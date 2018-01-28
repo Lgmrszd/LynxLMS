@@ -1,4 +1,6 @@
-from dbconnect import LMSDB
+import dbconfig as LMS
+from group_manager import Group
 
-db = LMSDB("postgres://admin:AdminsStrongPassword@localhost:5432/LynxLMS")
-db.close()
+LMS.init_db("localhost", "AdminsStrongPassword")
+s = Group.select()
+print(len(s))
