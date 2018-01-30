@@ -10,6 +10,8 @@ class BookInfo(QWidget):
         window_size_x = 400
         window_size_y = 250
 
+        self.book_id = QLabel("ID: 228322")
+
         self.book_name = QLabel("<h1>The art of QLabel</h1>")
         self.book_name.setFixedWidth(window_size_x - 20)
         self.book_name.setWordWrap(True)
@@ -23,6 +25,10 @@ class BookInfo(QWidget):
         self.book_description.setWordWrap(True)
 
         book_genres = [QLabel("genre 1"), QLabel("genre 2")]
+
+        top = QHBoxLayout()
+        top.addStretch(1)
+        top.addWidget(self.book_id)
 
         name_box = QGroupBox()
         name_box.setTitle("Book name")
@@ -46,6 +52,7 @@ class BookInfo(QWidget):
         description_box.setLayout(description_layout)
 
         vbox = QVBoxLayout()
+        vbox.addLayout(top)
         vbox.addWidget(name_box)
         vbox.addWidget(author_box)
         vbox.addWidget(description_box)
