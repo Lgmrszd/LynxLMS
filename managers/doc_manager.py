@@ -1,63 +1,33 @@
 import peewee as pw
-from playhouse.postgres_ext import *
 import json
 from dbconfig import BaseModel
-
-
-# remove next line in production
-# db = pw.PostgresqlDatabase('test', user='user', password='test')
-
-# class BaseModel (pw.Model):
-#        class Meta:
-#                database = db
 
 
 class Document(BaseModel):
     DocumentID = pw.PrimaryKeyField()
     typeID = pw.IntegerField()
-    name = pw.CharField()
+    title = pw.CharField()
     author = pw.CharField()
-    isBestseller = pw.BooleanField()
-    isReference = pw.BooleanField()
-    details = JSONField()
+    cost = pw.IntegerField()
+    keywords = pw.CharField()
 
+    @classmethod
+    def get_fields(cls):
+        temp = {**cls.__dict__ , **Document.__dict__}
+        temp.pop('__doc__')
+        temp.pop('__module__')
+        return temp.keys()
 
-class DocumentType(BaseModel):
-    ID = pw.PrimaryKeyField()
-    name = pw.CharField(unique=True)
-    fields = pw.TextField()
+class Book(Document):
+    edition = pw.CharField()
+    publisher = pw.CharField()
+    year = pw.IntegerField()
 
+class Journal_article(Document):
+    journal = pw.CharField()
+    issue = pw.CharField()
+    editor = pw.CharField()
 
-def doc_manager_init():
-    Document.create_table()
-    DocumentType.create_table()
+class AV_material(Document):
+    pass
 
-
-def add_document(name, doctype, author, isBestseller, isReference, details):
-    try:
-        # TODO: details json checker
-        Document.create(type=doctype, name=name, author=author, isBestseller=isBestseller, isReference=isReference,
-                        details=details)
-    except ValueError:
-        return 0
-    return 1
-
-
-def delete_document(DocumentID):
-    try:
-        # TODO: delete copies of this document
-        doc = Document.get(DocumentID=DocumentID)
-        doc.delete_instance()
-    except pw.DatabaseError:
-        return 0
-    return 1
-
-
-def add_type(name, fields=[], *args):
-    name = str(name)
-
-    for i in range(0, len(fields)):
-        fields[i] = str(fields[i])
-
-    DocumentType.create(name=name, fields=';'.join(fields))
-    return 1
