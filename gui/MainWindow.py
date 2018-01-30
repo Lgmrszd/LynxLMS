@@ -1,6 +1,6 @@
 import sys
 from PyQt5.QtWidgets import QWidget, QDesktopWidget, QPushButton, QVBoxLayout
-from SearchWindow import SearchWindow
+from gui.SearchWindow import SearchWindow
 
 
 class MainWindow(QWidget):

@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel, QGroupBox, QLineEdit, QPushButton, QTableWidget,\
     QTableWidgetItem, QAbstractItemView
 
-from BookInfo import BookInfo
+from gui.BookInfo import BookInfo
 
 class SearchWindow(QWidget):
     def __init__(self, parent=None):
