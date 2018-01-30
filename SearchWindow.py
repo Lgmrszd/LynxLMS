@@ -77,6 +77,5 @@ class SearchWindow(QWidget):
         book_info_window.show()
         self.books.append(book_info_window)  #to prevent deletion of book_info_window, because book_info_window is local variable
 
-
     def get_result(self):#вызывается при нажатии на кнопку 'search', вызвав 'self.search_field.text()' можно получить тескт из строки поиска
         print('\'' + self.search_field.text() + '\' searched')
