@@ -39,7 +39,11 @@ class Document(BaseModel):
         temp = {**cls.__dict__ , **Document.__dict__}
         temp.pop('__doc__')
         temp.pop('__module__')
-        return temp.keys()
+        res = []
+        for key in temp.keys():
+            if (isinstance(temp[key], pw.FieldDescriptor)):
+                res.append(key)
+        return res
 
 class Book(Document):
     edition = pw.CharField()
