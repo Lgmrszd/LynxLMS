@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel, QGroupBox, QLineEdit, QPushButton, QTableWidget,\
     QTableWidgetItem, QAbstractItemView, QComboBox, QTextEdit, QCheckBox, QScrollArea
-from managers.doc_manager import Document
+from managers.doc_manager import AV_material
 
 
 class AddBook(QWidget):
@@ -66,4 +66,4 @@ class AddBook(QWidget):
         self.setWindowTitle("Add book")
 
     def add_book(self):
-        Document.add(self.book_name.text(), self.book_author.text(), 123, self.book_details.toPlainText())
+        AV_material.add({"title": self.book_name.text(), "author": self.book_author.text(), "cost": 123, "keywords": self.book_details.toPlainText()})
