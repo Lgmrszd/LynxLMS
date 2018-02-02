@@ -6,7 +6,6 @@ from dbconfig import BaseModel
 
 class Document(BaseModel):
     DocumentID = pw.PrimaryKeyField()
-    #typeID = pw.IntegerField()
     title = pw.CharField()
     author = pw.CharField()
     cost = pw.IntegerField()
@@ -32,6 +31,15 @@ class Document(BaseModel):
             temp.__dict__['_data'][k] = new_values[k]
         temp.save()
         print(temp.__dict__)
+
+    @classmethod
+    def get_list(cls, page):
+        """Returns a content from ceratin page of document list"""
+        query = cls.select().offset(0 + (page-1)*15).limit(15).order_by(cls.title.asc())
+        res = []
+        for entry in query:
+            res.append(entry)
+        return res
 
     @classmethod
     def get_fields(cls):

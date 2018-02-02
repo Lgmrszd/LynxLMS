@@ -102,3 +102,6 @@ ENV/
 
 # IDEA files
 .idea
+
+#local testing
+loc_test/
