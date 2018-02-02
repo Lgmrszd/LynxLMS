@@ -1,13 +1,13 @@
 import sys
 from PyQt5.QtWidgets import QWidget, QDesktopWidget, QPushButton, QVBoxLayout
 from gui.SearchWindow import SearchWindow
-from gui.AddBook import AddBook
+from gui.AddDocument import AddDocument
 
 class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
         self.search_window = SearchWindow(self)
-        self.add_books = []
+        self.add_documents = []
         self._set_up_ui()
 
     def closeEvent(self, QCloseEvent):#вызывается при close event
@@ -17,21 +17,21 @@ class MainWindow(QWidget):
         window_size_x = 400
         window_size_y = 400
 
-        search_button = QPushButton("Search books")
+        search_button = QPushButton("Search documents")
         search_button.setFixedHeight(30)
         search_button.clicked.connect(self.switch_search_window)
 
         manage_users_button = QPushButton("Manage users")
         manage_users_button.setFixedHeight(30)
 
-        add_book_button = QPushButton("Add book")
-        add_book_button.setFixedHeight(30)
-        add_book_button.clicked.connect(self.open_add_book_window)
+        add_document_button = QPushButton("Add document")
+        add_document_button.setFixedHeight(30)
+        add_document_button.clicked.connect(self.open_add_document_window)
 
         vbox = QVBoxLayout()
         vbox.setSpacing(10)
         vbox.addWidget(search_button)
-        vbox.addWidget(add_book_button)
+        vbox.addWidget(add_document_button)
         vbox.addWidget(manage_users_button)
         vbox.addStretch()
 
@@ -39,7 +39,7 @@ class MainWindow(QWidget):
 
         self.setFixedSize(window_size_x, window_size_y)
         self._center()
-        self.setWindowTitle('Library')
+        self.setWindowTitle('Librarian application')
 
     def _center(self):# ставит окно в центр
         qr = self.frameGeometry()
@@ -53,7 +53,9 @@ class MainWindow(QWidget):
         else:
             self.search_window.hide()
 
-    def open_add_book_window(self):
-        add_book = AddBook()
-        add_book.show()
-        self.add_books.append(add_book)
+    def open_add_document_window(self):
+        add_document = AddDocument()
+        if add_document.type is None:
+            return
+        add_document.show()
+        self.add_documents.append(add_document)
