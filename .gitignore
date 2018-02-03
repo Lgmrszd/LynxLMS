@@ -105,3 +105,6 @@ ENV/
 
 #local testing
 loc_test/
+
+# Database
+data/database.db
