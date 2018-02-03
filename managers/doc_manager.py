@@ -1,8 +1,6 @@
 import peewee as pw
-import json
-import sys
-import inspect
-from dbconfig import BaseModel
+from db_connect import BaseModel
+
 
 class Document(BaseModel):
     DocumentID = pw.PrimaryKeyField()

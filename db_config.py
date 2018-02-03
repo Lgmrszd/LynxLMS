@@ -1,14 +1,7 @@
-from peewee import *
 import managers.doc_manager
 import managers.user_manager
 import managers.group_manager
-
-db = SqliteDatabase('data/database.db')
-
-
-class BaseModel(Model):
-    class Meta:
-        database = db
+from db_connect import db
 
 
 def initialize_db():
