@@ -19,7 +19,7 @@ class SearchSettings(QDialog):
 
         type_label = QLabel("Show:")
         self.typeBox = QComboBox()
-        self.typeBox.addItems(["All", "Book", "Journal", "AV"])
+        self.typeBox.addItems(["Book", "Journal", "AV"])
 
         ok_button = QPushButton("OK")
         ok_button.clicked.connect(self.close)

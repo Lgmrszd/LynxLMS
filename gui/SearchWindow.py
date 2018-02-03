@@ -3,7 +3,7 @@ from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel, QGroupBox
 
 from gui.BookInfo import BookInfo
 from gui.SearchSettings import SearchSettings
-from managers.doc_manager import AVMaterial, Book
+from managers.doc_manager import AVMaterial, Book, JournalArticle, Document
 
 
 class SearchWindow(QWidget):
@@ -38,11 +38,12 @@ class SearchWindow(QWidget):
         window_size_x = 800
         window_size_y = 650
 
+        self.list = None
         self.title_col = 1
         self.id_col = 0
         self.author_col = 2
 
-        self.type = "All"
+        self.type = "Book"
         self.sort = "New"
         self.indType = 0
         self.indSort = 2
@@ -51,6 +52,7 @@ class SearchWindow(QWidget):
 
         self.search_field = QLineEdit("")
         additional_options_button = QPushButton("...")
+        additional_options_button.setFixedWidth(20)
         additional_options_button.clicked.connect(self.settings_button_clicked)
 
         result_group = QGroupBox("")
@@ -62,22 +64,29 @@ class SearchWindow(QWidget):
         search_button = QPushButton("Search")
         search_button.clicked.connect(self.get_result)
 
+        prev_button = QPushButton("Prev")
+        page_num = QLabel("")
+        next_button = QPushButton("Next")
+
         search_layout = QHBoxLayout()
         search_layout.addWidget(self.search_field)
         search_layout.addWidget(additional_options_button)
+        search_layout.addWidget(search_button)
 
         in_group_layout = QVBoxLayout()
         in_group_layout.addWidget(self.result_table)
         result_group.setLayout(in_group_layout)
 
-        search_button_layout = QHBoxLayout()
-        search_button_layout.addStretch()
-        search_button_layout.addWidget(search_button)
+        prev_next_button_layout = QHBoxLayout()
+        prev_next_button_layout.addStretch()
+        prev_next_button_layout.addWidget(prev_button)
+        prev_next_button_layout.addWidget(page_num)
+        prev_next_button_layout.addWidget(next_button)
 
         full_layout = QVBoxLayout()
         full_layout.addLayout(search_layout)
         full_layout.addWidget(result_group)
-        full_layout.addLayout(search_button_layout)
+        full_layout.addLayout(prev_next_button_layout)
 
         self.setLayout(full_layout)
 
@@ -107,12 +116,17 @@ class SearchWindow(QWidget):
     def get_result(self):#вызывается при нажатии на кнопку 'search', вызвав 'self.search_field.text()' можно получить тескт из строки поиска
         print('\'' + self.search_field.text() + '\' searched')
         if self.type == "AV":
-            list = AVMaterial.get_list(15, 1)
-            for i in range(0, len(list)):
-                self.result_table.setItem(i, self.title_col, QTableWidgetItem(list[i].title))
-                self.result_table.setItem(i, self.author_col, QTableWidgetItem(list[i].author))
-        if self.type == "Book":
-            list = Book.get_list(15, 1)
-            for i in range(0, len(list)):
-                self.result_table.setItem(i, self.title_col, QTableWidgetItem(list[i].title))
-                self.result_table.setItem(i, self.author_col, QTableWidgetItem(list[i].author))
+            self.list = AVMaterial.get_list(15, 1)
+        elif self.type == "Book":
+            self.list = Book.get_list(15, 1)
+        elif self.type == "Journal":
+            self.list = JournalArticle.get_list(15, 1)
+        elif self.type == "All":
+            self.list = Document.get_list(15, 1)
+        for i in range(0, len(self.list)):
+            self.result_table.setItem(i, self.title_col, QTableWidgetItem(self.list[i].title))
+            self.result_table.setItem(i, self.author_col, QTableWidgetItem(self.list[i].author))
+        for i in range(len(self.list), 15):
+            self.result_table.setItem(i, self.title_col, QTableWidgetItem(""))
+            self.result_table.setItem(i, self.author_col, QTableWidgetItem(""))
+            self.result_table.setItem(i, self.id_col, QTableWidgetItem(""))
