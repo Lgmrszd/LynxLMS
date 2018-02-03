@@ -71,6 +71,7 @@ class AVMaterial(Document):
 class Copy(BaseModel):
     CopyID = pw.PrimaryKeyField()
     DocReference = pw.ForeignKeyField(Document, related_name = 'copies')
+    checked_out = pw.BooleanField(default=False)
 
 #clsmembers = inspect.getmembers(sys.modules[__name__], inspect.isclass)
 #for x in clsmembers:
