@@ -31,9 +31,9 @@ class Document(BaseModel):
         print(temp.__dict__)
 
     @classmethod
-    def get_list(cls, page):
+    def get_list(cls, rows_number, page):
         """Returns a content from ceratin page of document list"""
-        query = cls.select().offset(0 + (page-1)*15).limit(15).order_by(cls.title.asc())
+        query = cls.select().offset(0 + (page-1)*rows_number).limit(rows_number).order_by(cls.title.asc())
         res = []
         for entry in query:
             res.append(entry)
@@ -42,7 +42,7 @@ class Document(BaseModel):
     @classmethod
     def get_fields(cls):
         """Returns list of fields of specific document type"""
-        temp = {**cls.__dict__ , **Document.__dict__}
+        temp = {**cls.__dict__, **Document.__dict__}
         temp.pop('__doc__')
         temp.pop('__module__')
         res = []
@@ -66,6 +66,11 @@ class JournalArticle(Document):
 
 class AVMaterial(Document):
     pass
+
+
+class Copy(BaseModel):
+    CopyID = pw.PrimaryKeyField()
+    DocReference = pw.ForeignKeyField(Document, related_name = 'copies')
 
 #clsmembers = inspect.getmembers(sys.modules[__name__], inspect.isclass)
 #for x in clsmembers:
