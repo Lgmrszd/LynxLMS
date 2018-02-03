@@ -17,14 +17,14 @@ class Document(BaseModel):
     @classmethod
     def remove(cls, doc_id):
         """Removes an entity with specific DocumentID"""
-        temp = cls.get(DocumentID = doc_id)
+        temp = cls.get(DocumentID=doc_id)
         print(temp.title)
         temp.delete_instance()
     
     @classmethod
     def edit(cls, doc_id, new_values):
         """Edit certain values in an entity with specific DocumentID"""
-        temp = cls.get(DocumentID = doc_id)
+        temp = cls.get(DocumentID=doc_id)
         for k in new_values.keys():
             temp.__dict__['_data'][k] = new_values[k]
         temp.save()
