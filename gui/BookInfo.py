@@ -8,7 +8,7 @@ class BookInfo(QWidget):
 
     def _set_up_ui(self):
         window_size_x = 400
-        window_size_y = 250
+        window_size_y = 400
 
         self.book_id = QLabel("ID: 228322")
 

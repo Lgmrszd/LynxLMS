@@ -3,7 +3,7 @@ from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel, QGroupBox
 
 from gui.BookInfo import BookInfo
 from gui.SearchSettings import SearchSettings
-from managers.doc_manager import AVMaterial
+from managers.doc_manager import AVMaterial, Book
 
 
 class SearchWindow(QWidget):
@@ -36,7 +36,7 @@ class SearchWindow(QWidget):
 
     def _set_up_ui(self):
         window_size_x = 800
-        window_size_y = 600
+        window_size_y = 650
 
         self.title_col = 1
         self.id_col = 0
@@ -107,7 +107,12 @@ class SearchWindow(QWidget):
     def get_result(self):#вызывается при нажатии на кнопку 'search', вызвав 'self.search_field.text()' можно получить тескт из строки поиска
         print('\'' + self.search_field.text() + '\' searched')
         if self.type == "AV":
-            list = AVMaterial.get_list(1)
+            list = AVMaterial.get_list(15, 1)
+            for i in range(0, len(list)):
+                self.result_table.setItem(i, self.title_col, QTableWidgetItem(list[i].title))
+                self.result_table.setItem(i, self.author_col, QTableWidgetItem(list[i].author))
+        if self.type == "Book":
+            list = Book.get_list(15, 1)
             for i in range(0, len(list)):
                 self.result_table.setItem(i, self.title_col, QTableWidgetItem(list[i].title))
                 self.result_table.setItem(i, self.author_col, QTableWidgetItem(list[i].author))

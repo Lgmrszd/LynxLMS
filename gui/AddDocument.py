@@ -43,7 +43,6 @@ class AddDocument(QWidget):
         self.document_cost.setValidator(cost_validator)
 
         document_description_label = QLabel("Description:")
-        document_description_label.setFixedWidth(60)
         self.document_description = QTextEdit()
 
         #document_is_bestseller = QCheckBox()
@@ -158,3 +157,5 @@ class AddDocument(QWidget):
         if self.type == "AV":
             AVMaterial.add({"title": self.document_name.text(), "author": self.document_author.text(), "cost": 123,
                          "keywords": self.document_keywords.toPlainText()})
+
+        self.close()
