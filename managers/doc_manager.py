@@ -53,17 +53,20 @@ class Document(BaseModel):
                 res.append(key)
         return res
 
+
 class Book(Document):
     edition = pw.CharField()
     publisher = pw.CharField()
     year = pw.IntegerField()
 
-class Journal_article(Document):
+
+class JournalArticle(Document):
     journal = pw.CharField()
     issue = pw.CharField()
     editor = pw.CharField()
 
-class AV_material(Document):
+
+class AVMaterial(Document):
     pass
 
 #clsmembers = inspect.getmembers(sys.modules[__name__], inspect.isclass)

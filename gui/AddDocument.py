@@ -1,7 +1,7 @@
 from PyQt5.QtGui import QIntValidator
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel, QGroupBox, QLineEdit, QPushButton, QTableWidget,\
     QTableWidgetItem, QAbstractItemView, QComboBox, QTextEdit, QCheckBox, QScrollArea, QInputDialog
-from managers.doc_manager import AV_material, Document
+from managers.doc_manager import AVMaterial, Document
 
 
 class AddDocument(QWidget):
@@ -156,5 +156,5 @@ class AddDocument(QWidget):
 
     def add_document(self):
         if self.type == "AV":
-            AV_material.add({"title": self.document_name.text(), "author": self.document_author.text(), "cost": 123,
+            AVMaterial.add({"title": self.document_name.text(), "author": self.document_author.text(), "cost": 123,
                          "keywords": self.document_keywords.toPlainText()})

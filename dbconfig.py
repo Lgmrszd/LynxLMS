@@ -17,8 +17,8 @@ def initialize_db():
 
     # Creating tables
     db.create_tables([managers.doc_manager.Book,
-        managers.doc_manager.AV_material,
-        managers.doc_manager.Journal_article,
+        managers.doc_manager.AVMaterial,
+        managers.doc_manager.JournalArticle,
         managers.user_manager.User,
         managers.group_manager.Group], safe=True)
 
@@ -27,7 +27,7 @@ def drop_db():
     db.connect()
 
     db.drop_tables([managers.doc_manager.Book,
-        managers.doc_manager.AV_material,
-        managers.doc_manager.Journal_article,
+        managers.doc_manager.AVMaterial,
+        managers.doc_manager.JournalArticle,
         managers.user_manager.User,
         managers.group_manager.Group], safe=True)
