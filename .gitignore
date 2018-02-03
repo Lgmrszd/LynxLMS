@@ -108,3 +108,5 @@ loc_test/
 
 # Database
 data/database.db
+
+test.py
