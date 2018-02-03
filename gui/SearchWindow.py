@@ -95,10 +95,11 @@ class SearchWindow(QWidget):
 
     def cell_clicked_event(self, event):
         print(str(event.row()) + " row clicked")
-        book_info_window = BookInfo()
-        book_info_window.set_book_author("me")
-        book_info_window.show()
-        self.books.append(book_info_window)  #to prevent deletion of book_info_window, because book_info_window is local variable
+
+        if not list is None and len(self.list) > event.row():
+            book_info_window = BookInfo(self.list[event.row()])
+            book_info_window.show()
+            self.books.append(book_info_window)  #to prevent deletion of book_info_window, because book_info_window is local variable
 
     def update_settings(self):
         self.type = self.search_settings.typeBox.currentText()

@@ -1,26 +1,38 @@
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel, QGroupBox
-
+from managers.doc_manager import *
 
 class BookInfo(QWidget):
-    def __init__(self):
+    def __init__(self, doc):
         super().__init__()
-        self._set_up_ui()
+        self._set_up_ui(doc)
 
-    def _set_up_ui(self):
+
+    def _set_up_ui(self, doc):
         window_size_x = 400
         window_size_y = 400
 
-        self.book_id = QLabel("ID: 228322")
+        self.book_id = QLabel("ID: "+str(doc.DocumentID))
 
-        self.book_name = QLabel("<h1>The art of QLabel</h1>")
+        self.book_name = QLabel("<h1>"+doc.title+"</h1>")
         self.book_name.setFixedWidth(window_size_x - 20)
         self.book_name.setWordWrap(True)
 
-        self.book_author = QLabel("<h2>unknown</h2>")
+        self.book_author = QLabel("<h2>"+doc.author+"</h2>")
         self.book_author.setFixedWidth(window_size_x - 20)
         self.book_author.setWordWrap(True)
 
-        self.book_description = QLabel("<h4>In order to show multiple lines in QLabel, right click on QLabel and select 'change rich text'. This brings up dialog where you can type the text as you want to see including enter key. Setting the word wrap is not required for this.If you set the word wrap as well (in QLabel properties) than it will wrap each individual line in the Qlabel if it was longer than the real estate.</h4>")
+        desc = ""
+
+        fields = type(doc).get_fields()
+        for i in Document.__dict__:
+            if fields.__contains__(i):
+                fields.remove(i)
+
+        for f in fields:
+            desc += f + ": " + str(getattr(doc, f)) + "<br><br>"
+
+        self.book_description = QLabel("<h4>"+desc+"</h4>")
+        self.book_description.wordWrap()
         self.book_description.setFixedWidth(window_size_x - 20)
         self.book_description.setWordWrap(True)
 
@@ -69,3 +81,4 @@ class BookInfo(QWidget):
 
     def set_book_description(self, book_description):
         self.book_description.setText(book_description)
+
