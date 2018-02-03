@@ -96,7 +96,7 @@ class SearchWindow(QWidget):
     def cell_clicked_event(self, event):
         print(str(event.row()) + " row clicked")
 
-        if not list is None and len(self.list) > event.row():
+        if self.list is not None and len(self.list) > event.row():
             book_info_window = BookInfo(self.list[event.row()])
             book_info_window.show()
             self.books.append(book_info_window)  #to prevent deletion of book_info_window, because book_info_window is local variable
