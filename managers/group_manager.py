@@ -1,5 +1,5 @@
 from peewee import *
-from dbconfig import BaseModel
+from db_connect import BaseModel
 
 
 class Group(BaseModel):

@@ -1,6 +1,6 @@
 import peewee as pw
 from managers.group_manager import Group
-from dbconfig import BaseModel
+from db_connect import BaseModel
 
 
 class User(BaseModel):
