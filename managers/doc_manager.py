@@ -61,7 +61,7 @@ class Document(BaseModel):
             pw.CharField : str,
             pw.TextField : str
         }
-        temp = {**cls.__dict__, **Document.__dict__}
+        temp = {**Document.__dict__, **cls.__dict__}
         temp.pop('__doc__')
         temp.pop('__module__')
         res = {}

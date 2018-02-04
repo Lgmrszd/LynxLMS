@@ -36,9 +36,6 @@ class AddDocument(QWidget):
             dic = JournalArticle.get_fields_dict()
         elif self.type == "AV":
             dic = AVMaterial.get_fields_dict()
-        # for i in Document.__dict__:
-        #     if dic.__contains__(i):
-        #         dic.pop(i)
         dic.pop("DocumentID")
 
         for i in dic:
