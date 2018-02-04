@@ -1,20 +1,21 @@
 from peewee import *
 from db_connect import BaseModel
+from managers.doc_manager import class_to_name, name_to_class
 
 
 class Group(BaseModel):
     id = PrimaryKeyField()
     name = TextField()
-    book_checkout_time = SmallIntegerField()
-    book_bestseller_checkout_time = SmallIntegerField()
-    journal_checkout_time = SmallIntegerField()
-    av_checkout_time = SmallIntegerField()
+    book_ct = SmallIntegerField()
+    book_bestseller_ct = SmallIntegerField()
+    journal_ct = SmallIntegerField()
+    av_ct = SmallIntegerField()
     fields = {"id": id,
-               "name": name,
-               "book_checkout_time": book_checkout_time,
-               "book_bestseller_checkout_time": book_bestseller_checkout_time,
-               "journal_checkout_time": journal_checkout_time,
-               "av_checkout_time": av_checkout_time}
+              "name": name,
+              "book_ct": book_ct,
+              "book_bt": book_bestseller_ct,
+              "journal_ct": journal_ct,
+              "av_ct": av_ct}
 
     @classmethod
     def add(cls, **kwargs):
@@ -36,3 +37,11 @@ class Group(BaseModel):
                 group.__dict__['_data'][key] = kwargs[key]
         group.save()
 
+    def get_checkout_time(self, doc):
+        doc_type = class_to_name()[type(doc)]
+        if doc_type == "Book":
+            return self.book_ct
+        elif doc_type == "JournalArticle":
+            return self.journal_ct
+        elif doc_type == "AVMaterial":
+            return self.av_ct
