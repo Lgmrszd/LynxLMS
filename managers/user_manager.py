@@ -9,13 +9,18 @@ class User(BaseModel):
     surname = pw.CharField()
     address = pw.CharField()
     phone = pw.BigIntegerField()
+    fine = pw.SmallIntegerField()
     group = pw.ForeignKeyField(Group, related_name="users")
-    _fields = {"card_id": "key",
-                "name": "char",
-                "surname": "char",
-                "address": "char",
-                "phone": "bigint",
-                "group": "group"}
+    fields = {"name": name,
+              "surname": surname,
+              "address": address,
+              "phone": phone,
+              "fine": fine,
+              "group": group}
+
+    @classmethod
+    def get_by_id(cls, card_id):
+        return cls.get(card_id=card_id)
 
     @classmethod
     def add(cls, **kwargs):
@@ -28,12 +33,11 @@ class User(BaseModel):
 
     @classmethod
     def edit(cls, card_id, **kwargs):
-        user = cls.get(card_id)
-        for k in kwargs.keys():
-            if k in cls._fields.keys():
-                user.__dict__["_data"][k] = kwargs[k]
+        user = cls.get(card_id=card_id)
+        fields = cls.fields.copy()
+        fields.pop("id")
+        for key in fields.keys():
+            if key in kwargs.keys():
+                user.__dict__['_data'][key] = kwargs[key]
         user.save()
 
-    @classmethod
-    def get_fields(cls):
-        return cls._fields

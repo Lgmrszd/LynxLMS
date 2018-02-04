@@ -33,7 +33,6 @@ class Group(BaseModel):
     @classmethod
     def edit(cls, g_id, **kwargs):
         group = cls.get(id=g_id)
-        print(group)
         fields = cls.fields.copy()
         fields.pop("id")
         for key in fields.keys():
