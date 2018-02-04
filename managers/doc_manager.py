@@ -110,12 +110,12 @@ class Copy(BaseModel):
     storage = pw.CharField(default='')
 
     def get_doc(self):
-        doc_class = _name_to_class()[self.docClass]
+        doc_class = name_to_class()[self.docClass]
         return doc_class.get_by_id(self.docId)
     
     @classmethod
     def add(cls, doc):
-        cls.create(docClass = _class_to_name()[type(doc)], docId = doc.DocumentID)
+        cls.create(docClass = class_to_name()[type(doc)], docId = doc.DocumentID)
     
     @classmethod
     def edit_storage(cls, copy_id, new_storage):
@@ -124,7 +124,7 @@ class Copy(BaseModel):
         temp.save()
 
 
-def _name_to_class():
+def name_to_class():
     classes = inspect.getmembers(sys.modules[__name__], inspect.isclass)
     res = {}
     for c in classes:
@@ -132,7 +132,7 @@ def _name_to_class():
     return res
 
 
-def _class_to_name():
+def class_to_name():
     classes = inspect.getmembers(sys.modules[__name__], inspect.isclass)
     res = {}
     for c in classes:
