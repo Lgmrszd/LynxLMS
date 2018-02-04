@@ -1,5 +1,6 @@
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel, QPushButton, QMessageBox
 from gui.BookEdit import BookEdit
+from gui.CopiesWindow import *
 
 
 class BookInfo(QWidget):
@@ -8,6 +9,7 @@ class BookInfo(QWidget):
         self.doc = doc
         self.on_update = on_update
         self.edit = BookEdit(doc, self._update)
+        self.copies = CopiesWindow(doc)
         self._set_up_ui()
 
     def _set_up_ui(self):
@@ -43,6 +45,11 @@ class BookInfo(QWidget):
         edit_button.setFixedHeight(25)
         edit_button.clicked.connect(self.edit_document)
 
+        copies_button = QPushButton("Copies")
+        copies_button.setFixedWidth(90)
+        copies_button.setFixedHeight(25)
+        copies_button.clicked.connect(self.copy_list)
+
         delete_button = QPushButton("Delete")
         delete_button.setFixedWidth(90)
         delete_button.setFixedHeight(25)
@@ -51,12 +58,13 @@ class BookInfo(QWidget):
         edit_button_layout = QHBoxLayout()
         edit_button_layout.addStretch()
         edit_button_layout.addWidget(delete_button)
+        edit_button_layout.addWidget(copies_button)
         edit_button_layout.addWidget(edit_button)
         vbox.addLayout(edit_button_layout)
 
         self.setLayout(vbox)
         self.resize(window_size_x, window_size_y)
-        self.setWindowTitle('Book information')
+        self.setWindowTitle('Document information')
 
     def _update(self):
         for i in self.fields:
@@ -65,6 +73,9 @@ class BookInfo(QWidget):
 
     def edit_document(self):
         self.edit.show()
+
+    def copy_list(self):
+        self.copies.show()
 
     def delete_document(self):
         reply = QMessageBox.question(self, 'Delete?',
