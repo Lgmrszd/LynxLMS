@@ -1,6 +1,6 @@
 from peewee import *
 from db_connect import BaseModel
-from managers.doc_manager import class_to_name, name_to_class
+from managers.doc_manager import class_to_name
 
 
 class Group(BaseModel):
@@ -16,6 +16,10 @@ class Group(BaseModel):
               "book_bt": book_bestseller_ct,
               "journal_ct": journal_ct,
               "av_ct": av_ct}
+
+    @classmethod
+    def get_by_id(cls, g_id):
+        return cls.get(id=g_id)
 
     @classmethod
     def add(cls, **kwargs):
