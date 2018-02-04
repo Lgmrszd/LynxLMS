@@ -16,6 +16,8 @@ class History(BaseModel):
 
 
 class Booking_system:
+    __fine = 100
+
     def check_out(self, user, copy, librarian):
         if copy.checked_out == True:
             return 0
@@ -32,18 +34,15 @@ class Booking_system:
         entry.save()
         entry.copy.checked_out = False
         entry.copy.save()
+        
     
     def return_by_copy(self, copy, librarian):
         current_date = datetime.date.today()
         entry = History.select().where(History.date_return.is_null(True) & History.copy == copy).get()
-        entry.date_return = str(current_date)
-        entry.librarian_re = librarian
-        entry.save()
-        copy.checked_out = False
-        copy.save()
+        self.return_by_entry(entry, librarian)
 
     
-    def get_list_overdue(self):
+    def get_list_overdue(self): #TODO : fix, only overdue
         query = History.select().where(History.date_return.is_null(True))
         res = []
         for entry in query:
@@ -62,4 +61,26 @@ class Booking_system:
         res = []
         for entry in query:
             res.append(entry)
+        return res
+    
+    def get_document_copies(self, doc):
+        doc_class = doc_manager._class_to_name()[type(doc)]
+        query = doc_manager.Copy.select().where(doc_manager.Copy.docClass == doc_class , doc_manager.Copy.docId == doc.DocumentID)
+        print('::: doc_class = ' + doc_class + ' ::: docId = ' + str(doc.DocumentID) + '\n')
+        res = [] 
+        for entry in query:
+            res.append(entry)
+        return res
+
+    def check_overdue(self, entry):
+        period = entry.user.group.checkout_time * 7
+        #TODO : Period for bestseller
+        res = self.overdue(entry.date_check_out, entry.date_return, period)
+
+    def overdue(self, date_check_out, date_return, period):
+        d1_l = date_return.split('-')
+        d2_l = date_check_out.split('-')
+        d1 = datetime.date(int(d1_l[0]), int(d1_l[1]), int(d1_l[2]))
+        d2 = datetime.date(int(d2_l[0]), int(d2_l[1]), int(d2_l[2]))
+        res = max((d1 - d2).days - period, 0) * self.__fine
         return res
