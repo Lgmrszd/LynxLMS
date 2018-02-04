@@ -85,16 +85,11 @@ class Booking_system:
 
     def check_overdue(self, entry):
         period = 7 * 2
-        if (type(entry.doc) == doc_manager.name_to_class()['AVMaterial']):
-            period = entry.user.group.av_ct * 7
-        elif (type(entry.doc) == doc_manager.name_to_class()['Book']):
-            if ('best seller' in entry.copy.get_doc().keywords):
-                period = entry.user.group.book_bestseller_ct * 7
-            else:
-                period = entry.user.group.book_ct * 7
-        elif (type(entry.doc) == doc_manager.name_to_class()['JournalArticle']):
-            period = entry.user.group.journal_ct * 7
-        res = self.overdue(entry.date_check_out, entry.date_return, period)
+        if (type(entry.copy.get_doc()) == doc_manager.name_to_class()['Book'] & 'best seller' in entry.copy.get_doc().keywords):
+            period = entry.user.group.book_bestseller_ct * 7
+        else:
+            period = entry.user.group.get_checkout_time(entry.copy.get_doc())
+        res = min(self.overdue(entry.date_check_out, entry.date_return, period), entry.copy.get_doc().cost)
         return res
 
     def overdue(self, date_check_out, date_return, period):
