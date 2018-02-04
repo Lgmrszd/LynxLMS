@@ -1,5 +1,7 @@
 import peewee as pw
 from db_connect import BaseModel
+import sys
+import inspect
 
 
 class Document(BaseModel):
@@ -11,6 +13,10 @@ class Document(BaseModel):
     #is_bestseller = pw.BooleanField(null = true, default=False)
     #is_reference = pw.BooleanField(null = true, default=False)
 
+    @classmethod
+    def get_by_id(cls, doc_id):
+        return cls.get(DocumentID = doc_id)
+    
     @classmethod
     def add(cls, args):
         """Creates a new entity of selected type. Takes on input dictionary of values"""
@@ -61,7 +67,7 @@ class Document(BaseModel):
             pw.CharField : str,
             pw.TextField : str
         }
-        temp = {**Document.__dict__, **cls.__dict__}
+        temp = {**cls.__dict__, **Document.__dict__}
         temp.pop('__doc__')
         temp.pop('__module__')
         res = {}
@@ -97,13 +103,19 @@ class AVMaterial(Document):
 
 class Copy(BaseModel):
     CopyID = pw.PrimaryKeyField()
-    DocReference = pw.ForeignKeyField(Document, related_name = 'copies')
+    #DocReference = pw.ForeignKeyField(Document, related_name = 'copies')
+    docClass = pw.CharField()
+    docId = pw.IntegerField()
     checked_out = pw.BooleanField(default=False)
     storage = pw.CharField(default='')
 
+    def get_doc(self):
+        doc_class = _name_to_class()[self.docClass]
+        return doc_class.get_by_id(self.docId)
+    
     @classmethod
-    def add(cls, args):
-        cls.create(**args)
+    def add(cls, doc):
+        cls.create(docClass = _class_to_name()[type(doc)], docId = doc.DocumentID)
     
     @classmethod
     def edit_storage(cls, copy_id, new_storage):
@@ -112,8 +124,17 @@ class Copy(BaseModel):
         temp.save()
 
 
-#clsmembers = inspect.getmembers(sys.modules[__name__], inspect.isclass)
-#for x in clsmembers:
-#    if x[0] == 'BaseModel':
-#        continue
-#    Document._meta.database.create_table(x[1])
+def _name_to_class():
+    classes = inspect.getmembers(sys.modules[__name__], inspect.isclass)
+    res = {}
+    for c in classes:
+        res[c[0]] = c[1]
+    return res
+
+
+def _class_to_name():
+    classes = inspect.getmembers(sys.modules[__name__], inspect.isclass)
+    res = {}
+    for c in classes:
+        res[c[1]] = c[0]
+    return res
