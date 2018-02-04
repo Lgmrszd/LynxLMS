@@ -62,11 +62,14 @@ class SearchWindow(QWidget):
         self.result_table.doubleClicked.connect(self.cell_clicked_event)
 
         search_button = QPushButton("Search")
-        search_button.clicked.connect(self.get_result)
+        search_button.clicked.connect(self.click_search_button)
 
         prev_button = QPushButton("Prev")
-        page_num = QLabel("")
+        prev_button.clicked.connect(self.prev_page)
+        self.page_num = 1
+        self.page_num_label = QLabel("")
         next_button = QPushButton("Next")
+        next_button.clicked.connect(self.next_page)
 
         search_layout = QHBoxLayout()
         search_layout.addWidget(self.search_field)
@@ -80,7 +83,7 @@ class SearchWindow(QWidget):
         prev_next_button_layout = QHBoxLayout()
         prev_next_button_layout.addStretch()
         prev_next_button_layout.addWidget(prev_button)
-        prev_next_button_layout.addWidget(page_num)
+        prev_next_button_layout.addWidget(self.page_num_label)
         prev_next_button_layout.addWidget(next_button)
 
         full_layout = QVBoxLayout()
@@ -92,20 +95,24 @@ class SearchWindow(QWidget):
 
         self.resize(window_size_x, window_size_y)
         self.setWindowTitle('Search')
+        self.click_search_button()
 
     def cell_clicked_event(self, event):
-        print(str(event.row()) + " row clicked")
-
         if self.list is not None and len(self.list) > event.row():
             book_info_window = BookInfo(self.list[event.row()])
             book_info_window.show()
             self.books.append(book_info_window)  #to prevent deletion of book_info_window, because book_info_window is local variable
 
     def update_settings(self):
+        another = False
+        if self.indType != self.search_settings.typeBox.currentIndex() or self.indSort != self.search_settings.sortBox.currentIndex():
+            another = True
         self.type = self.search_settings.typeBox.currentText()
         self.indType = self.search_settings.typeBox.currentIndex()
         self.sort = self.search_settings.sortBox.currentText()
         self.indSort = self.search_settings.sortBox.currentIndex()
+        if another:
+            self.click_search_button()
 
     def settings_button_clicked(self):
         self.search_settings = SearchSettings()
@@ -114,16 +121,36 @@ class SearchWindow(QWidget):
         self.search_settings.exec_()
         self.update_settings()
 
+    def update_page(self):
+        self.page_num_label.setText(str(self.page_num))
+
+    def prev_page(self):
+        if self.page_num != 1:
+            self.page_num = self.page_num - 1
+        self.get_result()
+        self.update_page()
+
+    def next_page(self):
+        self.page_num = self.page_num + 1
+        self.get_result()
+        if len(self.list) == 0:
+            self.page_num = self.page_num - 1
+            self.get_result()
+        self.update_page()
+
+    def click_search_button(self):
+        self.page_num = 1
+        self.get_result()
+        self.update_page()
+
     def get_result(self):#вызывается при нажатии на кнопку 'search', вызвав 'self.search_field.text()' можно получить тескт из строки поиска
-        print('\'' + self.search_field.text() + '\' searched')
         if self.type == "AV":
-            self.list = AVMaterial.get_list(15, 1)
+            self.list = AVMaterial.get_list(15, self.page_num)
         elif self.type == "Book":
-            self.list = Book.get_list(15, 1)
+            self.list = Book.get_list(15, self.page_num)
         elif self.type == "Journal":
-            self.list = JournalArticle.get_list(15, 1)
-        elif self.type == "All":
-            self.list = Document.get_list(15, 1)
+            self.list = JournalArticle.get_list(15, self.page_num)
+
         for i in range(0, len(self.list)):
             self.result_table.setItem(i, self.title_col, QTableWidgetItem(self.list[i].title))
             self.result_table.setItem(i, self.author_col, QTableWidgetItem(self.list[i].author))
