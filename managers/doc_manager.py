@@ -40,7 +40,7 @@ class Document(BaseModel):
 
     @classmethod
     def get_list(cls, rows_number, page):
-        """Returns a content from ceratin page of document list"""
+        """Returns a content from certain page of document list"""
         query = cls.select().offset(0 + (page-1)*rows_number).limit(rows_number).order_by(cls.title.asc())
         res = []
         for entry in query:

@@ -41,3 +41,12 @@ class User(BaseModel):
                 user.__dict__['_data'][key] = kwargs[key]
         user.save()
 
+    @classmethod
+    def get_list(cls, rows_number, page):
+        """Returns a content from certain page of user list"""
+        query = cls.select().offset(0 + (page-1)*rows_number).limit(rows_number).order_by(cls.name.asc())
+        res = []
+        for entry in query:
+            res.append(entry)
+        return res
+
