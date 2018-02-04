@@ -8,6 +8,8 @@ class Document(BaseModel):
     author = pw.CharField()
     cost = pw.IntegerField()
     keywords = pw.CharField()
+    #is_bestseller = pw.BooleanField(null = true, default=False)
+    #is_reference = pw.BooleanField(null = true, default=False)
 
     @classmethod
     def add(cls, args):
@@ -97,10 +99,18 @@ class Copy(BaseModel):
     CopyID = pw.PrimaryKeyField()
     DocReference = pw.ForeignKeyField(Document, related_name = 'copies')
     checked_out = pw.BooleanField(default=False)
+    storage = pw.CharField(default='')
 
     @classmethod
     def add(cls, args):
         cls.create(**args)
+    
+    @classmethod
+    def edit_storage(cls, copy_id, new_storage):
+        temp = cls.get(CopyID = copy_id)
+        temp.storage = new_storage
+        temp.save()
+
 
 #clsmembers = inspect.getmembers(sys.modules[__name__], inspect.isclass)
 #for x in clsmembers:
