@@ -34,15 +34,24 @@ class Booking_system:
         entry.save()
         entry.copy.checked_out = False
         entry.copy.save()
+        entry.user.fine += self.check_overdue(entry)
+        entry.user.save()
         
     
     def return_by_copy(self, copy, librarian):
-        current_date = datetime.date.today()
         entry = History.select().where(History.date_return.is_null(True) & History.copy == copy).get()
         self.return_by_entry(entry, librarian)
 
     
-    def get_list_overdue(self): #TODO : fix, only overdue
+    def get_list_overdue(self):
+        opened = self.get_list_opened()
+        res = []
+        for entry in opened:
+            if (self.check_overdue(entry) > 0):
+                res.append(entry)
+        return res
+
+    def get_list_opened(self):
         query = History.select().where(History.date_return.is_null(True))
         res = []
         for entry in query:
@@ -64,18 +73,27 @@ class Booking_system:
         return res
     
     def get_document_copies(self, doc):
-        doc_class = doc_manager._class_to_name()[type(doc)]
+        doc_class = doc_manager.class_to_name()[type(doc)]
         query = doc_manager.Copy.select().where(doc_manager.Copy.docClass == doc_class , doc_manager.Copy.docId == doc.DocumentID)
-        print('::: doc_class = ' + doc_class + ' ::: docId = ' + str(doc.DocumentID) + '\n')
+        #print('::: doc_class = ' + doc_class + ' ::: docId = ' + str(doc.DocumentID) + '\n')
         res = [] 
         for entry in query:
             res.append(entry)
         return res
 
     def check_overdue(self, entry):
-        period = entry.user.group.checkout_time * 7
-        #TODO : Period for bestseller
+        period = 7 * 2
+        if (type(entry.doc) == doc_manager.name_to_class()['AVMaterial']):
+            period = entry.user.group.av_ct * 7
+        elif (type(entry.doc) == doc_manager.name_to_class()['Book']):
+            if (entry.doc.keywords == 'best seller'):
+                period = entry.user.group.book_bestseller_ct * 7
+            else:
+                period = entry.user.group.book_ct * 7
+        elif (type(entry.doc) == doc_manager.name_to_class()['JournalArticle']):
+            period = entry.user.group.journal_ct * 7
         res = self.overdue(entry.date_check_out, entry.date_return, period)
+        return res
 
     def overdue(self, date_check_out, date_return, period):
         d1_l = date_return.split('-')
