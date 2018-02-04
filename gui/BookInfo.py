@@ -1,5 +1,4 @@
-from PyQt5.QtGui import QCloseEvent
-from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel, QPushButton
+from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel, QPushButton, QMessageBox
 from gui.BookEdit import BookEdit
 
 
@@ -17,11 +16,6 @@ class BookInfo(QWidget):
 
         self.book_id = QLabel("ID: "+str(self.doc.DocumentID))
         vbox = QVBoxLayout()
-
-        edit_button = QPushButton("Edit")
-        edit_button.setFixedWidth(90)
-        edit_button.setFixedHeight(25)
-        edit_button.clicked.connect(self.edit_document)
 
         top = QHBoxLayout()
         top.addStretch(1)
@@ -44,8 +38,19 @@ class BookInfo(QWidget):
 
         vbox.addStretch()
 
+        edit_button = QPushButton("Edit")
+        edit_button.setFixedWidth(90)
+        edit_button.setFixedHeight(25)
+        edit_button.clicked.connect(self.edit_document)
+
+        delete_button = QPushButton("Delete")
+        delete_button.setFixedWidth(90)
+        delete_button.setFixedHeight(25)
+        delete_button.clicked.connect(self.delete_document)
+
         edit_button_layout = QHBoxLayout()
         edit_button_layout.addStretch()
+        edit_button_layout.addWidget(delete_button)
         edit_button_layout.addWidget(edit_button)
         vbox.addLayout(edit_button_layout)
 
@@ -60,3 +65,13 @@ class BookInfo(QWidget):
 
     def edit_document(self):
         self.edit.show()
+
+    def delete_document(self):
+        reply = QMessageBox.question(self, 'Delete?',
+                                           'Do you really want to delete this book?', QMessageBox.Yes, QMessageBox.No)
+
+        if reply == QMessageBox.No:
+            return
+        type(self.doc).remove(self.doc.DocumentID)
+        self.on_update()
+        self.close()
