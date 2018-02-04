@@ -22,45 +22,10 @@ class AddDocument(QWidget):
 
         vbox = QVBoxLayout()
 
-        document_title_label = QLabel("title:")
-        document_title_label.setFixedWidth(60)
-        self.document_title = QLineEdit()
-
-        document_author_label = QLabel("author:")
-        document_author_label.setFixedWidth(60)
-        self.document_author = QLineEdit()
-
-        document_cost_label = QLabel("cost:")
-        document_cost_label.setFixedWidth(60)
-        self.document_cost = QLineEdit()
-        cost_validator = QIntValidator()
-        cost_validator.setBottom(0)
-        self.document_cost.setValidator(cost_validator)
-        document_keywords_label = QLabel("keywords:")
-        document_keywords_label.setFixedWidth(60)
-        self.document_keywords = QTextEdit()
-
         add_button = QPushButton("Add")
         add_button.setFixedWidth(90)
         add_button.setFixedHeight(25)
         add_button.clicked.connect(self.add_document)
-
-        document_title_layout = QHBoxLayout()
-        document_title_layout.addWidget(document_title_label)
-        document_title_layout.addWidget(self.document_title)
-        vbox.addLayout(document_title_layout)
-        document_author_layout = QHBoxLayout()
-        document_author_layout.addWidget(document_author_label)
-        document_author_layout.addWidget(self.document_author)
-        vbox.addLayout(document_author_layout)
-        document_cost_layout = QHBoxLayout()
-        document_cost_layout.addWidget(document_cost_label)
-        document_cost_layout.addWidget(self.document_cost)
-        vbox.addLayout(document_cost_layout)
-        document_keywords_layout = QHBoxLayout()
-        document_keywords_layout.addWidget(document_keywords_label)
-        document_keywords_layout.addWidget(self.document_keywords)
-        vbox.addLayout(document_keywords_layout)
 
         self.fields = dict()
         self.types = dict()
@@ -71,9 +36,10 @@ class AddDocument(QWidget):
             dic = JournalArticle.get_fields_dict()
         elif self.type == "AV":
             dic = AVMaterial.get_fields_dict()
-        for i in Document.__dict__:
-            if dic.__contains__(i):
-                dic.pop(i)
+        # for i in Document.__dict__:
+        #     if dic.__contains__(i):
+        #         dic.pop(i)
+        dic.pop("DocumentID")
 
         for i in dic:
             line_item = QLineEdit()
@@ -106,8 +72,7 @@ class AddDocument(QWidget):
             type = JournalArticle
         elif self.type == "AV":
             type = AVMaterial
-        dic = {"title": self.document_title.text(), "author": self.document_author.text(), "cost": self.document_cost.text(),
-                         "keywords": self.document_keywords.toPlainText()}
+        dic = dict()
         for i in self.fields:
             dic[i] = self.fields[i].text()
         for i in dic:
