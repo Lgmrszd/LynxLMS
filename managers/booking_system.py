@@ -19,6 +19,8 @@ class Booking_system:
     __fine = 100
 
     def check_out(self, user, copy, librarian):
+        if 'reference' in copy.get_doc().keywords:
+            return 0
         if copy.checked_out == True:
             return 0
         current_date = datetime.date.today()
@@ -86,7 +88,7 @@ class Booking_system:
         if (type(entry.doc) == doc_manager.name_to_class()['AVMaterial']):
             period = entry.user.group.av_ct * 7
         elif (type(entry.doc) == doc_manager.name_to_class()['Book']):
-            if (entry.doc.keywords == 'best seller'):
+            if ('best seller' in entry.copy.get_doc().keywords):
                 period = entry.user.group.book_bestseller_ct * 7
             else:
                 period = entry.user.group.book_ct * 7
