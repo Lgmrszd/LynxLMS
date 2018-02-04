@@ -50,6 +50,31 @@ class Document(BaseModel):
             if (isinstance(temp[key], pw.FieldDescriptor)):
                 res.append(key)
         return res
+    
+    @classmethod
+    def get_fields_dict(cls):
+        """Returns dictionary with field name as a key and type of field as a value"""
+        map_to_types = {
+            pw.IntegerField : int,
+            pw.CharField : str,
+            pw.TextField : str
+        }
+        temp = {**cls.__dict__, **Document.__dict__}
+        temp.pop('__doc__')
+        temp.pop('__module__')
+        res = {}
+        for key in temp.keys():
+            if (isinstance(temp[key], pw.FieldDescriptor)):
+                if (isinstance(temp[key].field, pw.IntegerField) | isinstance(temp[key].field, pw.BigIntegerField)):
+                    res[key] = int
+                elif (isinstance(temp[key].field, pw.CharField) | isinstance(temp[key].field, pw.TextField)):
+                    res[key] = str
+                elif (isinstance(temp[key].field, pw.BooleanField)):
+                    res[key] = bool
+                elif (isinstance(temp[key].field, pw.ForeignKeyField)):
+                    res[key] = 'foreign'
+        return res
+
 
 
 class Book(Document):
@@ -72,6 +97,10 @@ class Copy(BaseModel):
     CopyID = pw.PrimaryKeyField()
     DocReference = pw.ForeignKeyField(Document, related_name = 'copies')
     checked_out = pw.BooleanField(default=False)
+
+    @classmethod
+    def add(cls, args):
+        cls.create(**args)
 
 #clsmembers = inspect.getmembers(sys.modules[__name__], inspect.isclass)
 #for x in clsmembers:
