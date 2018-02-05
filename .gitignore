@@ -110,3 +110,7 @@ loc_test/
 data/database.db
 
 test.py
+
+# build directories
+dist/*
+build/*
