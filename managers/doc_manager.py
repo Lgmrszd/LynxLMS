@@ -20,7 +20,7 @@ class Document(BaseModel):
     @classmethod
     def add(cls, args):
         """Creates a new entity of selected type. Takes on input dictionary of values"""
-        cls.create(**args)
+        return cls.create(**args)
 
     @classmethod
     def remove(cls, doc_id):
@@ -115,7 +115,7 @@ class Copy(BaseModel):
     
     @classmethod
     def add(cls, doc):
-        cls.create(docClass = class_to_name()[type(doc)], docId = doc.DocumentID)
+        return cls.create(docClass = class_to_name()[type(doc)], docId = doc.DocumentID)
     
     @classmethod
     def edit_storage(cls, copy_id, new_storage):
