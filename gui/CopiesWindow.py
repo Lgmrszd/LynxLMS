@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import *
 from managers.booking_system import *
 from managers.doc_manager import *
-from gui.CopyEdit import *
+from gui.CopyInfo import *
 
 class CopiesWindow(QWidget):
     def __init__(self, doc):
@@ -67,7 +67,7 @@ class CopiesWindow(QWidget):
         self.setWindowTitle("Copies")
 
     def _cell_clicked_event(self, event):
-        copy_edit_window = CopyEdit(self.cl[event.row()], lambda: self._row_update(event.row()))
+        copy_edit_window = CopyInfo(self.cl[event.row()], lambda: self._row_update(event.row()))
         copy_edit_window.show()
         self.edits.append(
             copy_edit_window)  # to prevent deletion of copy_edit_window, because copy_edit_window is local variable
@@ -77,3 +77,8 @@ class CopiesWindow(QWidget):
         self.cl = self.bs.get_document_copies(self.doc)
         self.table.setRowCount(len(self.cl))
         self._row_update(len(self.cl)-1)
+
+    def closeEvent(self, ev):
+        for i in self.edits:
+            i.close()
+        ev.accept()

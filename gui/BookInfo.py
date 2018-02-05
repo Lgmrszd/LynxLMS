@@ -83,6 +83,10 @@ class BookInfo(QWidget):
 
         if reply == QMessageBox.No:
             return
+        self.edit.close()
+        self.copies.close()
         type(self.doc).remove(self.doc.DocumentID)
         self.on_update()
         self.close()
+
+
