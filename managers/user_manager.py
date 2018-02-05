@@ -9,7 +9,7 @@ class User(BaseModel):
     surname = pw.CharField()
     address = pw.CharField()
     phone = pw.BigIntegerField()
-    fine = pw.SmallIntegerField()
+    fine = pw.SmallIntegerField(default=0)
     group = pw.ForeignKeyField(Group, related_name="users")
     fields = {"name": name,
               "surname": surname,
