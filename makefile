@@ -10,3 +10,4 @@ clean:
 	rm -r build/*
 	rm -r dist/*
 
+.PHONY: build
