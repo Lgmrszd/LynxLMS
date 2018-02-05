@@ -114,3 +114,4 @@ test.py
 # build directories
 dist/*
 build/*
+main.spec
