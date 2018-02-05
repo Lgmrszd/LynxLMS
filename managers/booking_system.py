@@ -99,3 +99,7 @@ class Booking_system:
         d2 = datetime.date(int(d2_l[0]), int(d2_l[1]), int(d2_l[2]))
         res = max((d1 - d2).days - period, 0) * self.__fine
         return res
+    
+    def pay_fine(self, usr, amount):
+        usr.fine = max(usr.fine - amount, 0)
+        return (max(amount - usr.fine, 0))
