@@ -51,7 +51,7 @@ class Booking_system:
     def return_by_copy(self, copy, librarian):
         """Return copy
         """
-        entry = History.select().where(History.date_return.is_null(True) and History.copy == copy).get()
+        entry = History.select().where((History.date_return.is_null(True)) &  (History.copy == copy)).get()
         self.return_by_entry(entry, librarian)
 
     
