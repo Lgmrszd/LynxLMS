@@ -106,7 +106,7 @@ class Booking_system:
         """Returns fine for overdue (0 if no fine)
         """
         period = 7 * 2
-        if (type(entry.copy.get_doc()) == doc_manager.name_to_class()['Book'] & 'best seller' in entry.copy.get_doc().keywords):
+        if ((type(entry.copy.get_doc()) == doc_manager.name_to_class()['Book']) & ('best seller' in entry.copy.get_doc().keywords)):
             period = entry.user.group.book_bestseller_ct * 7
         else:
             period = entry.user.group.get_checkout_time(entry.copy.get_doc())
