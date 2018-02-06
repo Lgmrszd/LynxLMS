@@ -83,9 +83,9 @@ class Document(BaseModel):
         res = {}
         for key in temp.keys():
             if (isinstance(temp[key], pw.FieldDescriptor)):
-                if (isinstance(temp[key].field, pw.IntegerField) | isinstance(temp[key].field, pw.BigIntegerField)):
+                if (isinstance(temp[key].field, pw.IntegerField) or isinstance(temp[key].field, pw.BigIntegerField)):
                     res[key] = int
-                elif (isinstance(temp[key].field, pw.CharField) | isinstance(temp[key].field, pw.TextField)):
+                elif (isinstance(temp[key].field, pw.CharField) or isinstance(temp[key].field, pw.TextField)):
                     res[key] = str
                 elif (isinstance(temp[key].field, pw.BooleanField)):
                     res[key] = bool
