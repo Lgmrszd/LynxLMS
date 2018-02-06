@@ -4,6 +4,7 @@ from db_connect import BaseModel
 
 
 class User(BaseModel):
+    """Data model for users and user's cards"""
     card_id = pw.PrimaryKeyField()
     name = pw.CharField()
     surname = pw.CharField()
@@ -20,19 +21,23 @@ class User(BaseModel):
 
     @classmethod
     def get_by_id(cls, card_id):
+        """Get user by id"""
         return cls.get(card_id=card_id)
 
     @classmethod
     def add(cls, **kwargs):
+        """Create a new user and add them to database"""
         return cls.create(**kwargs)
 
     @classmethod
     def remove(cls, card_id):
+        """Remove excising user from database"""
         temp = cls.get(card_id=card_id)
         temp.delete_instance()
 
     @classmethod
     def edit(cls, card_id, **kwargs):
+        """Edit certain values of user"""
         user = cls.get(card_id=card_id)
         fields = cls.fields.copy()
         fields.pop("id")
