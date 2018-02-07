@@ -75,7 +75,20 @@ class CopiesWindow(QWidget):
             copy_edit_window)  # to prevent deletion of copy_edit_window, because copy_edit_window is local variable
 
     def add_copy(self):
-        Copy.add(self.doc)
+
+        loc, ok = QInputDialog.getText(self, "Enter copy location", "Location:")
+
+        if not ok:
+            return
+        if len(str(loc)) == 0:
+            msg = QMessageBox()
+            msg.setText("Empty location")
+            msg.exec_()
+            return
+
+        c = Copy.add(self.doc)
+        c.storage = str(loc)
+        c.save()
         self.cl = self.bs.get_document_copies(self.doc)
         self.table.setRowCount(len(self.cl))
         self._row_update(len(self.cl)-1)
