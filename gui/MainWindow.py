@@ -2,6 +2,7 @@ import sys
 from PyQt5.QtWidgets import QWidget, QDesktopWidget, QPushButton, QVBoxLayout, QLineEdit, QHBoxLayout, QLabel
 from gui.SearchWindow import SearchWindow
 from gui.AddDocument import AddDocument
+from gui.ManageUsersWindow import ManageUsersWindow
 
 class MainWindow(QWidget):
     librarian = ""
@@ -9,6 +10,7 @@ class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
         self.search_window = SearchWindow(self)
+        self.manage_users = ManageUsersWindow()
         self.add_documents = []
         self._set_up_ui()
 
@@ -36,6 +38,7 @@ class MainWindow(QWidget):
 
         manage_users_button = QPushButton("Manage users")
         manage_users_button.setFixedHeight(30)
+        manage_users_button.clicked.connect(self.open_manage_users_window)
 
         add_document_button = QPushButton("Add document")
         add_document_button.setFixedHeight(30)
@@ -73,3 +76,9 @@ class MainWindow(QWidget):
             return
         add_document.show()
         self.add_documents.append(add_document)
+
+    def open_manage_users_window(self):
+        if self.manage_users.isHidden():
+            self.manage_users.show()
+        else:
+            self.manage_users.hide()
