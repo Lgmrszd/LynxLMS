@@ -1,9 +1,11 @@
 import sys
-from PyQt5.QtWidgets import QWidget, QDesktopWidget, QPushButton, QVBoxLayout
+from PyQt5.QtWidgets import QWidget, QDesktopWidget, QPushButton, QVBoxLayout, QLineEdit, QHBoxLayout, QLabel
 from gui.SearchWindow import SearchWindow
 from gui.AddDocument import AddDocument
 
 class MainWindow(QWidget):
+    librarian = ""
+
     def __init__(self):
         super().__init__()
         self.search_window = SearchWindow(self)
@@ -13,9 +15,20 @@ class MainWindow(QWidget):
     def closeEvent(self, QCloseEvent):#вызывается при close event
         sys.exit(0)
 
+    def librarian_update(self):
+        MainWindow.librarian = str(self.librarian_field.text())
+
     def _set_up_ui(self):
         window_size_x = 400
         window_size_y = 400
+
+
+        hbox = QHBoxLayout()
+        self.librarian_field = QLineEdit("")
+        self.librarian_field.textEdited.connect(self.librarian_update)
+        lab = QLabel("Librarian: ")
+        hbox.addWidget(lab)
+        hbox.addWidget(self.librarian_field)
 
         search_button = QPushButton("Search documents")
         search_button.setFixedHeight(30)
@@ -30,6 +43,7 @@ class MainWindow(QWidget):
 
         vbox = QVBoxLayout()
         vbox.setSpacing(10)
+        vbox.addLayout(hbox)
         vbox.addWidget(search_button)
         vbox.addWidget(add_document_button)
         vbox.addWidget(manage_users_button)

@@ -48,7 +48,7 @@ class BookEdit(QWidget):
 
         self.setLayout(vbox)
         self.resize(window_size_x, window_size_y)
-        self.setWindowTitle("Edit")
+        self.setWindowTitle("Edit: "+self.doc.title)
 
     def save_changes(self):
         dic = dict()

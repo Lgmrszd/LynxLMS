@@ -3,6 +3,7 @@ from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel, QLineEdit
 from managers.doc_manager import*
 
 
+#  !!!Is not ready at all
 class CopyEdit(QWidget):
     def __init__(self, copy, on_edit):
         super().__init__()

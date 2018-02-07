@@ -13,6 +13,7 @@ class CopiesWindow(QWidget):
         self._set_up_ui()
 
     def _row_update(self, row):
+        self.cl[row] = Copy.get(Copy.CopyID == self.cl[row].CopyID)
         self.table.setItem(row, 0, QTableWidgetItem(str(self.cl[row].CopyID)))
         self.table.setItem(row, 1, QTableWidgetItem(str(self.cl[row].storage)))
         self.table.setItem(row, 2, QTableWidgetItem(str(int(self.cl[row].checked_out))))
@@ -64,10 +65,11 @@ class CopiesWindow(QWidget):
 
         self.setLayout(vbox)
         self.resize(window_size_x, window_size_y)
-        self.setWindowTitle("Copies")
+        self.setWindowTitle("Copies of "+self.doc.title)
 
     def _cell_clicked_event(self, event):
-        copy_edit_window = CopyInfo(self.cl[event.row()], lambda: self._row_update(event.row()))
+        r = event.row()
+        copy_edit_window = CopyInfo(self.cl[r], lambda: self._row_update(r))
         copy_edit_window.show()
         self.edits.append(
             copy_edit_window)  # to prevent deletion of copy_edit_window, because copy_edit_window is local variable

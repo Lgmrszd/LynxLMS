@@ -64,11 +64,12 @@ class BookInfo(QWidget):
 
         self.setLayout(vbox)
         self.resize(window_size_x, window_size_y)
-        self.setWindowTitle('Document information')
+        self.setWindowTitle('Document information: '+self.doc.title)
 
     def _update(self):
         for i in self.fields:
             self.fields[i].setText(str(getattr(self.doc, i)))
+        self.setWindowTitle('Document information: ' + self.doc.title)
         self.on_update()
 
     def edit_document(self):
@@ -79,7 +80,7 @@ class BookInfo(QWidget):
 
     def delete_document(self):
         reply = QMessageBox.question(self, 'Delete?',
-                                           'Do you really want to delete this book?', QMessageBox.Yes, QMessageBox.No)
+                                           'Do you really want to delete this document?', QMessageBox.Yes, QMessageBox.No)
 
         if reply == QMessageBox.No:
             return

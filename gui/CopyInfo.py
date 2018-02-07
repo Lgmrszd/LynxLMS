@@ -1,7 +1,10 @@
 from PyQt5.QtGui import QIntValidator
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel, QLineEdit, QPushButton, QMessageBox, \
-    QTableWidget, QAbstractItemView, QTableWidgetItem
+    QTableWidget, QAbstractItemView, QTableWidgetItem, QInputDialog
+from managers.doc_manager import *
 from managers.booking_system import *
+from managers.user_manager import *
+import gui.MainWindow
 
 
 class CopyInfo(QWidget):
@@ -25,11 +28,6 @@ class CopyInfo(QWidget):
         top.addWidget(self.book_id)
         vbox.addLayout(top)
 
-        edit_button = QPushButton("Copy edit")
-        edit_button.setFixedWidth(90)
-        edit_button.setFixedHeight(25)
-        edit_button.clicked.connect(self.edit)
-
         self.fields = dict()
         dic = {'storage': str, 'checked_out': bool}
         for i in dic:
@@ -50,8 +48,25 @@ class CopyInfo(QWidget):
 
         vbox.addStretch()
 
+        edit_button = QPushButton("Copy edit")
+        edit_button.setFixedWidth(90)
+        edit_button.setFixedHeight(25)
+        edit_button.clicked.connect(self.edit)
+
+        book_button = QPushButton("Check out")
+        book_button.setFixedWidth(90)
+        book_button.setFixedHeight(25)
+        book_button.clicked.connect(self.check_out)
+
+        return_button = QPushButton("Return book")
+        return_button.setFixedWidth(90)
+        return_button.setFixedHeight(25)
+        return_button.clicked.connect(self.return_book)
+
         add_button_layout = QHBoxLayout()
         add_button_layout.addStretch()
+        add_button_layout.addWidget(return_button)
+        add_button_layout.addWidget(book_button)
         add_button_layout.addWidget(edit_button)
         vbox.addLayout(add_button_layout)
 
@@ -60,7 +75,7 @@ class CopyInfo(QWidget):
         self.setWindowTitle("Copy info")
 
     def _set_up_table(self, table):
-        #table.doubleClicked.connect(self._cell_clicked_event)
+        # table.doubleClicked.connect(self._cell_clicked_event)
         table.setEditTriggers(QAbstractItemView.NoEditTriggers)
         table.setSelectionBehavior(QAbstractItemView.SelectRows)
         table.setColumnCount(4)
@@ -88,10 +103,52 @@ class CopyInfo(QWidget):
 
     def _row_update(self, row):
         self.table.setItem(row, 0, QTableWidgetItem(str(int(self.his[row].OperationID))))
-        print(self.his[row].user)
         self.table.setItem(row, 1, QTableWidgetItem(str(int(self.his[row].user.card_id))))
         self.table.setItem(row, 2, QTableWidgetItem(str(self.his[row].date_check_out)))
         self.table.setItem(row, 3, QTableWidgetItem(str(self.his[row].date_return)))
+
+    def check_out(self):
+        id, okPressed = QInputDialog.getInt(self, "User", "User card ID")
+        if not okPressed:
+            return
+        usr = None
+        try:
+            usr = User.get_by_id(id)
+        except:
+            msg = QMessageBox()
+            msg.setText("Invalid user card")
+            msg.exec_()
+            return
+        if not self.bs.check_out(usr, self.copy, gui.MainWindow.MainWindow.librarian):
+            msg = QMessageBox()
+            msg.setText("Can't check out")
+            msg.exec_()
+            return
+        self.his = self.bs.get_copy_history(self.copy)
+        self.table.setRowCount(len(self.his))
+        self._row_update(len(self.his)-1)
+        self._on_edit()
+
+    def return_book(self):
+        if not self.copy.checked_out:
+            msg = QMessageBox()
+            msg.setText("The copy is not checked out")
+            msg.exec_()
+            return
+        reply = QMessageBox.question(self, 'Return?',
+                                     'Do you really want to return this copy?', QMessageBox.Yes, QMessageBox.No)
+
+        if reply == QMessageBox.No:
+            return
+
+        for i in History.select().where(History.date_return.is_null(True) and History.copy == self.copy):
+            print(i.OperationID, " ")
+
+        self.bs.return_by_copy(self.copy, gui.MainWindow.MainWindow.librarian)
+        self.copy = Copy.get(Copy.CopyID == self.copy.CopyID)
+        self.his = self.bs.get_copy_history(self.copy)
+        self._row_update(len(self.his)-1)
+        self._on_edit()
 
     def edit(self):
         pass
