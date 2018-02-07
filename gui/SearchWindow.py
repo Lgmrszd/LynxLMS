@@ -1,8 +1,7 @@
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel, QGroupBox, QLineEdit, QPushButton, QTableWidget,\
-    QTableWidgetItem, QAbstractItemView, QDialog
+    QTableWidgetItem, QAbstractItemView, QDialog, QComboBox
 
 from gui.BookInfo import BookInfo
-from gui.SearchSettings import SearchSettings
 from managers.doc_manager import AVMaterial, Book, JournalArticle, Document
 
 
@@ -51,9 +50,16 @@ class SearchWindow(QWidget):
         self.books = []
 
         self.search_field = QLineEdit("")
-        additional_options_button = QPushButton("...")
-        additional_options_button.setFixedWidth(20)
-        additional_options_button.clicked.connect(self.settings_button_clicked)
+
+        sort_label = QLabel("Sort by:")
+        self.sortBox = QComboBox()
+        self.sortBox.addItems(["Popular", "Name", "New"])
+        self.sortBox.currentIndexChanged.connect(self.update_settings)
+
+        type_label = QLabel("Show:")
+        self.typeBox = QComboBox()
+        self.typeBox.addItems(["Book", "Journal", "AV"])
+        self.typeBox.currentIndexChanged.connect(self.update_settings)
 
         result_group = QGroupBox("")
 
@@ -73,8 +79,14 @@ class SearchWindow(QWidget):
 
         search_layout = QHBoxLayout()
         search_layout.addWidget(self.search_field)
-        search_layout.addWidget(additional_options_button)
         search_layout.addWidget(search_button)
+
+        settings_layout = QHBoxLayout()
+        settings_layout.addWidget(sort_label)
+        settings_layout.addWidget(self.sortBox)
+        settings_layout.addWidget(type_label)
+        settings_layout.addWidget(self.typeBox)
+        settings_layout.addStretch()
 
         in_group_layout = QVBoxLayout()
         in_group_layout.addWidget(self.result_table)
@@ -88,6 +100,7 @@ class SearchWindow(QWidget):
 
         full_layout = QVBoxLayout()
         full_layout.addLayout(search_layout)
+        full_layout.addLayout(settings_layout)
         full_layout.addWidget(result_group)
         full_layout.addLayout(prev_next_button_layout)
 
@@ -104,22 +117,11 @@ class SearchWindow(QWidget):
             self.books.append(book_info_window)  #to prevent deletion of book_info_window, because book_info_window is local variable
 
     def update_settings(self):
-        another = False
-        if self.indType != self.search_settings.typeBox.currentIndex() or self.indSort != self.search_settings.sortBox.currentIndex():
-            another = True
-        self.type = self.search_settings.typeBox.currentText()
-        self.indType = self.search_settings.typeBox.currentIndex()
-        self.sort = self.search_settings.sortBox.currentText()
-        self.indSort = self.search_settings.sortBox.currentIndex()
-        if another:
-            self.click_search_button()
-
-    def settings_button_clicked(self):
-        self.search_settings = SearchSettings()
-        self.search_settings.typeBox.setCurrentIndex(self.indType)
-        self.search_settings.sortBox.setCurrentIndex(self.indSort)
-        self.search_settings.exec_()
-        self.update_settings()
+        self.type = self.typeBox.currentText()
+        self.indType = self.typeBox.currentIndex()
+        self.sort = self.sortBox.currentText()
+        self.indSort = self.sortBox.currentIndex()
+        self.click_search_button()
 
     def update_page(self):
         self.page_num_label.setText(str(self.page_num))
@@ -154,6 +156,7 @@ class SearchWindow(QWidget):
         for i in range(0, len(self.list)):
             self.result_table.setItem(i, self.title_col, QTableWidgetItem(self.list[i].title))
             self.result_table.setItem(i, self.author_col, QTableWidgetItem(self.list[i].author))
+            self.result_table.setItem(i, self.id_col, QTableWidgetItem(str(self.list[i].DocumentID)))
         for i in range(len(self.list), 15):
             self.result_table.setItem(i, self.title_col, QTableWidgetItem(""))
             self.result_table.setItem(i, self.author_col, QTableWidgetItem(""))
