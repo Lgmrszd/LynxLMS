@@ -69,6 +69,11 @@ class CopiesWindow(QWidget):
 
     def _cell_clicked_event(self, event):
         r = event.row()
+        for i in self.edits:
+            if i.copy.CopyID == self.cl[r].CopyID:
+                i.show()
+                i.raise_()
+                return
         copy_edit_window = CopyInfo(self.cl[r], lambda: self._row_update(r))
         copy_edit_window.show()
         self.edits.append(

@@ -17,8 +17,8 @@ class CopyInfo(QWidget):
         self._set_up_ui()
 
     def _set_up_ui(self):
-        window_size_x = 400
-        window_size_y = 400
+        window_size_x = 640
+        window_size_y = 480
 
         vbox = QVBoxLayout()
 
@@ -31,6 +31,8 @@ class CopyInfo(QWidget):
         self.fields = dict()
         dic = {'storage': str, 'checked_out': bool}
         for i in dic:
+            if dic[i] == bool:
+                continue
             line_item = QLabel(str(getattr(self.copy, i)))
             self.fields[i] = line_item
             line_label = QLabel(str(i) + ':')
@@ -39,8 +41,6 @@ class CopyInfo(QWidget):
             hbox.addWidget(line_label)
             hbox.addWidget(line_item)
             vbox.addLayout(hbox)
-            if dic[i] == bool:
-                line_item.setText(str(int(getattr(self.copy, i))))
 
         self.table = QTableWidget()
         self._set_up_table(self.table)
@@ -58,16 +58,22 @@ class CopyInfo(QWidget):
         book_button.setFixedHeight(25)
         book_button.clicked.connect(self.check_out)
 
-        return_button = QPushButton("Return book")
+        return_button = QPushButton("Return copy")
         return_button.setFixedWidth(90)
         return_button.setFixedHeight(25)
         return_button.clicked.connect(self.return_book)
 
+        delete_button = QPushButton("Delete")
+        delete_button.setFixedWidth(90)
+        delete_button.setFixedHeight(25)
+        delete_button.clicked.connect(self.delete_book)
+
         add_button_layout = QHBoxLayout()
         add_button_layout.addStretch()
+        add_button_layout.addWidget(delete_button)
+        add_button_layout.addWidget(edit_button)
         add_button_layout.addWidget(return_button)
         add_button_layout.addWidget(book_button)
-        add_button_layout.addWidget(edit_button)
         vbox.addLayout(add_button_layout)
 
         self.setLayout(vbox)
@@ -78,7 +84,7 @@ class CopyInfo(QWidget):
         # table.doubleClicked.connect(self._cell_clicked_event)
         table.setEditTriggers(QAbstractItemView.NoEditTriggers)
         table.setSelectionBehavior(QAbstractItemView.SelectRows)
-        table.setColumnCount(4)
+        table.setColumnCount(6)
         table.setRowCount(len(self.his))
 
         ID_item = QTableWidgetItem("ID")
@@ -90,13 +96,21 @@ class CopyInfo(QWidget):
         check_out_item = QTableWidgetItem("Checked out date")
         table.setHorizontalHeaderItem(2, check_out_item)
 
+        give_lib_item = QTableWidgetItem("Checked out by")
+        table.setHorizontalHeaderItem(3, give_lib_item)
+
         return_item = QTableWidgetItem("Return date")
-        table.setHorizontalHeaderItem(3, return_item)
+        table.setHorizontalHeaderItem(4, return_item)
+
+        return_lib_item = QTableWidgetItem("Returned by")
+        table.setHorizontalHeaderItem(5, return_lib_item)
 
         table.setColumnWidth(0, 50)
         table.setColumnWidth(1, 50)
         table.setColumnWidth(2, 120)
-        table.setColumnWidth(2, 120)
+        table.setColumnWidth(3, 120)
+        table.setColumnWidth(4, 120)
+        table.setColumnWidth(5, 120)
 
         for i in range(0, len(self.his)):
             self._row_update(i)
@@ -105,7 +119,9 @@ class CopyInfo(QWidget):
         self.table.setItem(row, 0, QTableWidgetItem(str(int(self.his[row].OperationID))))
         self.table.setItem(row, 1, QTableWidgetItem(str(int(self.his[row].user.card_id))))
         self.table.setItem(row, 2, QTableWidgetItem(str(self.his[row].date_check_out)))
-        self.table.setItem(row, 3, QTableWidgetItem(str(self.his[row].date_return)))
+        self.table.setItem(row, 3, QTableWidgetItem(str(self.his[row].librarian_co)))
+        self.table.setItem(row, 4, QTableWidgetItem(str(self.his[row].date_return)))
+        self.table.setItem(row, 5, QTableWidgetItem(str(self.his[row].librarian_re)))
 
     def check_out(self):
         id, okPressed = QInputDialog.getInt(self, "User", "User card ID")
@@ -149,6 +165,13 @@ class CopyInfo(QWidget):
         self.his = self.bs.get_copy_history(self.copy)
         self._row_update(len(self.his)-1)
         self._on_edit()
+
+    def delete_book(self):
+        reply = QMessageBox.question(self, 'Delete?',
+                                     'Do you really want to delete this copy?', QMessageBox.Yes, QMessageBox.No)
+        if reply == QMessageBox.Yes:
+            #ToDo: delete copy
+            pass
 
     def edit(self):
         pass
