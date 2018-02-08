@@ -14,7 +14,7 @@ class SearchWindow(QWidget):
     def closeEvent(self, event):
         self.par.show()
 
-    def set_up_table(self, table):
+    def set_up_table(self):
         self.result_table.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.result_table.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.result_table.setColumnCount(3)
@@ -64,7 +64,7 @@ class SearchWindow(QWidget):
         result_group = QGroupBox("")
 
         self.result_table = QTableWidget()
-        self.set_up_table(self.result_table)
+        self.set_up_table()
         self.result_table.doubleClicked.connect(self.cell_clicked_event)
 
         search_button = QPushButton("Search")

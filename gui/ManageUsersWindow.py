@@ -1,10 +1,27 @@
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel, QGroupBox, QLineEdit, QPushButton, QTableWidget,\
     QTableWidgetItem, QAbstractItemView, QDialog, QComboBox
+from gui.UserInfo import UserInfo
 
 class ManageUsersWindow(QWidget):
     def __init__(self, parent=None):
         super().__init__()
         self._set_up_ui()
+        self.user_infos = []
+
+    def _set_up_table(self):
+        self.result_table.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.result_table.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.result_table.setColumnCount(2)
+        self.result_table.setRowCount(15)
+
+        ID_item = QTableWidgetItem("ID")
+        self.result_table.setHorizontalHeaderItem(0, ID_item)
+
+        user_name_item = QTableWidgetItem("Name and surname")
+        self.result_table.setHorizontalHeaderItem(1, user_name_item)
+
+        self.result_table.setColumnWidth(0, 80)
+        self.result_table.setColumnWidth(1, 630)
 
     def _set_up_ui(self):
         window_size_x = 800
@@ -16,6 +33,8 @@ class ManageUsersWindow(QWidget):
 
         result_group = QGroupBox("")
         self.result_table = QTableWidget()
+        self._set_up_table()
+        self.result_table.doubleClicked.connect(self.cell_clicked_event)
 
         prev_button = QPushButton("Prev")
         prev_button.clicked.connect(self.prev_page)
@@ -47,6 +66,11 @@ class ManageUsersWindow(QWidget):
         self.setLayout(full_layout)
         self.resize(window_size_x, window_size_y)
         self.setWindowTitle('Manage users')
+
+    def cell_clicked_event(self, event):
+        userInfo = UserInfo(None)
+        userInfo.show()
+        self.user_infos.append(userInfo)
 
     def click_search_button(self):
         pass
