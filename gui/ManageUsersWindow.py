@@ -1,18 +1,21 @@
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel, QGroupBox, QLineEdit, QPushButton, QTableWidget,\
     QTableWidgetItem, QAbstractItemView, QDialog, QComboBox
 from gui.UserInfo import UserInfo
+from managers.user_manager import User
+
 
 class ManageUsersWindow(QWidget):
     def __init__(self, parent=None):
         super().__init__()
         self._set_up_ui()
         self.user_infos = []
+        self.list = None
 
     def _set_up_table(self):
         self.result_table.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.result_table.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.result_table.setColumnCount(2)
-        self.result_table.setRowCount(15)
+        self.result_table.setRowCount(10)
 
         ID_item = QTableWidgetItem("ID")
         self.result_table.setHorizontalHeaderItem(0, ID_item)
@@ -20,8 +23,8 @@ class ManageUsersWindow(QWidget):
         user_name_item = QTableWidgetItem("Name and surname")
         self.result_table.setHorizontalHeaderItem(1, user_name_item)
 
-        self.result_table.setColumnWidth(0, 80)
-        self.result_table.setColumnWidth(1, 630)
+        self.result_table.setColumnWidth(0, 100)
+        self.result_table.setColumnWidth(1, 610)
 
     def _set_up_ui(self):
         window_size_x = 800
@@ -36,10 +39,10 @@ class ManageUsersWindow(QWidget):
         self._set_up_table()
         self.result_table.doubleClicked.connect(self.cell_clicked_event)
 
-        prev_button = QPushButton("Prev")
-        prev_button.clicked.connect(self.prev_page)
         self.page_num = 1
         self.page_num_label = QLabel("")
+        prev_button = QPushButton("Prev")
+        prev_button.clicked.connect(self.prev_page)
         next_button = QPushButton("Next")
         next_button.clicked.connect(self.next_page)
 
@@ -67,19 +70,38 @@ class ManageUsersWindow(QWidget):
         self.resize(window_size_x, window_size_y)
         self.setWindowTitle('Manage users')
 
+    def update_page(self):
+        self.page_num_label.setText(str(self.page_num))
+
     def cell_clicked_event(self, event):
-        userInfo = UserInfo(None)
-        userInfo.show()
-        self.user_infos.append(userInfo)
+        if self.list is not None and len(self.list) > event.row():
+            user_info = UserInfo(self.list)
+            user_info.show()
+            self.user_infos.append(user_info)
 
     def click_search_button(self):
-        pass
+        self.page_num = 1
+        self.get_result()
+        self.update_page()
 
     def prev_page(self):
-        pass
+        if self.page_num != 1:
+            self.page_num = self.page_num - 1
+        self.get_result()
+        self.update_page()
 
     def next_page(self):
-        pass
+        self.page_num = self.page_num + 1
+        self.get_result()
+        if len(self.list) == 0:
+            self.page_num = self.page_num - 1
+            self.get_result()
+        self.update_page()
 
     def get_result(self):
-        pass
+        self.list = User.get_list(10, self.page_num)
+
+        for i in range(0, len(self.list)):
+            self.result_table.setItem(i, 0, QTableWidgetItem(str(self.list[i].card_id)))
+        for i in range(len(self.list), 10):
+            self.result_table.setItem(i, 0, QTableWidgetItem(self.list[i].name + " " + self.list[i].surname))
