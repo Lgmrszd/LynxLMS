@@ -13,7 +13,9 @@ LynxLMS written on python (ver 3) and built on:
 
     `python3 -m pip install -r requirements.txt`
 
+### Running from source
 
+* Just run `main.py` with python
 
 [peewee]: https://github.com/coleifer/peewee "PeeWee ORM"
 [SQLite3]: http://sqlite.org/
