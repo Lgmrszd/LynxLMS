@@ -24,3 +24,6 @@ def drop_db():
                     managers.user_manager.User,
                     managers.group_manager.Group,
                     managers.booking_system.History], safe=True)
+
+
+initialize_db()

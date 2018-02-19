@@ -1,6 +1,12 @@
 from peewee import *
+from os.path import exists
+from os import makedirs
 
-db = SqliteDatabase('data/database.db')
+if not exists("./data"):
+    makedirs("./data")
+
+
+db = SqliteDatabase("./data/database.db")
 db.connect()
 
 
