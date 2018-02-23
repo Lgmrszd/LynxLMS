@@ -25,19 +25,23 @@ class Booking_system:
     def check_out(self, user, copy, librarian):
         """Check out copy of specific document to specific user
         """
+        if copy.active == False:
+            return 3
         if 'reference' in copy.get_doc().keywords:
-            return 0
+            return 2
         if copy.checked_out == True:
-            return 0
+            return 1
         current_date = datetime.date.today()
         res = History.create(user = user, copy = copy, librarian_co = librarian, date_check_out = current_date)
         copy.checked_out = True
         copy.save()
-        return res
+        return 0,res
     
     def return_by_entry(self, entry, librarian):
         """Return copy by "History" entry
         """
+        if (entry.date_return != None):
+            return 1
         current_date = datetime.date.today()
         entry.date_return = str(current_date)
         entry.librarian_re = librarian
@@ -46,13 +50,19 @@ class Booking_system:
         entry.copy.save()
         entry.user.fine += self.check_overdue(entry)
         entry.user.save()
+        return 0
         
     
     def return_by_copy(self, copy, librarian):
         """Return copy
         """
-        entry = History.select().where((History.date_return.is_null(True)) &  (History.copy == copy)).get()
-        self.return_by_entry(entry, librarian)
+        query = History.select().where((History.date_return.is_null(True)) &  (History.copy == copy))
+        if (len(query) == 0):
+            return 3
+        if (len(query) > 1):
+            return 2
+        entry = query.get()
+        return self.return_by_entry(entry, librarian)
 
     
     def get_list_overdue(self):
@@ -95,12 +105,7 @@ class Booking_system:
     def get_document_copies(self, doc):
         """Get list of copies of speciific document
         """
-        doc_class = doc_manager.class_to_name()[type(doc)]
-        query = doc_manager.Copy.select().where(doc_manager.Copy.docClass == doc_class , doc_manager.Copy.docId == doc.DocumentID)
-        res = [] 
-        for entry in query:
-            res.append(entry)
-        return res
+        return doc.get_document_copies()
 
     def check_overdue(self, entry):
         """Returns fine for overdue (0 if no fine)
