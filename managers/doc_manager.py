@@ -12,8 +12,17 @@ class Document(BaseModel):
     author = pw.CharField()
     cost = pw.IntegerField()
     keywords = pw.CharField()
-    #is_bestseller = pw.BooleanField(null = true, default=False)
-    #is_reference = pw.BooleanField(null = true, default=False)
+    active = pw.BooleanField(default=True)
+
+    def get_document_copies(self):
+        """Get list of copies of speciific document
+        """
+        doc_class = class_to_name()[type(self)]
+        query = Copy.select().where(Copy.docClass == doc_class , Copy.docId == self.DocumentID)
+        res = []
+        for entry in query:
+            res.append(entry)
+        return res
 
     @classmethod
     def get_by_id(cls, doc_id):
@@ -31,9 +40,13 @@ class Document(BaseModel):
     def remove(cls, doc_id):
         """Removes an entity with specific DocumentID
         """
-        temp = cls.get(DocumentID=doc_id)
-        print(temp.title)
-        temp.delete_instance()
+        entry = cls.get(DocumentID = doc_id)
+        entry.active = False
+        entry.save()
+        copies = cls.get_document_copies(entry)
+        for c in copies:
+            Copy.remove(c.CopyID)
+        
     
     @classmethod
     def edit(cls, doc_id, new_values):
@@ -45,16 +58,27 @@ class Document(BaseModel):
         temp.save()
         print(temp.__dict__)
 
+    #TODO : Add number of pages
+    #Use SQL count() for pages
+
     @classmethod
-    def get_list(cls, rows_number, page):
+    def get_list(cls, rows_number, page, active=0):
         """Returns a content from certain page of document list
         """
-        query = cls.select().offset(0 + (page-1)*rows_number).limit(rows_number).order_by(cls.title.asc())
+        #Active - 1, Not active = -1, All = 0
+        if (active == 0):
+            query = cls.select().offset(0 + (page-1)*rows_number).limit(rows_number).order_by(cls.title.asc())
+        elif (active == 1):
+            query = cls.select().where(cls.active == True).offset(0 + (page-1)*rows_number).limit(rows_number).order_by(cls.title.asc())
+        elif (active == -1):
+            query = cls.select().where(cls.active == False).offset(0 + (page-1)*rows_number).limit(rows_number).order_by(cls.title.asc())
+        else:
+            return([])
         res = []
         for entry in query:
             res.append(entry)
         return res
-
+    
     @classmethod
     def get_fields(cls):
         """Returns list of fields of specific document type
@@ -124,8 +148,11 @@ class Copy(BaseModel):
     #DocReference = pw.ForeignKeyField(Document, related_name = 'copies')
     docClass = pw.CharField()
     docId = pw.IntegerField()
+    active = pw.BooleanField(default=True)
     checked_out = pw.BooleanField(default=False)
     storage = pw.CharField(default='')
+
+    #TODO : Add get_by_id
 
     def get_doc(self):
         """Get the document to which this copy referred
@@ -137,6 +164,7 @@ class Copy(BaseModel):
     def add(cls, doc):
         """Add copy of specific document
         """
+        #Activate document if it is deactivated
         return cls.create(docClass = class_to_name()[type(doc)], docId = doc.DocumentID)
     
     @classmethod
@@ -146,6 +174,18 @@ class Copy(BaseModel):
         temp = cls.get(CopyID = copy_id)
         temp.storage = new_storage
         temp.save()
+    
+    @classmethod
+    def remove(cls, copy_id):
+        """Removes (deactivates) copy"""
+        entry = cls.get(CopyID = copy_id)
+        entry.active = False
+        entry.save()
+        #Check number of active copies of document. If zero - deactivate document
+        #if (len(entry.get_doc.get_list(10,1,1)) == 0):
+        #   doc = entry.get_doc
+        #    doc.active = False
+        #    doc.save()
 
 
 def name_to_class():
