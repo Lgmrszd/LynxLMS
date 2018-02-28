@@ -43,11 +43,12 @@ class Document(BaseModel):
         entry = cls.get(DocumentID = doc_id)
         entry.active = False
         entry.save()
-        copies = cls.get_document_copies(entry)
-        for c in copies:
-            Copy.remove(c.CopyID)
+        #Removing all copies
+        doc_class = class_to_name()[type(cls)]
+        update_query = Copy.update(active = False).where(Copy.docClass == doc_class, 
+                                                         Copy.docId == doc_id, Copy.active == True)
+        update_query.execute()
         
-    
     @classmethod
     def edit(cls, doc_id, new_values):
         """Edit certain values in an entity with specific DocumentID
@@ -62,22 +63,27 @@ class Document(BaseModel):
     #Use SQL count() for pages
 
     @classmethod
-    def get_list(cls, rows_number, page, active=0):
+    def get_list(cls, rows_number, page, active=0): #TODO : rework arguments
         """Returns a content from certain page of document list
         """
         #Active - 1, Not active = -1, All = 0
+        select_query = cls.select()
         if (active == 0):
-            query = cls.select().offset(0 + (page-1)*rows_number).limit(rows_number).order_by(cls.title.asc())
+            query = select_query.offset(0 + (page-1)*rows_number).limit(rows_number).order_by(cls.title.asc())
         elif (active == 1):
-            query = cls.select().where(cls.active == True).offset(0 + (page-1)*rows_number).limit(rows_number).order_by(cls.title.asc())
+            query = select_query.where(cls.active == True).offset(0 + (page-1)*rows_number).limit(rows_number).order_by(cls.title.asc())
         elif (active == -1):
-            query = cls.select().where(cls.active == False).offset(0 + (page-1)*rows_number).limit(rows_number).order_by(cls.title.asc())
+            query = select_query.where(cls.active == False).offset(0 + (page-1)*rows_number).limit(rows_number).order_by(cls.title.asc())
         else:
-            return([])
+            return([], 0)
         res = []
         for entry in query:
             res.append(entry)
-        return res
+        #Counting number of pages
+        page_number = int(query.count())
+        if (query.count() % rows_number > 0):
+            page_number += 1
+        return res, page_number
     
     @classmethod
     def get_fields(cls):
@@ -152,19 +158,24 @@ class Copy(BaseModel):
     checked_out = pw.BooleanField(default=False)
     storage = pw.CharField(default='')
 
-    #TODO : Add get_by_id
-
     def get_doc(self):
         """Get the document to which this copy referred
         """
         doc_class = name_to_class()[self.docClass]
         return doc_class.get_by_id(self.docId)
-    
+
+    @classmethod
+    def get_by_id(cls, copy_id):
+        return cls.get(CopyID = copy_id)
+
     @classmethod
     def add(cls, doc):
         """Add copy of specific document
         """
         #Activate document if it is deactivated
+        if (doc.active == False):
+            doc.active = True
+            doc.save()
         return cls.create(docClass = class_to_name()[type(doc)], docId = doc.DocumentID)
     
     @classmethod
@@ -182,10 +193,25 @@ class Copy(BaseModel):
         entry.active = False
         entry.save()
         #Check number of active copies of document. If zero - deactivate document
-        #if (len(entry.get_doc.get_list(10,1,1)) == 0):
-        #   doc = entry.get_doc
-        #    doc.active = False
-        #    doc.save()
+        doc = entry.get_doc()
+        doc_class = class_to_name()[type(doc)]
+        query = Copy.select().where(Copy.docClass == doc_class , 
+                                    Copy.docId == doc.DocumentID, 
+                                    Copy.active == True).count()
+        if (query == 0):
+            doc.active = False
+            doc.save()
+    
+    @classmethod
+    def restore(cls, copy_id):
+        """Restores deleted copy"""
+        entry = cls.get_by_id(copy_id)
+        entry.active = True
+        entry.save()
+        doc = entry.get_doc()
+        if (doc.active == False):
+            doc.active = True
+            doc.save()
 
 
 def name_to_class():
