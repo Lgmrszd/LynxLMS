@@ -1,6 +1,7 @@
 import peewee as pw
 from db_connect import BaseModel
 import managers.user_manager as user_manager
+import managers.group_manager as group_manager
 import managers.doc_manager as doc_manager
 import datetime
 
@@ -25,6 +26,8 @@ class Booking_system:
     def check_out(self, user, copy, librarian):
         """Check out copy of specific document to specific user
         """
+        if (user.group == group_manager.Group.get(group_manager.Group.name == 'Deleted')):
+            return 4
         if copy.active == False:
             return 3
         if 'reference' in copy.get_doc().keywords:
@@ -64,7 +67,19 @@ class Booking_system:
         entry = query.get()
         return self.return_by_entry(entry, librarian)
 
-    
+    def get_list(self, rows_number, page):
+        """Returns a content from certain page of document list
+        """
+        res = []
+        select_query = History.select()
+        page_number = int(select_query.count()) // rows_number
+        if (select_query.count() % rows_number > 0):
+            page_number += 1
+        query = select_query.offset(0 + (page-1)*rows_number).limit(rows_number)
+        for entry in query:
+            res.append(entry)
+        return res, page_number
+
     def get_list_overdue(self):
         """Get list of overdue items
         """
