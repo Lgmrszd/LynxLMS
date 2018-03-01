@@ -16,7 +16,12 @@ class BookInfo(QWidget):
         window_size_x = 400
         window_size_y = 400
 
-        self.book_id = QLabel("ID: "+str(self.doc.DocumentID))
+
+
+        if self.doc.active:
+            self.book_id = QLabel("ID: "+str(self.doc.DocumentID))
+        else:
+            self.book_id = QLabel("<font color='red'>ID: " + str(self.doc.DocumentID)+"</font>")
         vbox = QVBoxLayout()
 
         top = QHBoxLayout()
@@ -26,6 +31,7 @@ class BookInfo(QWidget):
 
         dic = type(self.doc).get_fields_dict()
         dic.pop("DocumentID")
+        dic.pop("active")
 
         self.fields = dict()
         for i in dic:
@@ -50,14 +56,16 @@ class BookInfo(QWidget):
         copies_button.setFixedHeight(25)
         copies_button.clicked.connect(self.copy_list)
 
-        delete_button = QPushButton("Delete")
-        delete_button.setFixedWidth(90)
-        delete_button.setFixedHeight(25)
-        delete_button.clicked.connect(self.delete_document)
-
         edit_button_layout = QHBoxLayout()
         edit_button_layout.addStretch()
-        edit_button_layout.addWidget(delete_button)
+
+        if self.doc.active:
+            delete_button = QPushButton("Delete")
+            delete_button.setFixedWidth(90)
+            delete_button.setFixedHeight(25)
+            delete_button.clicked.connect(self.delete_document)
+            edit_button_layout.addWidget(delete_button)
+
         edit_button_layout.addWidget(copies_button)
         edit_button_layout.addWidget(edit_button)
         vbox.addLayout(edit_button_layout)
@@ -79,8 +87,11 @@ class BookInfo(QWidget):
         self.copies.show()
 
     def delete_document(self):
+        if not self.doc.active:
+            return
+
         reply = QMessageBox.question(self, 'Delete?',
-                                           'Do you really want to delete this document?', QMessageBox.Yes, QMessageBox.No)
+                                         'Do you really want to delete this document?', QMessageBox.Yes, QMessageBox.No)
 
         if reply == QMessageBox.No:
             return
