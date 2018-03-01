@@ -37,6 +37,7 @@ class AddDocument(QWidget):
         elif self.type == "AV":
             dic = AVMaterial.get_fields_dict()
         dic.pop("DocumentID")
+        dic.pop("active")
 
         for i in dic:
             line_item = QLineEdit()
