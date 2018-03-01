@@ -1,11 +1,15 @@
+from PyQt5.QtGui import QColor
 from PyQt5.QtWidgets import *
 from managers.booking_system import *
 from managers.doc_manager import *
 from gui.CopyInfo import *
 
 class CopiesWindow(QWidget):
-    def __init__(self, doc):
+    __inactive_color = QColor(230, 230, 230)
+
+    def __init__(self, doc, copy_edited_listener):
         super().__init__()
+        self._copy_edited_listener = copy_edited_listener
         self.doc = doc
         self.bs = Booking_system()
         self.cl = self.bs.get_document_copies(self.doc)
@@ -17,6 +21,11 @@ class CopiesWindow(QWidget):
         self.table.setItem(row, 0, QTableWidgetItem(str(self.cl[row].CopyID)))
         self.table.setItem(row, 1, QTableWidgetItem(str(self.cl[row].storage)))
         self.table.setItem(row, 2, QTableWidgetItem(str(int(self.cl[row].checked_out))))
+        if not self.cl[row].active:
+            self.table.item(row, 0).setBackground(self.__inactive_color)
+            self.table.item(row, 1).setBackground(self.__inactive_color)
+            self.table.item(row, 2).setBackground(self.__inactive_color)
+
 
     def _set_up_table(self, table):
         table.doubleClicked.connect(self._cell_clicked_event)
@@ -67,14 +76,16 @@ class CopiesWindow(QWidget):
         self.resize(window_size_x, window_size_y)
         self.setWindowTitle("Copies of "+self.doc.title)
 
+    def _copy_edited(self, r):
+        self._row_update(r)
+        self._copy_edited_listener()
+
     def _cell_clicked_event(self, event):
         r = event.row()
         for i in self.edits:
             if i.copy.CopyID == self.cl[r].CopyID:
-                i.show()
-                i.raise_()
-                return
-        copy_edit_window = CopyInfo(self.cl[r], lambda: self._row_update(r))
+                i.close()
+        copy_edit_window = CopyInfo(self.cl[r], lambda: self._copy_edited(r))
         copy_edit_window.show()
         self.edits.append(
             copy_edit_window)  # to prevent deletion of copy_edit_window, because copy_edit_window is local variable
@@ -96,7 +107,7 @@ class CopiesWindow(QWidget):
         c.save()
         self.cl = self.bs.get_document_copies(self.doc)
         self.table.setRowCount(len(self.cl))
-        self._row_update(len(self.cl)-1)
+        self._copy_edited(len(self.cl)-1)
 
     def closeEvent(self, ev):
         for i in self.edits:

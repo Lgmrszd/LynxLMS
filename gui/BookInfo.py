@@ -9,8 +9,19 @@ class BookInfo(QWidget):
         self.doc = doc
         self.on_update = on_update
         self.edit = BookEdit(doc, self._update)
-        self.copies = CopiesWindow(doc)
+        self.copies = CopiesWindow(doc, self._on_copies_update)
         self._set_up_ui()
+
+    def _on_copies_update(self):
+        self.on_update()
+        self.doc = type(self.doc).get_by_id(self.doc.DocumentID)
+        if self.doc.active:
+            self.delete_button.setVisible(True)
+            self.book_id.setText("ID: " + str(self.doc.DocumentID))
+        else:
+            self.delete_button.setVisible(False)
+            self.book_id.setText("<font color='red'>ID: " + str(self.doc.DocumentID) + "</font>")
+
 
     def _set_up_ui(self):
         window_size_x = 400
@@ -56,16 +67,16 @@ class BookInfo(QWidget):
         copies_button.setFixedHeight(25)
         copies_button.clicked.connect(self.copy_list)
 
+        self.delete_button = QPushButton("Delete")
+        self.delete_button.setFixedWidth(90)
+        self.delete_button.setFixedHeight(25)
+        self.delete_button.clicked.connect(self.delete_document)
+        if not self.doc.active:
+            self.delete_button.setVisible(False)
+
         edit_button_layout = QHBoxLayout()
         edit_button_layout.addStretch()
-
-        if self.doc.active:
-            delete_button = QPushButton("Delete")
-            delete_button.setFixedWidth(90)
-            delete_button.setFixedHeight(25)
-            delete_button.clicked.connect(self.delete_document)
-            edit_button_layout.addWidget(delete_button)
-
+        edit_button_layout.addWidget(self.delete_button)
         edit_button_layout.addWidget(copies_button)
         edit_button_layout.addWidget(edit_button)
         vbox.addLayout(edit_button_layout)

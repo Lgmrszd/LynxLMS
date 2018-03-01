@@ -22,7 +22,10 @@ class CopyInfo(QWidget):
 
         vbox = QVBoxLayout()
 
-        self.book_id = QLabel("ID: " + str(self.copy.CopyID))
+        if self.copy.active:
+            self.book_id = QLabel("ID: " + str(self.copy.CopyID))
+        else:
+            self.book_id = QLabel("<font color='red'>ID: " + str(self.copy.CopyID)+"</font>")
         top = QHBoxLayout()
         top.addStretch(1)
         top.addWidget(self.book_id)
@@ -63,7 +66,10 @@ class CopyInfo(QWidget):
         return_button.setFixedHeight(25)
         return_button.clicked.connect(self.return_book)
 
-        delete_button = QPushButton("Delete")
+        if self.copy.active:
+            delete_button = QPushButton("Delete")
+        else:
+            delete_button = QPushButton("Restore")
         delete_button.setFixedWidth(90)
         delete_button.setFixedHeight(25)
         delete_button.clicked.connect(self.delete_book)
@@ -167,11 +173,20 @@ class CopyInfo(QWidget):
         self._on_edit()
 
     def delete_book(self):
-        reply = QMessageBox.question(self, 'Delete?',
-                                     'Do you really want to delete this copy?', QMessageBox.Yes, QMessageBox.No)
+        if self.copy.active:
+            reply = QMessageBox.question(self, 'Delete?',
+                                         'Do you really want to delete this copy?', QMessageBox.Yes, QMessageBox.No)
+        else:
+            reply = QMessageBox.question(self, 'Restore?',
+                                         'Do you really want to restore this copy?', QMessageBox.Yes, QMessageBox.No)
+
         if reply == QMessageBox.Yes:
-            #ToDo: delete copy
-            pass
+            if self.copy.active:
+                Copy.remove(self.copy.CopyID)
+            else:
+                Copy.restore(self.copy.CopyID)
+            self._on_edit()
+            self.close()
 
     def edit(self):
         pass
