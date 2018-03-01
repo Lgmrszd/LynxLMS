@@ -80,7 +80,7 @@ class Document(BaseModel):
         for entry in query:
             res.append(entry)
         #Counting number of pages
-        page_number = int(query.count())
+        page_number = int(query.count()) // rows_number
         if (query.count() % rows_number > 0):
             page_number += 1
         return res, page_number
