@@ -44,7 +44,7 @@ class Document(BaseModel):
         entry.active = False
         entry.save()
         #Removing all copies
-        doc_class = class_to_name()[type(cls)]
+        doc_class = class_to_name()[cls]
         update_query = Copy.update(active = False).where(Copy.docClass == doc_class, 
                                                          Copy.docId == doc_id, Copy.active == True)
         update_query.execute()
