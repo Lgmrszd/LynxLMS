@@ -67,21 +67,24 @@ class Document(BaseModel):
         """Returns a content from certain page of document list
         """
         #Active - 1, Not active = -1, All = 0
-        select_query = cls.select()
+        select_query = None
         if (active == 0):
+            select_query = cls.select()
             query = select_query.offset(0 + (page-1)*rows_number).limit(rows_number).order_by(cls.title.asc())
         elif (active == 1):
-            query = select_query.where(cls.active == True).offset(0 + (page-1)*rows_number).limit(rows_number).order_by(cls.title.asc())
+            select_query = cls.select().where(cls.active == True)
+            query = select_query.offset(0 + (page-1)*rows_number).limit(rows_number).order_by(cls.title.asc())
         elif (active == -1):
-            query = select_query.where(cls.active == False).offset(0 + (page-1)*rows_number).limit(rows_number).order_by(cls.title.asc())
+            select_query = cls.select().where(cls.active == False)
+            query = select_query.offset(0 + (page-1)*rows_number).limit(rows_number).order_by(cls.title.asc())
         else:
             return([], 0)
         res = []
         for entry in query:
             res.append(entry)
         #Counting number of pages
-        page_number = int(query.count()) // rows_number
-        if (query.count() % rows_number > 0):
+        page_number = int(select_query.count()) // rows_number
+        if (select_query.count() % rows_number > 0):
             page_number += 1
         return res, page_number
     
