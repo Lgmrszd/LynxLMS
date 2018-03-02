@@ -5,8 +5,9 @@ from managers.doc_manager import*
 
 
 class AddDocument(QWidget):
-    def __init__(self):
+    def __init__(self, on_close_listener):
         super().__init__()
+        self._on_close_listener = on_close_listener
         doc_types = ("Book", "Journal", "AV")
         item, ok = QInputDialog.getItem(self, "Choose type", "", doc_types, 0, False)
         if ok and item:
@@ -80,5 +81,8 @@ class AddDocument(QWidget):
                 msg.exec_()
                 return
         type.add(dic)
-
         self.close()
+
+    def closeEvent(self, ev):
+        self._on_close_listener()
+        ev.accept()

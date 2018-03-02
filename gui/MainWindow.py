@@ -70,8 +70,12 @@ class MainWindow(QWidget):
         else:
             self.search_window.hide()
 
+    def _add_window_closed(self, window):
+        self.add_documents.remove(window)
+        self.search_window.click_search_button()
+
     def open_add_document_window(self):
-        add_document = AddDocument()
+        add_document = AddDocument(lambda: self._add_window_closed(add_document))
         if add_document.type is None:
             return
         add_document.show()
