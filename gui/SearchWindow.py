@@ -124,6 +124,11 @@ class SearchWindow(QWidget):
 
     def cell_clicked_event(self, event):
         if self.list is not None and len(self.list) > event.row():
+            for i in self.books:
+                if i.doc.DocumentID == self.list[event.row()].DocumentID:
+                    i.close()
+                    self.books.remove(i)
+                    break
             book_info_window = BookInfo(self.list[event.row()], self.get_result)
             book_info_window.show()
             self.books.append(book_info_window)  #to prevent deletion of book_info_window, because book_info_window is local variable

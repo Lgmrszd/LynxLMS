@@ -85,6 +85,8 @@ class CopiesWindow(QWidget):
         for i in self.edits:
             if i.copy.CopyID == self.cl[r].CopyID:
                 i.close()
+                self.edits.remove(i)
+                break
         copy_edit_window = CopyInfo(self.cl[r], lambda: self._copy_edited(r))
         copy_edit_window.show()
         self.edits.append(
