@@ -2,7 +2,9 @@ import sys
 from PyQt5.QtWidgets import QWidget, QDesktopWidget, QPushButton, QVBoxLayout, QLineEdit, QHBoxLayout, QLabel
 from gui.SearchWindow import SearchWindow
 from gui.AddDocument import AddDocument
+from gui.AddUser import AddUser
 from gui.ManageUsersWindow import ManageUsersWindow
+
 
 class MainWindow(QWidget):
     librarian = ""
@@ -12,6 +14,7 @@ class MainWindow(QWidget):
         self.search_window = SearchWindow(self)
         self.manage_users = ManageUsersWindow()
         self.add_documents = []
+        self.add_users = []
         self._set_up_ui()
 
     def closeEvent(self, QCloseEvent):#вызывается при close event
@@ -23,7 +26,6 @@ class MainWindow(QWidget):
     def _set_up_ui(self):
         window_size_x = 400
         window_size_y = 400
-
 
         hbox = QHBoxLayout()
         self.librarian_field = QLineEdit("")
@@ -44,12 +46,17 @@ class MainWindow(QWidget):
         add_document_button.setFixedHeight(30)
         add_document_button.clicked.connect(self.open_add_document_window)
 
+        add_user_button = QPushButton("Add user")
+        add_user_button.setFixedHeight(30)
+        add_user_button.clicked.connect(self.open_add_user_window)
+
         vbox = QVBoxLayout()
         vbox.setSpacing(10)
         vbox.addLayout(hbox)
         vbox.addWidget(search_button)
         vbox.addWidget(add_document_button)
         vbox.addWidget(manage_users_button)
+        vbox.addWidget(add_user_button)
         vbox.addStretch()
 
         self.setLayout(vbox)
@@ -86,3 +93,8 @@ class MainWindow(QWidget):
             self.manage_users.show()
         else:
             self.manage_users.hide()
+
+    def open_add_user_window(self):
+        add_user = AddUser()
+        add_user.show()
+        self.add_users.append(add_user)
