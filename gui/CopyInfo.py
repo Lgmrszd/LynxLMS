@@ -48,8 +48,6 @@ class CopyInfo(QWidget):
         self._set_up_table(self.table)
         vbox.addWidget(self.table)
 
-        vbox.addStretch()
-
         edit_button = QPushButton("Copy edit")
         edit_button.setFixedWidth(90)
         edit_button.setFixedHeight(25)
@@ -66,16 +64,16 @@ class CopyInfo(QWidget):
         return_button.clicked.connect(self.return_book)
 
         if self.copy.active:
-            delete_button = QPushButton("Delete")
+            self.delete_button = QPushButton("Delete")
         else:
-            delete_button = QPushButton("Restore")
-        delete_button.setFixedWidth(90)
-        delete_button.setFixedHeight(25)
-        delete_button.clicked.connect(self.delete_book)
+            self.delete_button = QPushButton("Restore")
+        self.delete_button.setFixedWidth(90)
+        self.delete_button.setFixedHeight(25)
+        self.delete_button.clicked.connect(self.delete_book)
 
         add_button_layout = QHBoxLayout()
         add_button_layout.addStretch()
-        add_button_layout.addWidget(delete_button)
+        add_button_layout.addWidget(self.delete_button)
         add_button_layout.addWidget(edit_button)
         add_button_layout.addWidget(return_button)
         add_button_layout.addWidget(book_button)
@@ -140,9 +138,11 @@ class CopyInfo(QWidget):
             msg.setText("Invalid user card")
             msg.exec_()
             return
-        if not self.bs.check_out(usr, self.copy, gui.MainWindow.MainWindow.librarian):
+        err = self.bs.check_out(usr, self.copy, gui.MainWindow.MainWindow.librarian)
+        msgs = {4: "User is deleted", 3: "Copy is not active", 2: "Copy is referenced", 1: "Copy is already checked out"}
+        if type(err) == int:
             msg = QMessageBox()
-            msg.setText("Can't check out")
+            msg.setText(msgs[err])
             msg.exec_()
             return
         self.his = self.bs.get_copy_history(self.copy)
@@ -155,7 +155,14 @@ class CopyInfo(QWidget):
         self.his = self.bs.get_copy_history(self.copy)
         self.table.setRowCount(len(self.his))
         self._row_update(len(self.his) - 1)
-        pass
+        if self.copy.active:
+            self.book_id.setText("ID: " + str(self.copy.CopyID))
+        else:
+            self.book_id.setText("<font color='red'>ID: " + str(self.copy.CopyID)+"</font>")
+        if self.copy.active:
+            self.delete_button.setText("Delete")
+        else:
+            self.delete_button.setText("Restore")
 
     def return_book(self):
         if not self.copy.checked_out:
