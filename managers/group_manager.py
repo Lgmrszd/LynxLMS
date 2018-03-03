@@ -23,7 +23,7 @@ class Group(BaseModel):
 
     @classmethod
     def add(cls, **kwargs):
-        cls.create(**kwargs)
+        return cls.create(**kwargs)
 
     @classmethod
     def remove(cls, g_id):
