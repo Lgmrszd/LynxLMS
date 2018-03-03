@@ -1,4 +1,3 @@
-from PyQt5.QtGui import QIntValidator
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel, QLineEdit, QPushButton, QMessageBox, \
     QTableWidget, QAbstractItemView, QTableWidgetItem, QInputDialog
 from managers.doc_manager import *
@@ -151,6 +150,13 @@ class CopyInfo(QWidget):
         self._row_update(len(self.his)-1)
         self._on_edit()
 
+    def update(self):
+        self.copy = Copy.get_by_id(self.copy.CopyID)
+        self.his = self.bs.get_copy_history(self.copy)
+        self.table.setRowCount(len(self.his))
+        self._row_update(len(self.his) - 1)
+        pass
+
     def return_book(self):
         if not self.copy.checked_out:
             msg = QMessageBox()
@@ -162,9 +168,6 @@ class CopyInfo(QWidget):
 
         if reply == QMessageBox.No:
             return
-
-        for i in History.select().where(History.date_return.is_null(True) and History.copy == self.copy):
-            print(i.OperationID, " ")
 
         self.bs.return_by_copy(self.copy, gui.MainWindow.MainWindow.librarian)
         self.copy = Copy.get(Copy.CopyID == self.copy.CopyID)
@@ -189,4 +192,5 @@ class CopyInfo(QWidget):
             self.close()
 
     def edit(self):
+        # ToDo edit copy?
         pass

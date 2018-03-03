@@ -3,18 +3,27 @@ from PyQt5.QtWidgets import QWidget, QDesktopWidget, QPushButton, QVBoxLayout, Q
 from gui.SearchWindow import SearchWindow
 from gui.AddDocument import AddDocument
 from gui.ManageUsersWindow import ManageUsersWindow
+from gui.HistoryWindow import HistoryWindow
 
 class MainWindow(QWidget):
     librarian = ""
 
     def __init__(self):
         super().__init__()
-        self.search_window = SearchWindow(self)
+        self.search_window = SearchWindow(self._s_copy_changed, self)
+        self.history_window = HistoryWindow(self._h_copy_changed)
         self.manage_users = ManageUsersWindow()
         self.add_documents = []
         self._set_up_ui()
 
-    def closeEvent(self, QCloseEvent):#вызывается при close event
+    def _h_copy_changed(self, copy_id):
+        self.search_window.update_copy_window(copy_id)
+
+    def _s_copy_changed(self, copy_id):
+        self.history_window.update_copy_window(copy_id)
+
+    def closeEvent(self, QCloseEvent):
+        """вызывается при close event"""
         sys.exit(0)
 
     def librarian_update(self):
@@ -44,12 +53,17 @@ class MainWindow(QWidget):
         add_document_button.setFixedHeight(30)
         add_document_button.clicked.connect(self.open_add_document_window)
 
+        history_button = QPushButton("Show history")
+        history_button.setFixedHeight(30)
+        history_button.clicked.connect(self.open_history_window)
+
         vbox = QVBoxLayout()
         vbox.setSpacing(10)
         vbox.addLayout(hbox)
         vbox.addWidget(search_button)
         vbox.addWidget(add_document_button)
         vbox.addWidget(manage_users_button)
+        vbox.addWidget(history_button)
         vbox.addStretch()
 
         self.setLayout(vbox)
@@ -58,7 +72,8 @@ class MainWindow(QWidget):
         self._center()
         self.setWindowTitle('Librarian application')
 
-    def _center(self):# ставит окно в центр
+    def _center(self):
+        """ставит окно в центр"""
         qr = self.frameGeometry()
         cp = QDesktopWidget().availableGeometry().center()
         qr.moveCenter(cp)
@@ -72,7 +87,8 @@ class MainWindow(QWidget):
 
     def _add_window_closed(self, window):
         self.add_documents.remove(window)
-        self.search_window.click_search_button()
+        self.search_window.self.get_result()
+        self.search_window.update_page()
 
     def open_add_document_window(self):
         add_document = AddDocument(lambda: self._add_window_closed(add_document))
@@ -86,3 +102,9 @@ class MainWindow(QWidget):
             self.manage_users.show()
         else:
             self.manage_users.hide()
+
+    def open_history_window(self):
+        if self.history_window.isHidden():
+            self.history_window.show()
+        else:
+            self.history_window.hide()

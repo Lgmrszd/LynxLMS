@@ -4,16 +4,16 @@ from gui.CopiesWindow import *
 
 
 class BookInfo(QWidget):
-    def __init__(self, doc, on_update):
+    def __init__(self, doc, on_update, on_copy_update):
         super().__init__()
         self.doc = doc
         self.on_update = on_update
+        self._on_copy_update = on_copy_update
         self.edit = BookEdit(doc, self._update)
         self.copies = CopiesWindow(doc, self._on_copies_update)
         self._set_up_ui()
 
-    def _on_copies_update(self):
-        self.on_update()
+    def _on_copies_update(self, copy_id):
         self.doc = type(self.doc).get_by_id(self.doc.DocumentID)
         if self.doc.active:
             self.delete_button.setVisible(True)
@@ -21,13 +21,12 @@ class BookInfo(QWidget):
         else:
             self.delete_button.setVisible(False)
             self.book_id.setText("<font color='red'>ID: " + str(self.doc.DocumentID) + "</font>")
-
+        self.on_update()
+        self._on_copy_update(copy_id)
 
     def _set_up_ui(self):
         window_size_x = 400
         window_size_y = 400
-
-
 
         if self.doc.active:
             self.book_id = QLabel("ID: "+str(self.doc.DocumentID))
@@ -96,6 +95,9 @@ class BookInfo(QWidget):
 
     def copy_list(self):
         self.copies.show()
+
+    def update_copy_window(self, copy_id):
+        self.copies.update_copy_window(copy_id)
 
     def delete_document(self):
         if not self.doc.active:

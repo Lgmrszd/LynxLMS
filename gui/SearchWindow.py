@@ -9,8 +9,9 @@ from managers.doc_manager import AVMaterial, Book, JournalArticle, Document
 class SearchWindow(QWidget):
     __inactive_color = QColor(230,230,230)
 
-    def __init__(self, parent=None):
+    def __init__(self, copy_update_listener, parent=None):
         super().__init__()
+        self._copy_update_listener = copy_update_listener
         self._set_up_ui()
         self.par = parent
 
@@ -129,9 +130,13 @@ class SearchWindow(QWidget):
                     i.close()
                     self.books.remove(i)
                     break
-            book_info_window = BookInfo(self.list[event.row()], self.get_result)
+            book_info_window = BookInfo(self.list[event.row()], self.get_result, self._copy_update_listener)
             book_info_window.show()
             self.books.append(book_info_window)  #to prevent deletion of book_info_window, because book_info_window is local variable
+
+    def update_copy_window(self, copy_id):
+        for b in self.books:
+            b.update_copy_window(copy_id)
 
     def update_settings(self):
         self.type = self.typeBox.currentText()

@@ -78,7 +78,15 @@ class CopiesWindow(QWidget):
 
     def _copy_edited(self, r):
         self._row_update(r)
-        self._copy_edited_listener()
+        self._copy_edited_listener(self.cl[r].CopyID)
+
+    def update_copy_window(self, copy_id):
+        for i in range(len(self.edits)):
+            if self.edits[i].copy.CopyID == copy_id:
+                self.edits[i].update()
+                self._copy_edited_listener(None)
+        for i in range(self.table.rowCount()):
+            self._row_update(i)
 
     def _cell_clicked_event(self, event):
         r = event.row()
