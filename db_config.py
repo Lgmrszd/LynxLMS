@@ -6,13 +6,17 @@ from db_connect import db
 from os import path, makedirs
 
 
-def initialize_db(db_filename="./data/database.db"):
-    # Creating tables
+def init_db(db_filename="./data/database.db"):
     dirname, _ = path.split(db_filename)
     if dirname != "" and not path.exists(dirname):
         makedirs(dirname)
     db.init(db_filename)
     db.connect()
+    create_tables()
+
+
+def create_tables():
+    # Creating tables
     db.create_tables([managers.doc_manager.Book,
                       managers.doc_manager.AVMaterial,
                       managers.doc_manager.JournalArticle,
@@ -25,7 +29,8 @@ def initialize_db(db_filename="./data/database.db"):
     if (deleted_group == 0):
         managers.group_manager.Group.create(name='Deleted', book_ct=-1, book_bestseller_ct=-1, journal_ct=-1, av_ct=-1)
 
-def drop_db():
+
+def drop_tables():
     db.drop_tables([managers.doc_manager.Book,
                     managers.doc_manager.AVMaterial,
                     managers.doc_manager.JournalArticle,
