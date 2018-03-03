@@ -3,10 +3,16 @@ import managers.user_manager
 import managers.group_manager
 import managers.booking_system
 from db_connect import db
+from os import path, makedirs
 
 
-def initialize_db():
+def initialize_db(db_filename="./data/database.db"):
     # Creating tables
+    dirname, _ = path.split(db_filename)
+    if dirname != "" and not path.exists(dirname):
+        makedirs(dirname)
+    db.init(db_filename)
+    db.connect()
     db.create_tables([managers.doc_manager.Book,
                       managers.doc_manager.AVMaterial,
                       managers.doc_manager.JournalArticle,
