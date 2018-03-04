@@ -1,6 +1,8 @@
-from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel, QPushButton, QMessageBox, QTableWidget, QGroupBox
+from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel, QPushButton, QMessageBox, QTableWidget, \
+    QGroupBox, QTableWidgetItem
 from managers.user_manager import User
 from gui.UserEdit import UserEdit
+from managers.booking_system import Booking_system
 
 
 class UserInfo(QWidget):
@@ -28,7 +30,12 @@ class UserInfo(QWidget):
         self.delete_button.setFixedHeight(25)
         self.delete_button.clicked.connect(self.delete_user)
 
+        history = Booking_system.get_user_history(user=self.userObj)
         self.history_table = QTableWidget()
+        self.history_table.setRowCount(len(history))
+        self.history_table.setColumnCount(1)
+        for i in range(len(history)):
+            self.history_table.setItem(i, 0, QTableWidgetItem("13"))
 
         self.history_table.doubleClicked.connect(self.cell_clicked_event)
 
