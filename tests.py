@@ -10,9 +10,9 @@ class tests(unittest.TestCase):
 
     def test_case_1(self):
         #db init values
-        db_connect.custom_db('test1.db')
-        db_config.drop_db()
-        db_config.initialize_db()
+        db_config.init_db('test1.db')
+        db_config.drop_tables()
+        db_config.create_tables()
         patron = group_manager.Group.create(name = 'patrons', book_ct = 3, book_bestseller_ct = 2, journal_ct = 2, av_ct = 2)
         user = user_manager.User.add(name = 'user_name', surname = 'user_surname', address = 'user_address', phone = 11111111111, group = patron)
         book = doc_manager.Book.create(title = 'Wonderful book', author = 'Nice Author', cost = 500, keywords = 'key', edition = 1, publisher = 'Good publisher', year = 2018)

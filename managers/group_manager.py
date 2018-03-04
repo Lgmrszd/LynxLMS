@@ -22,8 +22,8 @@ class Group(BaseModel):
         return cls.get(id=g_id)
 
     @classmethod
-    def add(cls, **kwargs):
-        cls.create(**kwargs)
+    def add(cls, kwargs):
+        return cls.create(**kwargs)
 
     @classmethod
     def remove(cls, g_id):
