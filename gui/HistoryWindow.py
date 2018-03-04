@@ -129,6 +129,7 @@ class HistoryWindow(QWidget):
                 copy_edit_window)
 
     def update_copy_window(self, copy_id):
+        self.get_result()
         for i in self.edits:
             if i.copy.CopyID == copy_id:
                 i.update()
@@ -158,7 +159,7 @@ class HistoryWindow(QWidget):
             self.result_table.item(i, 1).setText(str(self.list[i].user.card_id))
             self.result_table.item(i, 2).setText(str(self.list[i].copy.CopyID))
             self.result_table.item(i, 3).setText(str(self.list[i].date_check_out))
-            self.result_table.item(i, 4).setText(str(self.list[i].date_check_out))
+            self.result_table.item(i, 4).setText(str(self.list[i].librarian_co))
             self.result_table.item(i, 5).setText(str(self.list[i].date_return))
             self.result_table.item(i, 6).setText(str(self.list[i].librarian_re))
 

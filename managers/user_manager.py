@@ -25,7 +25,7 @@ class User(BaseModel):
         return cls.get(card_id=card_id)
 
     @classmethod
-    def add(cls, **kwargs):
+    def add(cls, kwargs):
         """Create a new user and add them to database"""
         return cls.create(**kwargs)
 
