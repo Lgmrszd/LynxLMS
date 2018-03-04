@@ -31,7 +31,7 @@ class Group(BaseModel):
         temp.delete_instance()
 
     @classmethod
-    def edit(cls, g_id, **kwargs):
+    def edit(cls, g_id, kwargs):
         group = cls.get(id=g_id)
         fields = cls.fields.copy()
         fields.pop("id")

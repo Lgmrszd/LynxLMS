@@ -36,7 +36,7 @@ class User(BaseModel):
         temp.delete_instance()
 
     @classmethod
-    def edit(cls, card_id, **kwargs):
+    def edit(cls, card_id, kwargs):
         """Edit certain values of user"""
         user = cls.get(card_id=card_id)
         fields = cls.fields.copy()
