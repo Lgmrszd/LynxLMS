@@ -1,11 +1,10 @@
 import unittest
-from os.path import exists
-from os import remove
 import managers.doc_manager as doc_manager
 import managers.booking_system as booking_system
 import managers.user_manager as user_manager
 import managers.group_manager as group_manager
 import db_config
+import datetime
 
 
 def prepare_database():
@@ -131,6 +130,126 @@ class TestCases1(unittest.TestCase):
 
         # There is no such group by this author
         self.assertTrue(len(books_by_author) == 0)
+
+    def test_case_3(self):
+        prepare_database()
+        faculty = group_manager.Group.add(
+            {
+                "name": "Faculty",
+                "book_ct": 4,
+                "book_bestseller_ct": 4,
+                "journal_ct": 2,
+                "av_ct": 2
+            }
+        )
+        students = group_manager.Group.add(
+            {
+                "name": "Students",
+                "book_ct": 3,
+                "book_bestseller_ct": 2,
+                "journal_ct": 2,
+                "av_ct": 2
+            }
+        )
+        f = user_manager.User.add(
+            {
+                "name": "Faculty",
+                "surname": "Member",
+                "address": "Moscow, MSU",
+                "phone": 84959391000,
+                "group": faculty
+            }
+        )
+        s = user_manager.User.add(
+            {
+                "name": "Faculty",
+                "surname": "Member",
+                "address": "Moscow, MSU, ",
+                "phone": 88005553535,
+                "group": students
+            }
+        )
+        b = doc_manager.Book.add(
+            {
+                "title": "Book",
+                "author": "author",
+                "cost": 300,
+                "keywords": "keywords",
+                "edition": "edition",
+                "publisher": "publisher",
+                "year": 2000
+            }
+        )
+        bc = doc_manager.Copy.add(b)
+
+        bsystem = booking_system.Booking_system()
+        bsystem.check_out(f, bc, "Librarian")
+        fh = bsystem.get_user_history(f)
+        self.assertTrue(len(fh) == 1)
+        fh = fh[0]
+        return_time = datetime.datetime.strptime(bsystem.get_max_return_time(fh), "%Y-%m-%d").date()
+        self.assertTrue((return_time - datetime.date.today()).days >= 7*4)
+
+    def test_case_4(self):
+        prepare_database()
+        faculty = group_manager.Group.add(
+            {
+                "name": "Faculty",
+                "book_ct": 4,
+                "book_bestseller_ct": 4,
+                "journal_ct": 2,
+                "av_ct": 2
+            }
+        )
+        students = group_manager.Group.add(
+            {
+                "name": "Students",
+                "book_ct": 3,
+                "book_bestseller_ct": 2,
+                "journal_ct": 2,
+                "av_ct": 2
+            }
+        )
+        f = user_manager.User.add(
+            {
+                "name": "Faculty",
+                "surname": "Member",
+                "address": "Moscow, MSU",
+                "phone": 84959391000,
+                "group": faculty
+            }
+        )
+        s = user_manager.User.add(
+            {
+                "name": "Faculty",
+                "surname": "Member",
+                "address": "Moscow, MSU, ",
+                "phone": 88005553535,
+                "group": students
+            }
+        )
+        b = doc_manager.Book.add(
+            {
+                "title": "Book",
+                "author": "author",
+                "cost": 300,
+                "keywords": "keywords",
+                "edition": "edition",
+                "publisher": "publisher",
+                "year": 2000
+            }
+        )
+        bc = doc_manager.Copy.add(b)
+
+        bsystem = booking_system.Booking_system()
+        bsystem.check_out(f, bc, "Librarian")
+        fh = bsystem.get_user_history(f)
+        self.assertTrue(len(fh) == 1)
+        fh = fh[0]
+        return_time = datetime.datetime.strptime(bsystem.get_max_return_time(fh), "%Y-%m-%d").date()
+        self.assertTrue((return_time - datetime.date.today()).days >= 7*2)
+
+    
 
 
 if __name__ == '__main__':
