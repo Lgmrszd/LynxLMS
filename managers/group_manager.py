@@ -10,8 +10,7 @@ class Group(BaseModel):
     book_bestseller_ct = SmallIntegerField()
     journal_ct = SmallIntegerField()
     av_ct = SmallIntegerField()
-    fields = {"id": id,
-              "name": name,
+    fields = {"name": name,
               "book_ct": book_ct,
               "book_bt": book_bestseller_ct,
               "journal_ct": journal_ct,
@@ -31,10 +30,9 @@ class Group(BaseModel):
         temp.delete_instance()
 
     @classmethod
-    def edit(cls, g_id, **kwargs):
+    def edit(cls, g_id, kwargs):
         group = cls.get(id=g_id)
         fields = cls.fields.copy()
-        fields.pop("id")
         for key in fields.keys():
             if key in kwargs.keys():
                 group.__dict__['_data'][key] = kwargs[key]

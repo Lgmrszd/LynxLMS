@@ -118,7 +118,8 @@ class HistoryWindow(QWidget):
     def cell_clicked_event(self, event):
         if self.list is not None and len(self.list) > event.row():
             r = event.row()
-            copy_edit_window = CopyInfo(self.list[r].copy, lambda: self._copy_edited(self.list[r].copy.CopyID))
+            id = self.list[r].copy.CopyID
+            copy_edit_window = CopyInfo(self.list[r].copy, lambda: self._copy_edited(id))
             copy_edit_window.show()
             for i in self.edits:
                 if i.copy.CopyID == self.list[r].copy.CopyID:

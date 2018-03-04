@@ -36,11 +36,10 @@ class User(BaseModel):
         temp.delete_instance()
 
     @classmethod
-    def edit(cls, card_id, **kwargs):
+    def edit(cls, card_id, kwargs):
         """Edit certain values of user"""
         user = cls.get(card_id=card_id)
         fields = cls.fields.copy()
-        fields.pop("id")
         for key in fields.keys():
             if key in kwargs.keys():
                 user.__dict__['_data'][key] = kwargs[key]
