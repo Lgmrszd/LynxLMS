@@ -75,7 +75,7 @@ class ManageUsersWindow(QWidget):
 
     def cell_clicked_event(self, event):
         if self.list is not None and len(self.list) > event.row():
-            user_info = UserInfo(self.list)
+            user_info = UserInfo(self.list[event.row()])
             user_info.show()
             self.user_infos.append(user_info)
 
