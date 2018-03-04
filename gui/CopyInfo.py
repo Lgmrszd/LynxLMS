@@ -138,9 +138,9 @@ class CopyInfo(QWidget):
             msg.setText("Invalid user card")
             msg.exec_()
             return
-        err = self.bs.check_out(usr, self.copy, gui.MainWindow.MainWindow.librarian)
+        (err, res) = self.bs.check_out(usr, self.copy, gui.MainWindow.MainWindow.librarian)
         msgs = {4: "User is deleted", 3: "Copy is not active", 2: "Copy is referenced", 1: "Copy is already checked out"}
-        if type(err) == int:
+        if err > 0:
             msg = QMessageBox()
             msg.setText(msgs[err])
             msg.exec_()

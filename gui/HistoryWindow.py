@@ -21,11 +21,11 @@ class HistoryWindow(QWidget):
         self.edits = list()
         self.number = 0
 
-        self.active = 1
+        self.active = 2
 
         active_label = QLabel("Show:")
         self.activeBox = QComboBox()
-        self.activeBox.addItems(["Active", "All", "Closed"])
+        self.activeBox.addItems(["Overdue", "Opened", "All", "Closed"])
         self.activeBox.currentIndexChanged.connect(self.update_settings)
 
         result_group = QGroupBox("")
@@ -108,7 +108,7 @@ class HistoryWindow(QWidget):
         table.setColumnWidth(6, 120)
 
     def update_settings(self):
-        self.active = 1-self.activeBox.currentIndex()
+        self.active = 2-self.activeBox.currentIndex()
         self.get_result()
 
     def _copy_edited(self, r):
@@ -152,7 +152,7 @@ class HistoryWindow(QWidget):
             self.get_result()
 
     def get_result(self):
-        self.list, self.number = self.bs.get_list(15, self.page_num)
+        self.list, self.number = self.bs.get_list(15, self.page_num, self.active)
 
         for i in range(0, len(self.list)):
             self.result_table.item(i, 0).setText(str(self.list[i].OperationID))
