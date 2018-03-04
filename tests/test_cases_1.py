@@ -75,6 +75,63 @@ class TestCases1(unittest.TestCase):
         self.assertTrue((b1_copy1_after.CopyID == uh.copy.CopyID) or (b1_copy2_after.CopyID == uh.copy.CopyID))
         self.assertTrue((b1_copy1_after.CopyID != uh.copy.CopyID) or (b1_copy2_after.CopyID != uh.copy.CopyID))
 
+    def test_case_2(self):
+        prepare_database()
+        # Sample group
+        group1 = group_manager.Group.add(
+            {
+                "name": "Group",
+                "book_ct": 2,
+                "book_bestseller_ct": 1,
+                "journal_ct": 2,
+                "av_ct": 2
+            }
+        )
+        # Sample user
+        user1 = user_manager.User.add(
+            {
+                "name": "User",
+                "surname": "Userovich",
+                "address": "Pushkin street, Kolotushkin building",
+                "phone": 88005553535,
+                "group": group1
+            }
+        )
+        # Sample books
+        book1 = doc_manager.Book.add(
+            {
+                "title": "Book 1",
+                "author": "Not interesting author",
+                "cost": 300,
+                "keywords": "keywords",
+                "edition": "edition",
+                "publisher": "publisher",
+                "year": 2000
+            }
+        )
+        book2 = doc_manager.Book.add(
+            {
+                "title": "Book 2",
+                "author": "Another not interesting author",
+                "cost": 300,
+                "keywords": "keywords",
+                "edition": "edition",
+                "publisher": "publisher",
+                "year": 2000
+            }
+        )
+
+        # Find the book with author "Totally good author"
+        books = doc_manager.Book.get_list(10, 1)[0]
+        author = "Totally good author"
+        books_by_author = []
+        for book in books:
+            if book.author == author:
+                books_by_author.append(book)
+
+        # There is no such group by this author
+        self.assertTrue(len(books_by_author) == 0)
+
 
 if __name__ == '__main__':
     unittest.main()
