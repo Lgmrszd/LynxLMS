@@ -111,20 +111,20 @@ class HistoryWindow(QWidget):
         self.active = 2-self.activeBox.currentIndex()
         self.get_result()
 
-    def _copy_edited(self, r):
+    def _copy_edited(self, id):
         self.get_result()
-        self._copy_state_changed_listener(self.list[r].copy.CopyID)
+        self._copy_state_changed_listener(id)
 
     def cell_clicked_event(self, event):
         if self.list is not None and len(self.list) > event.row():
             r = event.row()
+            copy_edit_window = CopyInfo(self.list[r].copy, lambda: self._copy_edited(self.list[r].copy.CopyID))
+            copy_edit_window.show()
             for i in self.edits:
                 if i.copy.CopyID == self.list[r].copy.CopyID:
                     i.close()
                     self.edits.remove(i)
                     break
-            copy_edit_window = CopyInfo(self.list[r].copy, lambda: self._copy_edited(r))
-            copy_edit_window.show()
             self.edits.append(
                 copy_edit_window)
 
