@@ -115,3 +115,6 @@ test.py
 dist/*
 build/*
 main.spec
+
+# test
+tests/test_database.db
