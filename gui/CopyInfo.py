@@ -139,7 +139,8 @@ class CopyInfo(QWidget):
             msg.exec_()
             return
         (err, res) = self.bs.check_out(usr, self.copy, gui.MainWindow.MainWindow.librarian)
-        msgs = {4: "User is deleted", 3: "Copy is not active", 2: "Copy is referenced", 1: "Copy is already checked out"}
+        msgs = {6: "User already have copy of this document",
+                4: "User is deleted", 3: "Copy is not active", 2: "Copy is referenced", 1: "Copy is already checked out"}
         if err > 0:
             msg = QMessageBox()
             msg.setText(msgs[err])
