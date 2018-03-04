@@ -59,14 +59,12 @@ class Document(BaseModel):
         temp.save()
         print(temp.__dict__)
 
-    #TODO : Add number of pages
-    #Use SQL count() for pages
 
     @classmethod
     def get_list(cls, rows_number, page, active=0): #TODO : rework arguments
         """Returns a content from certain page of document list
+        Active - active=1, Not active - active=-1, All - active=0
         """
-        #Active - 1, Not active = -1, All = 0
         select_query = None
         if (active == 0):
             select_query = cls.select()

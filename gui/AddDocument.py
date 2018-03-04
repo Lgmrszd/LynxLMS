@@ -80,6 +80,14 @@ class AddDocument(QWidget):
                 msg.setText("Empty " + str(i))
                 msg.exec_()
                 return
+            if self.types[i] == int:
+                try:
+                    int(dic[i])
+                except:
+                    msg = QMessageBox()
+                    msg.setText(str(i)+" should be an integer")
+                    msg.exec_()
+                    return
         type.add(dic)
         self.close()
 

@@ -27,18 +27,18 @@ class Booking_system:
         """Check out copy of specific document to specific user
         """
         if (user.group == group_manager.Group.get(group_manager.Group.name == 'Deleted')):
-            return 4
+            return (4, None)
         if copy.active == False:
-            return 3
+            return (3, None)
         if 'reference' in copy.get_doc().keywords:
-            return 2
+            return (2, None)
         if copy.checked_out == True:
-            return 1
+            return (1, None)
         current_date = datetime.date.today()
         res = History.create(user = user, copy = copy, librarian_co = librarian, date_check_out = current_date)
         copy.checked_out = True
         copy.save()
-        return 0,res
+        return (0, res)
     
     def return_by_entry(self, entry, librarian):
         """Return copy by "History" entry
@@ -67,11 +67,31 @@ class Booking_system:
         entry = query.get()
         return self.return_by_entry(entry, librarian)
 
-    def get_list(self, rows_number, page):
-        """Returns a content from certain page of document list
+    def get_list(self, rows_number, page, opened=0):
+        """Returns a content from certain page of history check out
+        Overdue opened=2, Opened - opened=1, All - opened=0, Closed - opened=-1
         """
         res = []
-        select_query = History.select()
+        select_query = None
+        if (opened == 0):
+            select_query = History.select()
+        elif (opened == 1):
+            select_query = History.select().where(History.date_return.is_null(True))
+        elif (opened == 2):
+            select_query = History.select().where(History.date_return.is_null(True))
+            overdue_entries = []
+            for entry in select_query:
+                if (self.check_overdue(entry) > 0):
+                    overdue_entries.append(entry)
+            page_number = len(overdue_entries) // rows_number
+            if (len(overdue_entries) % rows_number > 0):
+                page_number += 1
+            return (overdue_entries[(page-1) * rows_number : page * rows_number], page_number)
+        elif (opened == -1):
+            select_query = History.select().where(History.date_return.is_null(False))
+        else:
+            return ([], 0)
+        #Calculating number of pages
         page_number = int(select_query.count()) // rows_number
         if (select_query.count() % rows_number > 0):
             page_number += 1
@@ -79,25 +99,6 @@ class Booking_system:
         for entry in query:
             res.append(entry)
         return res, page_number
-
-    def get_list_overdue(self):
-        """Get list of overdue items
-        """
-        opened = self.get_list_opened()
-        res = []
-        for entry in opened:
-            if (self.check_overdue(entry) > 0):
-                res.append(entry)
-        return res
-
-    def get_list_opened(self):
-        """Get list of items that are checked out but not returned yet
-        """
-        query = History.select().where(History.date_return.is_null(True))
-        res = []
-        for entry in query:
-            res.append(entry)
-        return res
 
     def get_user_history(self, user):
         """Get all operation for particular user
@@ -130,7 +131,10 @@ class Booking_system:
             period = entry.user.group.book_bestseller_ct * 7
         else:
             period = entry.user.group.get_checkout_time(entry.copy.get_doc())
-        res = min(self.overdue(entry.date_check_out, entry.date_return, period), entry.copy.get_doc().cost)
+        date_return = entry.date_return
+        if (date_return == None):   #if we are trying to check open entry
+            date_return = str(datetime.date.today())
+        res = min(self.overdue(entry.date_check_out, date_return, period), entry.copy.get_doc().cost)
         return res
 
     def overdue(self, date_check_out, date_return, period):

@@ -21,11 +21,11 @@ class HistoryWindow(QWidget):
         self.edits = list()
         self.number = 0
 
-        self.active = 1
+        self.active = 2
 
         active_label = QLabel("Show:")
         self.activeBox = QComboBox()
-        self.activeBox.addItems(["Active", "All", "Closed"])
+        self.activeBox.addItems(["Overdue", "Opened", "All", "Closed"])
         self.activeBox.currentIndexChanged.connect(self.update_settings)
 
         result_group = QGroupBox("")
@@ -108,27 +108,28 @@ class HistoryWindow(QWidget):
         table.setColumnWidth(6, 120)
 
     def update_settings(self):
-        self.active = 1-self.activeBox.currentIndex()
+        self.active = 2-self.activeBox.currentIndex()
         self.get_result()
 
-    def _copy_edited(self, r):
+    def _copy_edited(self, id):
         self.get_result()
-        self._copy_state_changed_listener(self.list[r].copy.CopyID)
+        self._copy_state_changed_listener(id)
 
     def cell_clicked_event(self, event):
         if self.list is not None and len(self.list) > event.row():
             r = event.row()
+            copy_edit_window = CopyInfo(self.list[r].copy, lambda: self._copy_edited(self.list[r].copy.CopyID))
+            copy_edit_window.show()
             for i in self.edits:
                 if i.copy.CopyID == self.list[r].copy.CopyID:
                     i.close()
                     self.edits.remove(i)
                     break
-            copy_edit_window = CopyInfo(self.list[r].copy, lambda: self._copy_edited(r))
-            copy_edit_window.show()
             self.edits.append(
                 copy_edit_window)
 
     def update_copy_window(self, copy_id):
+        self.get_result()
         for i in self.edits:
             if i.copy.CopyID == copy_id:
                 i.update()
@@ -151,14 +152,14 @@ class HistoryWindow(QWidget):
             self.get_result()
 
     def get_result(self):
-        self.list, self.number = self.bs.get_list(15, self.page_num)
+        self.list, self.number = self.bs.get_list(15, self.page_num, self.active)
 
         for i in range(0, len(self.list)):
             self.result_table.item(i, 0).setText(str(self.list[i].OperationID))
             self.result_table.item(i, 1).setText(str(self.list[i].user.card_id))
             self.result_table.item(i, 2).setText(str(self.list[i].copy.CopyID))
             self.result_table.item(i, 3).setText(str(self.list[i].date_check_out))
-            self.result_table.item(i, 4).setText(str(self.list[i].date_check_out))
+            self.result_table.item(i, 4).setText(str(self.list[i].librarian_co))
             self.result_table.item(i, 5).setText(str(self.list[i].date_return))
             self.result_table.item(i, 6).setText(str(self.list[i].librarian_re))
 

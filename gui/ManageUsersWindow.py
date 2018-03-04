@@ -15,7 +15,7 @@ class ManageUsersWindow(QWidget):
         self.result_table.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.result_table.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.result_table.setColumnCount(2)
-        self.result_table.setRowCount(10)
+        self.result_table.setRowCount(15)
 
         ID_item = QTableWidgetItem("ID")
         self.result_table.setHorizontalHeaderItem(0, ID_item)
@@ -99,9 +99,11 @@ class ManageUsersWindow(QWidget):
         self.update_page()
 
     def get_result(self):
-        self.list = User.get_list(10, self.page_num)
+        self.list = User.get_list(15, self.page_num)
 
         for i in range(0, len(self.list)):
             self.result_table.setItem(i, 0, QTableWidgetItem(str(self.list[i].card_id)))
-        for i in range(len(self.list), 10):
-            self.result_table.setItem(i, 0, QTableWidgetItem(self.list[i].name + " " + self.list[i].surname))
+            self.result_table.setItem(i, 1, QTableWidgetItem(self.list[i].name + " " + self.list[i].surname))
+        for i in range(len(self.list), 15):
+            self.result_table.setItem(i, 0, QTableWidgetItem(""))
+            self.result_table.setItem(i, 1, QTableWidgetItem(""))
