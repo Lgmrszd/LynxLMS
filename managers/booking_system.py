@@ -34,6 +34,11 @@ class Booking_system:
             return (2, None)
         if copy.checked_out == True:
             return (1, None)
+        #Check if user checked out another copy of this document
+        copy_doc = copy.get_doc()
+        for entry in self.get_user_history(user):
+            if (entry.date_return == None and entry.copy.get_doc() == copy_doc):
+                return (6, None)
         current_date = datetime.date.today()
         res = History.create(user = user, copy = copy, librarian_co = librarian, date_check_out = current_date)
         copy.checked_out = True
