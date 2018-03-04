@@ -123,6 +123,19 @@ class Booking_system:
         """
         return doc.get_document_copies()
 
+    def get_max_return_time(self, entry):
+        """Returns maximum copy return time by history entry
+        """
+        date_splitted = entry.date_check_out.split('-')
+        date_check_out = datetime.date(int(date_splitted[0]),
+                                       int(date_splitted[1]),
+                                       int(date_splitted[2]))
+        user = entry.user
+        date_return = date_check_out + datetime.timedelta(
+            days=7 * user.group.get_checkout_time(entry.copy.get_doc())
+        )
+        return str(date_return)
+
     def check_overdue(self, entry):
         """Returns fine for overdue (0 if no fine)
         """
