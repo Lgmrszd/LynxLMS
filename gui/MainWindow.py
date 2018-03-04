@@ -94,7 +94,7 @@ class MainWindow(QWidget):
 
     def _add_window_closed(self, window):
         self.add_documents.remove(window)
-        self.search_window.self.get_result()
+        self.search_window.get_result()
         self.search_window.update_page()
 
     def open_add_document_window(self):
