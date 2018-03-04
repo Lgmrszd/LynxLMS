@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel, QPushButton, QMessageBox, QTableWidget, \
-    QGroupBox, QTableWidgetItem
+    QGroupBox, QTableWidgetItem, QAbstractItemView
 from managers.user_manager import User
 from gui.UserEdit import UserEdit
 from managers.booking_system import Booking_system
@@ -11,6 +11,40 @@ class UserInfo(QWidget):
         self.userObj = userObj
         self.user_edit = UserEdit(self.userObj)
         self._set_up_ui()
+
+    def set_up_table(self, table):
+        table.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        table.setSelectionBehavior(QAbstractItemView.SelectRows)
+        table.setColumnCount(7)
+
+        ID_item = QTableWidgetItem("ID")
+        table.setHorizontalHeaderItem(0, ID_item)
+
+        ser_card_item = QTableWidgetItem("Card ID")
+        table.setHorizontalHeaderItem(1, ser_card_item)
+
+        copy_item = QTableWidgetItem("Copy ID")
+        table.setHorizontalHeaderItem(2, copy_item)
+
+        check_out_item = QTableWidgetItem("Checked out date")
+        table.setHorizontalHeaderItem(3, check_out_item)
+
+        give_lib_item = QTableWidgetItem("Checked out by")
+        table.setHorizontalHeaderItem(4, give_lib_item)
+
+        return_item = QTableWidgetItem("Return date")
+        table.setHorizontalHeaderItem(5, return_item)
+
+        return_lib_item = QTableWidgetItem("Returned by")
+        table.setHorizontalHeaderItem(6, return_lib_item)
+
+        table.setColumnWidth(0, 30)
+        table.setColumnWidth(1, 60)
+        table.setColumnWidth(2, 60)
+        table.setColumnWidth(3, 120)
+        table.setColumnWidth(4, 120)
+        table.setColumnWidth(5, 120)
+        table.setColumnWidth(6, 120)
 
     def _set_up_ui(self):
         window_size_x = 400
@@ -30,12 +64,18 @@ class UserInfo(QWidget):
         self.delete_button.setFixedHeight(25)
         self.delete_button.clicked.connect(self.delete_user)
 
-        history = Booking_system.get_user_history(user=self.userObj)
+        history = Booking_system().get_user_history(self.userObj)
         self.history_table = QTableWidget()
         self.history_table.setRowCount(len(history))
-        self.history_table.setColumnCount(1)
-        for i in range(len(history)):
-            self.history_table.setItem(i, 0, QTableWidgetItem("13"))
+        self.set_up_table(self.history_table)
+        for i in range(0, len(history)):
+            self.history_table.setItem(i, 0, QTableWidgetItem(str(history[i].OperationID)))
+            self.history_table.setItem(i, 1, QTableWidgetItem(str(history[i].user.card_id)))
+            self.history_table.setItem(i, 2, QTableWidgetItem(str(history[i].copy.CopyID)))
+            self.history_table.setItem(i, 3, QTableWidgetItem(str(history[i].date_check_out)))
+            self.history_table.setItem(i, 4, QTableWidgetItem(str(history[i].librarian_co)))
+            self.history_table.setItem(i, 5, QTableWidgetItem(str(history[i].date_return)))
+            self.history_table.setItem(i, 6, QTableWidgetItem(str(history[i].librarian_re)))
 
         self.history_table.doubleClicked.connect(self.cell_clicked_event)
 
