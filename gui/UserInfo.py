@@ -47,8 +47,8 @@ class UserInfo(QWidget):
         table.setColumnWidth(6, 120)
 
     def _set_up_ui(self):
-        window_size_x = 400
-        window_size_y = 400
+        window_size_x = 700
+        window_size_y = 650
 
         self.user_id = QLabel("ID: " + str(self.userObj.card_id))
         self.address_label = QLabel("Address: " + str(self.userObj.address))

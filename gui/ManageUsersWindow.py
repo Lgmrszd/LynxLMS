@@ -14,17 +14,37 @@ class ManageUsersWindow(QWidget):
     def _set_up_table(self):
         self.result_table.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.result_table.setSelectionBehavior(QAbstractItemView.SelectRows)
-        self.result_table.setColumnCount(2)
+        self.result_table.setColumnCount(7)
         self.result_table.setRowCount(15)
 
         ID_item = QTableWidgetItem("ID")
         self.result_table.setHorizontalHeaderItem(0, ID_item)
 
-        user_name_item = QTableWidgetItem("Name and surname")
+        user_name_item = QTableWidgetItem("Name")
         self.result_table.setHorizontalHeaderItem(1, user_name_item)
 
+        user_surname_item = QTableWidgetItem("Surname")
+        self.result_table.setHorizontalHeaderItem(2, user_surname_item)
+
+        user_address_item = QTableWidgetItem("Address")
+        self.result_table.setHorizontalHeaderItem(3, user_address_item)
+
+        user_phone_item = QTableWidgetItem("Phone")
+        self.result_table.setHorizontalHeaderItem(4, user_phone_item)
+
+        user_fine_item = QTableWidgetItem("Fine")
+        self.result_table.setHorizontalHeaderItem(5, user_fine_item)
+
+        user_group_item = QTableWidgetItem("Group")
+        self.result_table.setHorizontalHeaderItem(6, user_group_item)
+
         self.result_table.setColumnWidth(0, 100)
-        self.result_table.setColumnWidth(1, 610)
+        self.result_table.setColumnWidth(1, 115)
+        self.result_table.setColumnWidth(2, 115)
+        self.result_table.setColumnWidth(3, 95)
+        self.result_table.setColumnWidth(4, 95)
+        self.result_table.setColumnWidth(5, 95)
+        self.result_table.setColumnWidth(6, 95)
 
     def _set_up_ui(self):
         window_size_x = 800
@@ -103,7 +123,17 @@ class ManageUsersWindow(QWidget):
 
         for i in range(0, len(self.list)):
             self.result_table.setItem(i, 0, QTableWidgetItem(str(self.list[i].card_id)))
-            self.result_table.setItem(i, 1, QTableWidgetItem(self.list[i].name + " " + self.list[i].surname))
+            self.result_table.setItem(i, 1, QTableWidgetItem(self.list[i].name))
+            self.result_table.setItem(i, 2, QTableWidgetItem(self.list[i].surname))
+            self.result_table.setItem(i, 3, QTableWidgetItem(self.list[i].phone))
+            self.result_table.setItem(i, 4, QTableWidgetItem(self.list[i].address))
+            self.result_table.setItem(i, 5, QTableWidgetItem(self.list[i].phone))
+            self.result_table.setItem(i, 6, QTableWidgetItem(self.list[i].group.name))
         for i in range(len(self.list), 15):
             self.result_table.setItem(i, 0, QTableWidgetItem(""))
             self.result_table.setItem(i, 1, QTableWidgetItem(""))
+            self.result_table.setItem(i, 2, QTableWidgetItem(""))
+            self.result_table.setItem(i, 3, QTableWidgetItem(""))
+            self.result_table.setItem(i, 4, QTableWidgetItem(""))
+            self.result_table.setItem(i, 5, QTableWidgetItem(""))
+            self.result_table.setItem(i, 6, QTableWidgetItem(""))
