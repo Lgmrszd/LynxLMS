@@ -10,6 +10,7 @@ class ManageUsersWindow(QWidget):
         self._set_up_ui()
         self.user_infos = []
         self.list = None
+        self.click_search_button()
 
     def _set_up_table(self):
         self.result_table.setEditTriggers(QAbstractItemView.NoEditTriggers)
@@ -125,9 +126,9 @@ class ManageUsersWindow(QWidget):
             self.result_table.setItem(i, 0, QTableWidgetItem(str(self.list[i].card_id)))
             self.result_table.setItem(i, 1, QTableWidgetItem(self.list[i].name))
             self.result_table.setItem(i, 2, QTableWidgetItem(self.list[i].surname))
-            self.result_table.setItem(i, 3, QTableWidgetItem(self.list[i].phone))
-            self.result_table.setItem(i, 4, QTableWidgetItem(self.list[i].address))
-            self.result_table.setItem(i, 5, QTableWidgetItem(self.list[i].phone))
+            self.result_table.setItem(i, 3, QTableWidgetItem(self.list[i].address))
+            self.result_table.setItem(i, 4, QTableWidgetItem(str(self.list[i].phone)))
+            self.result_table.setItem(i, 5, QTableWidgetItem(str(self.list[i].fine)))
             self.result_table.setItem(i, 6, QTableWidgetItem(self.list[i].group.name))
         for i in range(len(self.list), 15):
             self.result_table.setItem(i, 0, QTableWidgetItem(""))
