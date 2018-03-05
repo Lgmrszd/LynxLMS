@@ -6,7 +6,8 @@ from gui.CopyInfo import CopyInfo
 
 class HistoryWindow(QWidget):
     __inactive_color = QColor(230, 230, 230)
-    __active_color = None
+    __overdue_color = QColor(255, 230, 230)
+    __active_color = QTableWidgetItem("").background()
 
     def __init__(self, copy_state_changed_listener):
         super().__init__()
@@ -97,7 +98,6 @@ class HistoryWindow(QWidget):
         for i in range(15):
             for j in range(self.result_table.columnCount()):
                 self.result_table.setItem(i, j, QTableWidgetItem(""))
-        self.__active_color = self.result_table.item(0, 0).background()
 
         table.setColumnWidth(0, 30)
         table.setColumnWidth(1, 60)
@@ -161,12 +161,18 @@ class HistoryWindow(QWidget):
             self.result_table.item(i, 2).setText(str(self.list[i].copy.CopyID))
             self.result_table.item(i, 3).setText(str(self.list[i].date_check_out))
             self.result_table.item(i, 4).setText(str(self.list[i].librarian_co))
-            self.result_table.item(i, 5).setText(str(self.list[i].date_return))
+            if self.list[i].date_return is None:
+                self.result_table.item(i, 5).setText(str(self.bs.get_max_return_time(self.list[i])))
+            else:
+                self.result_table.item(i, 5).setText(str(self.list[i].date_return))
             self.result_table.item(i, 6).setText(str(self.list[i].librarian_re))
 
             for j in range(self.result_table.columnCount()):
                 if self.list[i].date_return is None:
-                    self.result_table.item(i, j).setBackground(self.__inactive_color)
+                    if self.bs.check_overdue(self.list[i]) > 0:
+                        self.result_table.item(i, j).setBackground(self.__overdue_color)
+                    else:
+                        self.result_table.item(i, j).setBackground(self.__inactive_color)
                 else:
                     self.result_table.item(i, j).setBackground(self.__active_color)
 
