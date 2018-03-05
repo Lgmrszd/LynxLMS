@@ -136,9 +136,15 @@ class Booking_system:
                                        int(date_splitted[1]),
                                        int(date_splitted[2]))
         user = entry.user
-        date_return = date_check_out + datetime.timedelta(
-            days=7 * user.group.get_checkout_time(entry.copy.get_doc())
-        )
+        date_return = None
+        if ((type(entry.copy.get_doc()) == doc_manager.name_to_class()['Book']) and ('best seller' in entry.copy.get_doc().keywords)):
+            date_return = date_check_out + datetime.timedelta(
+                days=7 * user.group.book_bestseller_ct
+            )
+        else:
+            date_return = date_check_out + datetime.timedelta(
+                days=7 * user.group.get_checkout_time(entry.copy.get_doc())
+            )
         return str(date_return)
 
     def check_overdue(self, entry):
