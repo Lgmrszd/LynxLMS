@@ -362,11 +362,11 @@ class TestCases2(unittest.TestCase):
         
         today = datetime.date.today()
 
-        self.assertEqual(ans1[0][1], 3 + (today -  datetime.date(2018, 3, 5)).days)
+        self.assertEqual(ans1[0][1], min(3 + (today -  datetime.date(2018, 3, 5)).days, 3000))
         self.assertEqual(ans1[0][0], b2.title)
-        self.assertEqual(ans2[0][1], 7 + (today -  datetime.date(2018, 3, 5)).days)
+        self.assertEqual(ans2[0][1], min(7 + (today -  datetime.date(2018, 3, 5)).days, 3000))
         self.assertEqual(ans2[0][0], b1.title)
-        self.assertEqual(ans2[1][1], 2 + (today -  datetime.date(2018, 3, 5)).days)
+        self.assertEqual(ans2[1][1], min(2 + (today -  datetime.date(2018, 3, 5)).days, 3000))
         self.assertEqual(ans2[1][0], av1.title)
 
     def test_case_9(self):
