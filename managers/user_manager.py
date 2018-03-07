@@ -22,7 +22,8 @@ class User(BaseModel):
     @classmethod
     def get_by_id(cls, card_id):
         """Get user by id"""
-        return cls.get(card_id=card_id)
+        user = cls.get(card_id=card_id)
+        return user
 
     @classmethod
     def add(cls, kwargs):
@@ -50,7 +51,7 @@ class User(BaseModel):
     @classmethod
     def get_list(cls, rows_number, page):
         """Returns a content from certain page of user list"""
-        query = cls.select().offset(0 + (page-1)*rows_number).limit(rows_number).order_by(cls.name.asc())
+        query = cls.select().where(cls.group != 1).offset(0 + (page-1)*rows_number).limit(rows_number).order_by(cls.name.asc())
         res = []
         for entry in query:
             res.append(entry)
