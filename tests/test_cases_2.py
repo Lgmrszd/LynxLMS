@@ -240,21 +240,22 @@ class TestCases2(unittest.TestCase):
         self.assertEqual(p1.card_id, 1000)
         self.assertEqual(p1.group, self.g_f)
 
-        p1_checked_out = [p1_h.copy.get_doc() for p1_h in p1.operations]
-        p1_docs = [self.b1, self.b2, self.av1]
+        p1_operations = list(p1.operations)
+        p1_docs = {self.b1: 4, self.b2: 4, self.av1: 2}
         # documents which user should have
-        for p1_shd in p1_docs:
+        for p1_shd in p1_docs.keys():
             # documents which user actually have
             have = False
-            for p1_d in p1_checked_out:
+            for p1_h in p1_operations:
+                p1_d = p1_h.copy.get_doc()
                 if type(p1_d) == type(p1_shd) and p1_d.DocumentID == p1_shd.DocumentID:
                     self.assertFalse(have)
+                    ret_time = bsystem.get_max_return_time(p1_h)
+                    delay = datetime.datetime.strptime(ret_time, "%Y-%m-%d").date() - datetime.date.today()
+                    datetime.datetime.strptime(ret_time, "%Y-%m-%d").date()
+                    self.assertEqual(delay.days, 7*p1_docs[p1_shd])
                     have = True
             self.assertTrue(have)
-
-        p1_operations = list(p1.operations)
-        for p1_h in p1_operations:
-            print(bsystem.get_max_return_time(p1_h))
 
         p2 = user_manager.User.get_by_id(1001)
         self.assertEqual(p2.name + " " + self.p2.surname, "Nadia Teixeira")
@@ -263,15 +264,32 @@ class TestCases2(unittest.TestCase):
         self.assertEqual(p2.card_id, 1001)
         self.assertEqual(p2.group, self.g_s)
 
-        p2_checked_out = [p2_h.copy.get_doc() for p2_h in p2.operations]
-        p2_docs = [self.b1, self.b2, self.av2]
+        # p2_checked_out = [p2_h.copy.get_doc() for p2_h in p2.operations]
+        # p2_docs = [self.b1, self.b2, self.av2]
+        # # documents which user should have
+        # for p2_shd in p2_docs:
+        #     # documents which user actually have
+        #     have = False
+        #     for p2_d in p2_checked_out:
+        #         if type(p2_d) == type(p2_shd) and p2_d.DocumentID == p2_shd.DocumentID:
+        #             self.assertFalse(have)
+        #             have = True
+        #     self.assertTrue(have)
+
+        p2_operations = list(p2.operations)
+        p2_docs = {self.b1: 3, self.b2: 2, self.av2: 2}
         # documents which user should have
-        for p2_shd in p2_docs:
+        for p2_shd in p2_docs.keys():
             # documents which user actually have
             have = False
-            for p2_d in p2_checked_out:
+            for p2_h in p2_operations:
+                p2_d = p2_h.copy.get_doc()
                 if type(p2_d) == type(p2_shd) and p2_d.DocumentID == p2_shd.DocumentID:
                     self.assertFalse(have)
+                    ret_time = bsystem.get_max_return_time(p2_h)
+                    delay = datetime.datetime.strptime(ret_time, "%Y-%m-%d").date() - datetime.date.today()
+                    datetime.datetime.strptime(ret_time, "%Y-%m-%d").date()
+                    self.assertEqual(delay.days, 7*p2_docs[p2_shd])
                     have = True
             self.assertTrue(have)
 
