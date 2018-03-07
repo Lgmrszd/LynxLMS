@@ -154,7 +154,7 @@ class Booking_system:
         if ((type(entry.copy.get_doc()) == doc_manager.name_to_class()['Book']) and ('best seller' in entry.copy.get_doc().keywords)):
             period = entry.user.group.book_bestseller_ct * 7
         else:
-            period = entry.user.group.get_checkout_time(entry.copy.get_doc())
+            period = entry.user.group.get_checkout_time(entry.copy.get_doc()) * 7
         date_return = entry.date_return
         if (date_return == None):   #if we are trying to check open entry
             date_return = str(datetime.date.today())
