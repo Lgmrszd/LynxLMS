@@ -40,7 +40,7 @@ class TestCases2(unittest.TestCase):
             {
                 "title": "Introduction to Algorithms",
                 "author": "Thomas H. Cormen, Charles E. Leiserson, Ronald L. Rivest and Clifford Stein",
-                "cost": 300,
+                "cost": 3000,
                 "keywords": "",
                 "edition": "Third edition",
                 "publisher": "MIT Press",
@@ -51,7 +51,7 @@ class TestCases2(unittest.TestCase):
             {
                 "title": "Design Patterns: Elements of Reusable Object-Oriented Software",
                 "author": "Erich Gamma, Ralph Johnson, John Vlissides, Richard Helm",
-                "cost": 300,
+                "cost": 3000,
                 "keywords": "best seller",
                 "edition": "First edition",
                 "publisher": "Addison-Wesley Professional",
@@ -62,7 +62,7 @@ class TestCases2(unittest.TestCase):
             {
                 "title": "The Mythical Man-month",
                 "author": "Brooks,Jr., Frederick P.",
-                "cost": 300,
+                "cost": 3000,
                 "keywords": "reference",
                 "edition": "Second edition",
                 "publisher": "Addison-Wesley Professional",
@@ -317,7 +317,57 @@ class TestCases2(unittest.TestCase):
             self.assertTrue(have)
 
     def test_case_8(self):
-        pass
+        self.test_case_1()
+
+        p1 = user_manager.User.get_by_id(1000)
+        b1 = doc_manager.Book.get_by_id(1)
+        b2 = doc_manager.Book.get_by_id(2)
+        p2 = user_manager.User.get_by_id(1001)
+        av1 = doc_manager.AVMaterial.get_by_id(1)
+
+        bs = booking_system.Booking_system()
+        h1 = bs.check_out(p1, b2.get_document_copies()[0], 'Mr. Libro')[1]
+        h1.date_check_out = '2018-02-02'
+        h1.save()
+
+        h3 = bs.check_out(p2, b1.get_document_copies()[1], 'Mr. Libro')[1]
+        h3.date_check_out = '2018-02-05'
+        h3.save()
+
+        h2 = bs.check_out(p1, b1.get_document_copies()[0], 'Mr. Libro')[1]
+        h2.date_check_out = '2018-02-09'
+        h2.save()
+
+        h4 = bs.check_out(p2, av1.get_document_copies()[0], 'Mr. Libro')[1]
+        h4.date_check_out = '2018-02-17'
+        h4.save()
+
+        p1 = user_manager.User.get_by_id(1000)
+        p2 = user_manager.User.get_by_id(1001)
+
+        ans1 = []
+        ans2 = []
+
+        p1_history = bs.get_user_history(p1)
+        for entry in p1_history:
+            if (bs.check_overdue(entry) > 0):
+                t = (entry.copy.get_doc().title, bs.check_overdue(entry) // 100)
+                ans1.append(t)
+        
+        p2_history = bs.get_user_history(p2)
+        for entry in p2_history:
+            if (bs.check_overdue(entry) > 0):
+                t = (entry.copy.get_doc().title, bs.check_overdue(entry) // 100)
+                ans2.append(t)
+        
+        today = datetime.date.today()
+
+        self.assertEqual(ans1[0][1], 3 + (today -  datetime.date(2018, 3, 5)).days)
+        self.assertEqual(ans1[0][0], b2.title)
+        self.assertEqual(ans2[0][1], 7 + (today -  datetime.date(2018, 3, 5)).days)
+        self.assertEqual(ans2[0][0], b1.title)
+        self.assertEqual(ans2[1][1], 2 + (today -  datetime.date(2018, 3, 5)).days)
+        self.assertEqual(ans2[1][0], av1.title)
 
     def test_case_9(self):
         self.test_case_1()
