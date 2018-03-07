@@ -27,13 +27,15 @@ class User(BaseModel):
     @classmethod
     def add(cls, kwargs):
         """Create a new user and add them to database"""
+        if len(cls.get_list(1, 1)) == 0:
+            kwargs["card_id"] = 1000
         return cls.create(**kwargs)
 
     @classmethod
     def remove(cls, card_id):
         """Remove excising user from database"""
-        temp = cls.get(card_id=card_id)
-        temp.delete_instance()
+        deleted = Group.get_deleted()
+        cls.edit(card_id, {"group": deleted})
 
     @classmethod
     def edit(cls, card_id, kwargs):

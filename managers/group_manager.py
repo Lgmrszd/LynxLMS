@@ -55,3 +55,8 @@ class Group(BaseModel):
         for entry in query:
             res.append(entry)
         return res
+
+    @classmethod
+    def get_deleted(cls):
+        deleted = Group.get(Group.name == "Deleted")
+        return deleted
