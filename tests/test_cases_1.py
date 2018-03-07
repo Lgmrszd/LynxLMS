@@ -596,7 +596,5 @@ class TestCases1(unittest.TestCase):
         self.assertEqual(history2, None)
 
 
-
-
 if __name__ == '__main__':
     unittest.main()

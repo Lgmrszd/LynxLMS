@@ -140,7 +140,7 @@ class TestCases2(unittest.TestCase):
         doc_manager.Copy.remove(b1_ac[0].CopyID)
         doc_manager.Copy.remove(b1_ac[1].CopyID)
 
-        b3_c = self.b1.get_document_copies()
+        b3_c = self.b3.get_document_copies()
         b3_ac = [x for x in b3_c if x.active]
         doc_manager.Copy.remove(b3_ac[0].CopyID)
 
@@ -191,16 +191,52 @@ class TestCases2(unittest.TestCase):
         self.assertEqual(res, (4, None))
 
     def test_case_6(self):
-        """
         self.test_case_2()
         bsystem = booking_system.Booking_system()
-        p1 = user_manager.User.get_by_id(1001)
+        p1 = user_manager.User.get_by_id(1000)
+        p3 = user_manager.User.get_by_id(1002)
+        b1_not_checked_copies = [x for x in doc_manager.Book.get_document_copies(self.b1) if x.active and not x.checked_out]
+        res = bsystem.check_out(p1, b1_not_checked_copies[0], "Librarian")
+        # successfully checked out b1 to p1
+        self.assertEqual(res[0], 0)
         b1_not_checked_copies = [x for x in doc_manager.Book.get_document_copies(self.b1) if not x.checked_out]
-        bsystem.check_out(self.p1, b1_not_checked_copies[0], "Librarian")
         b2_not_checked_copies = [x for x in doc_manager.Book.get_document_copies(self.b2) if not x.checked_out]
-        bsystem.check_out(self.p1, b2_not_checked_copies[0], "Librarian")
-        """
-        # Wrong test
+        res = bsystem.check_out(p3, b1_not_checked_copies[0], "Librarian")
+        # error while checking out b1 to p3
+        self.assertEqual(res[0], 3)
+        res = bsystem.check_out(p3, b2_not_checked_copies[0], "Librarian")
+        # successfully checked out b2 to p3
+        self.assertEqual(res[0], 0)
+
+        self.assertEqual(p1.name + " " + self.p1.surname, "Sergey Afonso")
+        self.assertEqual(p1.address, "Via Margutta, 3")
+        self.assertEqual(p1.phone, 30001)
+        self.assertEqual(p1.card_id, 1000)
+        self.assertEqual(p1.group, self.g_f)
+
+        self.assertEqual(len(p1.operations), 1)
+        p1_h = p1.operations[0]
+        p1_d = p1_h.copy.get_doc()
+        self.assertEqual(p1_d.DocumentID, self.b1.DocumentID)
+        ret_time = bsystem.get_max_return_time(p1_h)
+        delay = (datetime.datetime.strptime(ret_time, "%Y-%m-%d").date() - datetime.date.today()).days
+        self.assertEqual(delay, 28)
+
+        p3 = user_manager.User.get_by_id(1002)
+        self.assertEqual(p3.name + " " + self.p3.surname, "Elvira Espindola")
+        self.assertEqual(p3.address, "Via del Corso, 22")
+        self.assertEqual(p3.phone, 30003)
+        self.assertEqual(p3.card_id, 1002)
+        self.assertEqual(p3.group, self.g_s)
+
+        self.assertEqual(len(p3.operations), 1)
+        p3_h = p3.operations[0]
+        p3_d = p3_h.copy.get_doc()
+        self.assertEqual(p3_d.DocumentID, self.b2.DocumentID)
+        ret_time = bsystem.get_max_return_time(p3_h)
+        delay = (datetime.datetime.strptime(ret_time, "%Y-%m-%d").date() - datetime.date.today()).days
+        self.assertEqual(delay, 14)
+
 
     def test_case_7(self):
         self.test_case_1()
@@ -252,7 +288,6 @@ class TestCases2(unittest.TestCase):
                     self.assertFalse(have)
                     ret_time = bsystem.get_max_return_time(p1_h)
                     delay = datetime.datetime.strptime(ret_time, "%Y-%m-%d").date() - datetime.date.today()
-                    datetime.datetime.strptime(ret_time, "%Y-%m-%d").date()
                     self.assertEqual(delay.days, 7*p1_docs[p1_shd])
                     have = True
             self.assertTrue(have)
@@ -263,18 +298,6 @@ class TestCases2(unittest.TestCase):
         self.assertEqual(p2.phone, 30002)
         self.assertEqual(p2.card_id, 1001)
         self.assertEqual(p2.group, self.g_s)
-
-        # p2_checked_out = [p2_h.copy.get_doc() for p2_h in p2.operations]
-        # p2_docs = [self.b1, self.b2, self.av2]
-        # # documents which user should have
-        # for p2_shd in p2_docs:
-        #     # documents which user actually have
-        #     have = False
-        #     for p2_d in p2_checked_out:
-        #         if type(p2_d) == type(p2_shd) and p2_d.DocumentID == p2_shd.DocumentID:
-        #             self.assertFalse(have)
-        #             have = True
-        #     self.assertTrue(have)
 
         p2_operations = list(p2.operations)
         p2_docs = {self.b1: 3, self.b2: 2, self.av2: 2}
@@ -297,8 +320,25 @@ class TestCases2(unittest.TestCase):
         pass
 
     def test_case_9(self):
-        pass
+        self.test_case_1()
+
+        # simulate re-run
+        db_fname = "test_database.db"
+        db_config.init_db(db_fname)
+        db_config.create_tables()
+
+        b1 = doc_manager.Book.get_by_id(1)
+        self.assertEqual(len(doc_manager.Book.get_document_copies(b1)), 3)
+
+        b2 = doc_manager.Book.get_by_id(2)
+        self.assertEqual(len(doc_manager.Book.get_document_copies(b2)), 2)
+
+        b3 = doc_manager.Book.get_by_id(3)
+        self.assertEqual(len(doc_manager.Book.get_document_copies(b3)), 1)
+
+        u = user_manager.User.get_list(20, 1)
+        self.assertEqual(len(u), 3)
 
 
-
-
+if __name__ == '__main__':
+    unittest.main()
