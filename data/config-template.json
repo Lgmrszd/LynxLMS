@@ -2,17 +2,25 @@
     "first_run": true,
     "def_doc_types": {
         "Book": {
-            "edition": "str",
-            "publisher": "str",
-            "year": "int",
+            "fields": {
+                "edition": "str",
+                "publisher": "str",
+                "year": "int"
+            },
             "possible_keywords": "bestseller"
         },
         "Journal": {
-            "journal": "str",
-            "issue": "str",
-            "editor": "str"
+            "fields": {
+                "journal": "str",
+                "issue": "str",
+                "editor": "str"
+            },
+            "possible_keywords": ""
         },
-        "AV material": {}
+        "AV material": {
+            "fields": {},
+            "possible_keywords": ""
+        }
     },
     "def_groups": {
         "Faculty": {
