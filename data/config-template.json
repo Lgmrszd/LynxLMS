@@ -7,8 +7,12 @@
             "year": "int",
             "possible_keywords": "bestseller"
         },
-        "AV material": {
-        }
+        "Journal": {
+            "journal": "str",
+            "issue": "str",
+            "editor": "str"
+        },
+        "AV material": {}
     },
     "def_groups": {
         "Faculty": {

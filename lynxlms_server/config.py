@@ -53,7 +53,7 @@ def prepare(config):
     create_tables()
     for doc_type in config["def_doc_types"]:
         fields = json.dumps(config["def_doc_types"][doc_type])
-        doc_type_entry = DocType.create(ame=doc_type, fields=fields)
+        doc_type_entry = DocType.create(name=doc_type, fields=fields)
         doc_type_entry.save()
 
     for group in config["def_groups"]:
