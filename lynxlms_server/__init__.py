@@ -1,4 +1,4 @@
 from .lmsdb import BaseModel
-from .managers import Document
+from .managers import Document, DocType, Group
 
-__all__ = ["config", "BaseModel", "Document"]
+__all__ = ["config", "BaseModel", "Document", "DocType", "Group"]

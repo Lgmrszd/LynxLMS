@@ -52,7 +52,7 @@ def prepare(config):
     drop_tables()
     create_tables()
     for doc_type in config["def_doc_types"]:
-        fields = json.dumps(config["def_doc_types"][doc_type])
+        fields = json.dumps(config["def_doc_types"][doc_type]["fields"])
         doc_type_entry = DocType.create(name=doc_type, fields=fields)
         doc_type_entry.save()
 
@@ -68,6 +68,7 @@ def init_main():
         prepare(config)
         # config["first_run"] = False
         save_config(config)
+    init_db()
 
 
 
