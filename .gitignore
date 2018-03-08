@@ -106,8 +106,10 @@ ENV/
 #local testing
 loc_test/
 
-# Database
+# Data
 data/database.db
+data/lms_db.db
+data/config.json
 
 test.py
 

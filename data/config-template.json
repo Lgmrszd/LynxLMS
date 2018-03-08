@@ -1,0 +1,31 @@
+{
+    "first_run": true,
+    "def_doc_types": {
+        "Book": {
+            "edition": "str",
+            "publisher": "str",
+            "year": "int",
+            "possible_keywords": "bestseller"
+        },
+        "AV material": {
+        }
+    },
+    "def_groups": {
+        "Faculty": {
+            "Book": 28,
+            "AV material": 14
+        },
+        "Students": {
+            "Book": 21,
+            "AV material": 14
+        }
+    },
+    "rules": {
+        "*:*": {
+            "reference": -1
+        },
+        "!Faculty:Book": {
+            "bestseller": 14
+        }
+    }
+}
