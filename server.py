@@ -14,11 +14,14 @@ def main():
         year=1999
     )
     d.save()
-    print(d.get_main_fields())
-    print(d.get_additional_fields())
-    print("====")
-    print(d.get_main_fields_names())
-    print(d.get_additional_fields_names())
+    u = User.create(
+        name="Name",
+        surname="Surname",
+        address="Address",
+        phone=14241,
+        group=Group.get(Group.name == "Students")
+    )
+    u.save()
 
 
 if __name__ == '__main__':

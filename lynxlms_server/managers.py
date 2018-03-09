@@ -1,9 +1,11 @@
 from lynxlms_server import BaseModel
+from lynxlms_server.lmsdb import db
 import peewee as pw
 import json
 
 
 class DocType(BaseModel):
+    doc_type_id = pw.PrimaryKeyField()
     name = pw.CharField()
     fields = pw.CharField()
 
@@ -67,9 +69,46 @@ class Document(BaseModel):
 
 
 class Group(BaseModel):
-    groups_id = pw.PrimaryKeyField()
+    group_id = pw.PrimaryKeyField()
     name = pw.TextField()
     rules = pw.CharField()
 
 
-tables = [DocType, Document, Group]
+class User(BaseModel):
+    user_id = pw.PrimaryKeyField()
+    name = pw.CharField()
+    surname = pw.CharField()
+    address = pw.CharField()
+    phone = pw.BigIntegerField()
+    fine = pw.SmallIntegerField(default=0)
+    group = pw.ForeignKeyField(Group, related_name="users")
+    active = pw.BooleanField(default=True)
+
+
+class Copy(BaseModel):
+    copy_id = pw.PrimaryKeyField()
+    document_id = pw.ForeignKeyField(Document, related_name='copies')
+    active = pw.BooleanField(default=True)
+    checked_out = pw.BooleanField(default=False)
+    storage = pw.CharField(default='')
+
+
+class Librarian(BaseModel):
+    librarian_id = pw.PrimaryKeyField()
+    name = pw.CharField()
+    surname = pw.CharField()
+    password = pw.CharField()
+
+
+class Entry(BaseModel):
+    operations_id = pw.PrimaryKeyField()
+    user = pw.ForeignKeyField(User, related_name='operations')
+    copy = pw.ForeignKeyField(Copy, related_name='operations')
+    librarian_checked_out = pw.ForeignKeyField(Librarian, related_name='checked_out_entries')
+    librarian_returned = pw.ForeignKeyField(Librarian, related_name='returned_entries')
+    date_check_out = pw.DateField(formats='%Y-%m-%d')
+    date_deadline = pw.DateField(formats='%Y-%m-%d', null=True)
+    date_return = pw.DateField(formats='%Y-%m-%d', null=True)
+
+
+tables = [DocType, Document, Group, User, Copy, Librarian, Entry]

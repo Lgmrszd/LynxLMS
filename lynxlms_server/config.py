@@ -57,7 +57,9 @@ def prepare(config):
         doc_type_entry.save()
 
     for group in config["def_groups"]:
-        rules = json.dumps(config["def_groups"][group])
+        group_rules = config["def_groups"][group]
+        group_rules = {DocType.get(DocType.name == k).id: group_rules[k] for k in group_rules}
+        rules = json.dumps(group_rules)
         group_entry = Group.create(name=group, rules=rules)
         group_entry.save()
 
