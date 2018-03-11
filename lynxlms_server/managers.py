@@ -1,5 +1,4 @@
 from lynxlms_server import BaseModel
-from lynxlms_server.lmsdb import db
 import peewee as pw
 import json
 
@@ -84,6 +83,17 @@ class User(BaseModel):
     group = pw.ForeignKeyField(Group, related_name="users")
     active = pw.BooleanField(default=True)
 
+    def get_fields(self):
+        return {
+            "user_id": self.user_id,
+            "name": self.name,
+            "surname": self.surname,
+            "address": self.address,
+            "fine": self.fine,
+            "group": self.group.group_id,
+            "active": self.active
+        }
+
 
 class Copy(BaseModel):
     copy_id = pw.PrimaryKeyField()
@@ -93,22 +103,4 @@ class Copy(BaseModel):
     storage = pw.CharField(default='')
 
 
-class Librarian(BaseModel):
-    librarian_id = pw.PrimaryKeyField()
-    name = pw.CharField()
-    surname = pw.CharField()
-    password = pw.CharField()
-
-
-class Entry(BaseModel):
-    operations_id = pw.PrimaryKeyField()
-    user = pw.ForeignKeyField(User, related_name='operations')
-    copy = pw.ForeignKeyField(Copy, related_name='operations')
-    librarian_checked_out = pw.ForeignKeyField(Librarian, related_name='checked_out_entries')
-    librarian_returned = pw.ForeignKeyField(Librarian, related_name='returned_entries')
-    date_check_out = pw.DateField(formats='%Y-%m-%d')
-    date_deadline = pw.DateField(formats='%Y-%m-%d', null=True)
-    date_return = pw.DateField(formats='%Y-%m-%d', null=True)
-
-
-tables = [DocType, Document, Group, User, Copy, Librarian, Entry]
+managers_tables = [DocType, Document, Group, User, Copy]
