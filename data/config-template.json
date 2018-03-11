@@ -25,10 +25,12 @@
     "def_groups": {
         "Faculty": {
             "Book": 28,
+            "Journal": 14,
             "AV material": 14
         },
         "Students": {
             "Book": 21,
+            "Journal": 14,
             "AV material": 14
         }
     },
