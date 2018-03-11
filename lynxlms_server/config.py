@@ -2,7 +2,8 @@ import json
 from lynxlms_server.lmsdb import db
 from os import path, makedirs
 from shutil import copyfile
-from lynxlms_server.managers import *
+from lynxlms_server.managers import DocType, Group, managers_tables
+from lynxlms_server.booking_system import booking_system_tables
 
 DEF_DB_FILE = "./data/lms_db.db"
 DEF_CONFIG_FILE = "./data/config.json"
@@ -10,11 +11,11 @@ __DEF_CONFIG_TEMPLATE = "./data/config-template.json"
 
 
 def drop_tables():
-    db.drop_tables(tables, safe=True)
+    db.drop_tables(managers_tables + booking_system_tables, safe=True)
 
 
 def create_tables():
-    db.create_tables(tables, safe=True)
+    db.create_tables(managers_tables + booking_system_tables, safe=True)
 
 
 def init_db(db_filename=DEF_DB_FILE):
