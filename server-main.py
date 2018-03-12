@@ -13,14 +13,34 @@ class UsersListAPI(Resource):
         self.reqparse.add_argument('phone', type=int, location='json')
         self.reqparse.add_argument('fine', type=int, location='json')
         self.reqparse.add_argument('group', type=int, location='json')
-        self.reqparse.add_argument('active', type=bool, location='json')
+        self.reqparse.add_argument('page_size', type=int, location='json')
+        self.reqparse.add_argument('page', type=int, location='json')
         super(UsersListAPI, self).__init__()
 
-    def put(self, user_id):
-        pass
+    def get(self):
+        print("A")
+        args = self.reqparse.parse_args()
+        search_args = {k: v for k, v in args.items() if (v is not None) and (k not in ["page", "page_size"])}
+        if args["page"]:
+            page = args["page"]
+        else:
+            page = 1
+        if args["page_size"]:
+            page_size = args["page_size"]
+        else:
+            page_size = 15
+        print(page, page_size, search_args)
 
-    def delete(self, user_id):
-        pass
+    def post(self):
+        args = self.reqparse.parse_args()
+        create_args = {k: v for k, v in args.items() if (k not in ["page", "page_size", "fine"])}
+        for k, v in create_args.items():
+            if v == None:
+                abort(400)
+        print(create_args)
+        user = User.create(**create_args)
+        user_fields = user.get_fields()
+        return {"user": user_fields}, 201
 
 
 class UserAPI(Resource):
@@ -32,7 +52,6 @@ class UserAPI(Resource):
         self.reqparse.add_argument('phone', type=int, location='json')
         self.reqparse.add_argument('fine', type=int, location='json')
         self.reqparse.add_argument('group', type=int, location='json')
-        self.reqparse.add_argument('active', type=bool, location='json')
         super(UserAPI, self).__init__()
 
     def get(self, user_id):
@@ -42,7 +61,7 @@ class UserAPI(Resource):
             abort(404)
         user = User.get(User.user_id == user_id)
         user_fields = user.get_fields()
-        return user_fields
+        return {"user": user_fields}
 
     def put(self, user_id):
         try:
@@ -55,7 +74,16 @@ class UserAPI(Resource):
         User.update(**update_args).where(User.user_id == user_id).execute()
 
     def delete(self, user_id):
-        pass
+        try:
+            User.get(User.user_id == user_id)
+        except:   # TODO: specify error
+            abort(404)
+        user = User.get(User.user_id == user_id)
+        if not user.active:
+            abort(404)
+        user.active = False
+        user.save()
+        return {'result': True}
 
 
 def main():
@@ -81,6 +109,7 @@ def main():
     app = Flask(__name__)
     api = Api(app)
     api.add_resource(UserAPI, '/lynx_lms/api/users/<int:user_id>', endpoint='user')
+    api.add_resource(UsersListAPI, '/lynx_lms/api/users', endpoint='users')
     app.run(debug=True)
 
 
