@@ -1,6 +1,6 @@
 from lynxlms_server import *
-from flask import Flask, jsonify, abort, make_response
-from flask_restful import Api, Resource, reqparse, fields, marshal
+from flask import Flask, abort
+from flask_restful import Api, Resource, reqparse
 import peewee as pw
 
 
@@ -13,23 +13,31 @@ class UsersListAPI(Resource):
         self.reqparse.add_argument('phone', type=int, location='json')
         self.reqparse.add_argument('fine', type=int, location='json')
         self.reqparse.add_argument('group', type=int, location='json')
-        self.reqparse.add_argument('page_size', type=int, location='json')
+        self.reqparse.add_argument('size', type=int, location='json')
         self.reqparse.add_argument('page', type=int, location='json')
         super(UsersListAPI, self).__init__()
 
     def get(self):
-        print("A")
         args = self.reqparse.parse_args()
-        search_args = {k: v for k, v in args.items() if (v is not None) and (k not in ["page", "page_size"])}
+        search_args = {k: v for k, v in args.items() if (v is not None) and (k not in ["page", "size"])}
         if args["page"]:
             page = args["page"]
         else:
             page = 1
-        if args["page_size"]:
-            page_size = args["page_size"]
+        if args["size"]:
+            size = args["size"]
         else:
-            page_size = 15
-        print(page, page_size, search_args)
+            size = 15
+        query = User.select().where(User.group != 1).offset(0 + (page-1)*size).limit(size).order_by(User.name.asc())
+        res = []
+        for entry in query:
+            res.append(entry.get_fields())
+        to_return = {
+            "page": page,
+            "size": size,
+            "users": res
+        }
+        return to_return
 
     def post(self):
         args = self.reqparse.parse_args()
@@ -94,14 +102,15 @@ def main():
         password="Password"
     )
     l.save()
-    u = User.create(
-        name="Name",
-        surname="Surname",
-        address="Address",
-        phone=14241,
-        group=Group.get(Group.name == "Students")
-    )
-    u.save()
+    for i in range(60):
+        j = str(i)+" "
+        User.create(
+            name=j+"Name",
+            surname=j+"Surname",
+            address=j+"Address",
+            phone=14241,
+            group=Group.get(Group.name == "Students")
+        )
     # s = Session.create(
     #     librarian=l
     # )
