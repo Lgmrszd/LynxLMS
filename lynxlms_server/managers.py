@@ -89,6 +89,7 @@ class User(BaseModel):
             "name": self.name,
             "surname": self.surname,
             "address": self.address,
+            "phone": self.phone,
             "fine": self.fine,
             "group": self.group.group_id,
             "active": self.active
