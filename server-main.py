@@ -18,9 +18,6 @@ def tests():
             phone=14241,
             group=Group.get(Group.name == "Students")
         )
-    # Session.create(
-    #     librarian=l
-    # )
 
 
 def main():

@@ -28,7 +28,8 @@ class UsersListAPI(Resource):
             size = args["size"]
         else:
             size = 15
-        query = User.select().where(User.group != 1).offset(0 + (page-1)*size).limit(size).order_by(User.name.asc())
+        query = User.select()
+        query = query.offset(0 + (page-1)*size).limit(size).order_by(User.user_id.asc())
         res = []
         for entry in query:
             res.append(entry.get_fields())
@@ -41,7 +42,7 @@ class UsersListAPI(Resource):
 
     def post(self):
         args = self.reqparse.parse_args()
-        create_args = {k: v for k, v in args.items() if (k not in ["page", "page_size", "fine"])}
+        create_args = {k: v for k, v in args.items() if (k not in ["page", "size", "fine"])}
         for k, v in create_args.items():
             if v == None:
                 abort(400)
