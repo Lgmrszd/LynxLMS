@@ -28,7 +28,7 @@ def create_tables():
     #deleted_group = managers.group_manager.Group.get(managers.group_manager.Group.name == 'Deleted')
     deleted_group = len(managers.group_manager.Group.select().where(managers.group_manager.Group.name == 'Deleted'))
     if (deleted_group == 0):
-        managers.group_manager.Group.create(name='Deleted', book_ct=-1, book_bestseller_ct=-1, journal_ct=-1, av_ct=-1)
+        managers.group_manager.Group.create(name='Deleted', book_ct=-1, book_bestseller_ct=-1, journal_ct=-1, av_ct=-1, priority=-1)
 
 
 def drop_tables():
