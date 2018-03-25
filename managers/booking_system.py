@@ -33,7 +33,6 @@ class Queue(BaseModel):
     def push_to_queue(cls, doc, user):
         """Pushes user to queue for specific document
         """
-        #TODO : FIX PRIORITY!!!!!!!1111111
         #Check if user is already in queue
         docClass = doc_manager.class_to_name()[type(doc)]
         docId = doc.DocumentID
@@ -46,16 +45,12 @@ class Queue(BaseModel):
             print('Houston, we have a problem in booking system in push_to_queue')
             return None
         
-        return Queue.create(docClass=docClass, docId=docId , user=user, priority = 1)
+        return Queue.create(docClass=docClass, docId=docId , user=user, priority = user.group.priority)
     
     @classmethod
     def remove_from_queue(cls, doc):
         """Removes user from queue
         """
-        #res = self.get_from_queue(doc)
-        #Queue.delete().where(Queue.docClass == doc_manager.class_to_name()[type(doc)],
-        #                     Queue.docId == doc.DocumentID,
-        #                     Queue.active == True, Queue.user == res).execute()
         entry = cls.get_queue_entry(doc)
         if (entry == None):
             return None
@@ -93,12 +88,14 @@ class Queue(BaseModel):
     
     @classmethod
     def get_user_from_queue(cls, copy): #TODO : change copy to document!
+        """Get highest priority user from queue for document of specific copy and assign this copy to user
+        """
         doc = copy.get_doc()
         res = cls.get_queue_entry(doc)
         if (res == None):
             return None
-        current_date = datetime.date.today()
-        res.time_out = str(current_date)
+        time_out_date = datetime.date.today() + datetime.timedelta(days=1)
+        res.time_out = str(time_out_date)
         res.assigned_copy = copy
         res.active = False
         res.save()
@@ -108,6 +105,8 @@ class Queue(BaseModel):
     
     @classmethod
     def update_queue(cls):
+        """Update queue. Delete all overdue entries
+        """
         select_query = Queue.select().where(Queue.active == False)
         current_date = datetime.date.today()
         users = []
@@ -125,6 +124,8 @@ class Queue(BaseModel):
     
     @classmethod
     def red_button(cls, doc):
+        """Outstanding request to delete queue for specific document
+        """
         docClass = doc_manager.class_to_name()[type(doc)]
         docId = doc.DocumentID
         select_query = Queue.select().where(Queue.docClass == docClass, Queue.docId == docId)
@@ -176,11 +177,19 @@ class Booking_system:
             return (3, None)
         if 'reference' in doc.keywords:
             return (2, None)
-        
+
         for entry in self.get_user_history(user):
             if (entry.date_return == None and entry.copy.get_doc() == doc):
                 return (6, None)
         
+        #Check if copy reserved. If it is not reserved, method check_out_reserved returns error
+        #and checks out document otherwise
+        reserved = self.__check_out_reserved(doc, user, librarian)
+        if (reserved[0] == 0):
+            return reserved
+
+        #find copy that is not checked out
+        #TODO : replace with one query
         copies = doc.get_document_copies()
         for entry in copies:
             if (entry.checked_out == 0):
@@ -194,23 +203,21 @@ class Booking_system:
             return (6, None) #Already in the queue
         return (1, None)
     
-    def check_out_reserved(self, doc, user, librarian): #TODO : Add user to args. Rework remove from queue!!!
+    def __check_out_reserved(self, doc, user, librarian):
         """Checks out reserved copy of document
         """
-        #TODO : Find entry in queue with specific user and
-        
         docClass = doc_manager.class_to_name()[type(doc)]
         docId = doc.DocumentID
         ent = Queue.select().where(Queue.user == user,
                                    Queue.docClass == docClass, Queue.docId == docId,
                                    Queue.active == False)
         
-        if (user.group == group_manager.Group.get(group_manager.Group.name == 'Deleted')):
-            return (4, None)
-        if doc.active == False:
-            return (3, None)
-        if 'reference' in doc.keywords:
-            return (2, None)
+        # if (user.group == group_manager.Group.get(group_manager.Group.name == 'Deleted')):
+        #     return (4, None)
+        # if doc.active == False:
+        #     return (3, None)
+        # if 'reference' in doc.keywords:
+        #     return (2, None)
         if (len(ent) == 0):
             return (1, None) #Nothing to check out
         if (len(ent) > 1):
@@ -225,36 +232,8 @@ class Booking_system:
         res = History.create(user=user, copy=copy, librarian_co=librarian, date_check_out=current_date)
         ent.delete_instance()
         return(0, res)
-
-
-        # ##!
-        # copies = doc.get_document_copies()
-        # for copy in copies:
-        #     if (copy.checked_out == 1):
-        #         user = self.remove_from_queue(doc)
-
-        #         if (user.group == group_manager.Group.get(group_manager.Group.name == 'Deleted')):
-        #             return (4, None)
-        #         if doc.active == False:
-        #             return (3, None)
-        #         if 'reference' in doc.keywords:
-        #             return (2, None)
-                
-        #         #it is not possible that user already has copy, but just to ensure
-        #         for entry in self.get_user_history(user):
-        #             if (entry.date_return == None and entry.copy.get_doc() == doc):
-        #                 return (6, None)
-                
-        #         copy.check_out = 2
-        #         copy.save()
-        #         current_date = datetime.date.today()
-        #         res = History.create(user=user, copy=copy, librarian_co=librarian, date_check_out=current_date)
-        #         return(0, res)
-        
-        #return(1, None) #Nothing to check out
     
 
-    #TODO : ADD GET FROM QUEUE AND ASSIGN TO THIS USER
     def return_by_entry(self, entry, librarian):
         """Return copy by "History" entry
         """
@@ -272,11 +251,10 @@ class Booking_system:
         if queue_next == None:
             return 0
         #Inform user about free copy here <-
-        return 2 #assigned to someone in the queue
+        return 4 #assigned to someone in the queue
         
         
     
-    #TODO : ADD GET FROM QUEUE AND ASSIGN TO THIS USER
     def return_by_copy(self, copy, librarian):
         """Return copy
         """
