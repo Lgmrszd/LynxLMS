@@ -156,7 +156,8 @@ class Copy(BaseModel):
     docClass = pw.CharField()
     docId = pw.IntegerField()
     active = pw.BooleanField(default=True)
-    checked_out = pw.BooleanField(default=False)
+    #checked_out = pw.BooleanField(default=False)
+    checked_out = pw.SmallIntegerField(default=0) #0 - not cheked out, 1 - reserved, 2 - checked out
     storage = pw.CharField(default='')
 
     def get_doc(self):
@@ -170,7 +171,7 @@ class Copy(BaseModel):
         return cls.get(CopyID = copy_id)
 
     @classmethod
-    def add(cls, doc):
+    def add(cls, doc, storage=''):
         """Add copy of specific document
         """
         #Activate document if it is deactivated
