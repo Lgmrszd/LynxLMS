@@ -13,10 +13,10 @@ class Group(BaseModel):
     priority = SmallIntegerField()
     fields = {"name": name,
               "book_ct": book_ct,
-              "book_bt": book_bestseller_ct,
+              "book_bestseller_ct": book_bestseller_ct,
               "journal_ct": journal_ct,
               "av_ct": av_ct,
-              "proiority": priority}
+              "priority": priority}
 
     @classmethod
     def get_by_id(cls, g_id):

@@ -126,11 +126,11 @@ class ManageGroupsWindow(QWidget):
         for i in range(0, len(self.list)):
             self.result_table.setItem(i, 0, QTableWidgetItem(str(self.list[i].id)))
             self.result_table.setItem(i, 1, QTableWidgetItem(self.list[i].name))
-            self.result_table.setItem(i, 2, QTableWidgetItem(self.list[i].book_ct))
-            self.result_table.setItem(i, 3, QTableWidgetItem(self.list[i].book_bestseller_ct))
+            self.result_table.setItem(i, 2, QTableWidgetItem(str(self.list[i].book_ct)))
+            self.result_table.setItem(i, 3, QTableWidgetItem(str(self.list[i].book_bestseller_ct)))
             self.result_table.setItem(i, 4, QTableWidgetItem(str(self.list[i].journal_ct)))
             self.result_table.setItem(i, 5, QTableWidgetItem(str(self.list[i].av_ct)))
-            self.result_table.setItem(i, 6, QTableWidgetItem(self.list[i].priority))
+            self.result_table.setItem(i, 6, QTableWidgetItem(str(self.list[i].priority)))
         for i in range(len(self.list), 15):
             self.result_table.setItem(i, 0, QTableWidgetItem(""))
             self.result_table.setItem(i, 1, QTableWidgetItem(""))

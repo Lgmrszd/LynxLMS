@@ -84,9 +84,9 @@ class AddGroup(QWidget):
         dic = dict()
         dic["name"] = self.name_edit.text()
         dic["book_ct"] = int(self.book_ct_edit.text())
-        dic["book_bestseller_ct"] = int(self.book_bt_edit.text())
+        dic["book_bestseller_ct"] = int(self.book_bestseller_ct_edit.text())
         dic["journal_ct"] = int(self.journal_ct_edit.text())
-        dic["av_ct"] = int(self.av_ct_ct_edit.text())
+        dic["av_ct"] = int(self.av_ct_edit.text())
         dic["priority"] = int(self.priority_edit.text())
 
         Group.add(dic)
