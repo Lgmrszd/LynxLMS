@@ -15,7 +15,8 @@ class Group(BaseModel):
               "book_ct": book_ct,
               "book_bt": book_bestseller_ct,
               "journal_ct": journal_ct,
-              "av_ct": av_ct}
+              "av_ct": av_ct,
+              "proiority": priority}
 
     @classmethod
     def get_by_id(cls, g_id):
