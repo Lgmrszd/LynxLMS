@@ -3,7 +3,12 @@ from db_connect import BaseModel
 import sys
 import inspect
 
-
+#OUTSTANDING REQUEST
+#it is on document
+#need to track it
+#if people for whom this outstanding request have made take a book, the request is canceled
+#queue is removed
+#during request people can't renew
 class Document(BaseModel):
     """Base data model for all document classes
     """
@@ -13,6 +18,7 @@ class Document(BaseModel):
     cost = pw.IntegerField()
     keywords = pw.CharField()
     active = pw.BooleanField(default=True)
+    requested = pw.BooleanField(default=False)
 
     def get_document_copies(self):
         """Get list of copies of speciific document
@@ -23,6 +29,14 @@ class Document(BaseModel):
         for entry in query:
             res.append(entry)
         return res
+
+    def enable_request(self):
+        self.requested = True
+        self.update()
+    
+    def cancel_request(self):
+        self.requested = False
+        self.update()
 
     @classmethod
     def get_by_id(cls, doc_id):
