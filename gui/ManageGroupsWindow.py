@@ -3,6 +3,7 @@ from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel, QGroupBox
 from gui.UserInfo import UserInfo
 from managers.user_manager import User
 from managers.group_manager import Group
+from gui.GroupInfo import GroupInfo
 
 
 class ManageGroupsWindow(QWidget):
