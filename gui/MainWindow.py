@@ -3,7 +3,9 @@ from PyQt5.QtWidgets import QWidget, QDesktopWidget, QPushButton, QVBoxLayout, Q
 from gui.SearchWindow import SearchWindow
 from gui.AddDocument import AddDocument
 from gui.AddUser import AddUser
+from gui.AddGroup import AddGroup
 from gui.ManageUsersWindow import ManageUsersWindow
+from gui.ManageGroupsWindow import ManageGroupsWindow
 from gui.HistoryWindow import HistoryWindow
 
 
@@ -15,8 +17,10 @@ class MainWindow(QWidget):
         self.search_window = SearchWindow(self._s_copy_changed, self)
         self.history_window = HistoryWindow(self._h_copy_changed)
         self.manage_users = ManageUsersWindow()
+        self.manage_groups = ManageGroupsWindow()
         self.add_documents = []
         self.add_users = []
+        self.add_groups = []
         self._set_up_ui()
 
     def _h_copy_changed(self, copy_id):
@@ -47,6 +51,14 @@ class MainWindow(QWidget):
         search_button.setFixedHeight(30)
         search_button.clicked.connect(self.switch_search_window)
 
+        manage_groups_button = QPushButton("Manage groups")
+        manage_groups_button.setFixedHeight(30)
+        manage_groups_button.clicked.connect(self.open_groups_window)
+
+        add_group_button = QPushButton("Add group")
+        add_group_button.setFixedHeight(30)
+        add_group_button.clicked.connect(self.open_add_group)
+
         manage_users_button = QPushButton("Manage users")
         manage_users_button.setFixedHeight(30)
         manage_users_button.clicked.connect(self.open_manage_users_window)
@@ -68,6 +80,8 @@ class MainWindow(QWidget):
         vbox.addLayout(hbox)
         vbox.addWidget(search_button)
         vbox.addWidget(add_document_button)
+        vbox.addWidget(manage_groups_button)
+        vbox.addWidget(add_group_button)
         vbox.addWidget(manage_users_button)
         vbox.addWidget(add_user_button)
         vbox.addWidget(history_button)
@@ -120,3 +134,14 @@ class MainWindow(QWidget):
             self.history_window.show()
         else:
             self.history_window.hide()
+
+    def open_groups_window(self):
+        if self.manage_groups.isHidden():
+            self.manage_groups.show()
+        else:
+            self.manage_groups.hide()
+
+    def open_add_group(self):
+        add_group = AddGroup()
+        add_group.show()
+        self.add_groups.append(add_group)

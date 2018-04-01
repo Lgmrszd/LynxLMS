@@ -1,6 +1,8 @@
 import peewee as pw
 from managers.group_manager import Group
 from db_connect import BaseModel
+import managers.doc_manager as doc_manager
+import datetime
 
 
 class User(BaseModel):
@@ -35,6 +37,28 @@ class User(BaseModel):
     @classmethod
     def remove(cls, card_id):
         """Remove excising user from database"""
+        #Delete entries in queues
+        current_user = cls.get_by_id(card_id)
+        Queue.delete().where(Queue.user == current_user, Queue.active == True).execute()
+        select_query = Queue.select().where(Queue.user == current_user)
+        for entry in select_query:
+            copy = entry.assigned_copy
+            copy.checked_out = 0
+            copy.save()
+            #Maybe inform user at this point
+        Queue.delete().where(Queue.user == current_user).execute()
+        #Cancel outstanding request
+        select_query = Request.select().where(Request.user == current_user, Request.active == True)
+        for entry in select_query:
+            #Check if it is only active entry in requests with such document and cancel request
+            if (len(Request.select().where(Request.docClass == entry.docClass,
+                                           Request.docId == entry.docId,
+                                           Request.active == True)) == 1):
+                #getting document from request entry
+                doc = doc_manager.name_to_class()[entry.docClass].get_by_id(entry.docId)
+                doc.cancel_request()
+        Request.update(active=False).where(Request.user == current_user, Request.active == True).execute() #Possible bug here!
+        #Deleting user (moving to group deleted)
         deleted = Group.get_deleted()
         cls.edit(card_id, {"group": deleted})
 
@@ -57,3 +81,187 @@ class User(BaseModel):
             res.append(entry)
         return res
 
+
+class Queue(BaseModel):
+    """Data model for document queue
+    """
+    QueueID = pw.PrimaryKeyField()
+    user = pw.ForeignKeyField(User, related_name='queue')
+    priority = pw.SmallIntegerField()
+    docClass = pw.CharField()
+    docId = pw.IntegerField()
+    assigned_copy = pw.ForeignKeyField(doc_manager.Copy, related_name='reserved', null=True)
+    time_out = pw.DateField(formats='%Y-%m-%d', null=True)
+    active = pw.BooleanField(default=True) #if user is in queue    
+    
+    @classmethod
+    def push_to_queue(cls, doc, user):
+        """Pushes user to queue for specific document
+        """
+        #Check if user is already in queue
+        docClass = doc_manager.class_to_name()[type(doc)]
+        docId = doc.DocumentID
+        select_query = Queue.select().where(Queue.user == user, Queue.active == True,
+                                            Queue.docClass == docClass,
+                                            Queue.docId == docId)
+        if (len(select_query) == 1):
+            return None
+        elif (len(select_query) > 1):
+            print('Houston, we have a problem in booking system in push_to_queue')
+            return None
+        
+        return Queue.create(docClass=docClass, docId=docId , user=user, priority = user.group.priority)
+    
+    @classmethod
+    def remove_from_queue(cls, doc):
+        """Removes user from queue
+        """
+        entry = cls.get_queue_entry(doc)
+        if (entry == None):
+            return None
+        res = entry.user
+        entry.delete_instance()
+        return res
+    
+    @classmethod
+    def get_queue_entry(cls, doc):
+        """Gets entry from queue.
+        """
+        #Find earliest with higher prority
+        select_query = Queue.select(Queue.priority).where(Queue.docClass == doc_manager.class_to_name()[type(doc)],
+                                                    Queue.docId == doc.DocumentID, Queue.active == True).distinct()
+        #if queue is empty
+        if (len(select_query) == 0):
+            return None
+        #Find max priority
+        max_priority = -1
+        for entry in select_query:
+            if (entry.priority > max_priority): #possible bug due to no entries
+                max_priority = entry.priority
+        
+        print(max_priority)
+
+        docClass = doc_manager.class_to_name()[type(doc)]
+        docId = doc.DocumentID
+
+        entry = Queue.select().where(Queue.docClass == docClass, Queue.docId == docId,
+                               Queue.priority == max_priority, Queue.active == True).get() #check if return least id
+        #TODO : Try to optimize
+        return entry
+    
+    @classmethod
+    def get_user_from_queue(cls, copy):
+        """Get highest priority user from queue for document of specific copy and assign this copy to user
+        """
+        doc = copy.get_doc()
+        res = cls.get_queue_entry(doc)
+        if (res == None):
+            return None
+        time_out_date = datetime.date.today() + datetime.timedelta(days=1)
+        res.time_out = str(time_out_date)
+        res.assigned_copy = copy
+        res.active = False
+        res.save()
+        copy.checked_out = 1
+        copy.save()
+        return res.user
+    
+    @classmethod
+    def update_queue(cls):
+        """Update queue. Delete all overdue entries
+        """
+        select_query = Queue.select().where(Queue.active == False)
+        current_date = datetime.date.today()
+        users = []
+        for entry in select_query:
+            time_out_date = datetime.datetime.strptime(entry.time_out,'%Y-%m-%d')
+            if (current_date >= time_out_date):
+                #inform user here
+                users.append(entry.user)
+                copy = entry.assigned_copy 
+                if (cls.get_user_from_queue(copy) == None):
+                    copy.checked_out = 0
+                    copy.save()
+                entry.delete_instance()
+        return users
+    
+    @classmethod
+    def red_button(cls, doc):   #TODO : HERE IS A BUG
+        """Outstanding request to delete queue for specific document
+        """
+        docClass = doc_manager.class_to_name()[type(doc)]
+        docId = doc.DocumentID
+        select_query = Queue.select().where(Queue.docClass == docClass, Queue.docId == docId)
+        users = []
+        #TODO : Replace code below with 2-3 queries!!!
+        for entry in select_query:
+            users.append(entry.user) #inform user
+            entry.delete_instance()
+        copies = doc.get_document_copies()
+        res = []
+        for copy in copies:
+            if (copy.checked_out == 1):
+                copy.check_out = 0
+                copy.save()
+                res.append(copy)
+        return res
+
+class Request(BaseModel):
+    request_id = pw.PrimaryKeyField()
+    user = pw.ForeignKeyField(User, related_name='requests')
+    #doc = pw.ForeignKeyField(doc_manager.Document, related_name='requests')
+    docClass = pw.CharField()
+    docId = pw.IntegerField()
+    date = pw.DateField(formats = '%Y-%m-%d')
+    librarian = pw.CharField()
+    active = pw.BooleanField(default=True)
+
+    @classmethod
+    def place_request(cls, user, doc, librarian):
+        """Place outstanding request for certain user for certain document"""
+        if (user.group == Group.get(Group.name == 'Deleted')):
+            return 4
+        if doc.active == False:
+            return 3
+        if 'reference' in doc.keywords:
+            return 2
+
+        for entry in cls.get_user_history(user):
+            if (entry.date_return == None and entry.copy.get_doc() == doc):
+                return 6
+        
+        doc.enable_request()
+        current_date = datetime.date.today()
+        docClass = doc_manager.class_to_name()[type(doc)]
+        docId = doc.DocumentID
+        cls.create(user=user, docClass=docClass, docId=docId, date = str(current_date), librarian=librarian)
+        Queue.red_button(doc)
+        return 0
+    
+    @classmethod
+    def close_request(cls, user, doc, librarian):
+        """Close outstanding request for certain user and document"""
+        docClass = doc_manager.class_to_name()[type(doc)]
+        docId = doc.DocumentID
+        entry = Request.select().where(Request.user == user, Request.docClass == docClass,
+                                       Request.docId == docId, Request.active == True)
+        if (entry.count() > 1):
+            print("Houston, check close_request in Request")
+            return 1
+        if (entry.count() == 0):
+            return 1
+        entry = entry.get()
+        entry.active = False
+        entry.save()
+        if (len(Request.select().where(Request.docClass == docClass, Request.docId == docId,
+                                       Request.active == True)) == 0):
+            doc.cancel_request()
+        return 0
+
+    @classmethod
+    def get_user(cls, doc):
+        """Get user from outstanding request for certain document"""
+        entry = Request.select().where(Request.doc == doc, Request.active == True)
+        if (len(entry) == 0):
+            return None
+        return entry.get()

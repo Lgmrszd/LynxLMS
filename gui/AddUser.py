@@ -22,11 +22,19 @@ class AddUser(QWidget):
         address_label.setFixedWidth(60)
         phone_label = QLabel("phone")
         phone_label.setFixedWidth(60)
+        group_label = QLabel("group")
+        group_label.setFixedWidth(60)
 
         self.name_edit = QLineEdit()
         self.surname_edit = QLineEdit()
         self.address_edit = QLineEdit()
         self.phone_edit = QLineEdit()
+        self.group_combo_box = QComboBox()
+
+        items = []
+        for item in Group.get_list(12345, 1):
+            items.append(item.name)
+        self.group_combo_box.addItems(items)
 
         add_button = QPushButton("Add")
         add_button.setFixedWidth(90)
@@ -52,6 +60,8 @@ class AddUser(QWidget):
         phone_layout.addWidget(self.phone_edit)
 
         group_layout = QHBoxLayout()
+        group_layout.addWidget(group_label)
+        group_layout.addWidget(self.group_combo_box)
 
         add_button_layout = QHBoxLayout()
         add_button_layout.addStretch()
@@ -61,6 +71,7 @@ class AddUser(QWidget):
         vbox.addLayout(surname_layout)
         vbox.addLayout(address_layout)
         vbox.addLayout(phone_layout)
+        vbox.addLayout(group_layout)
         vbox.addLayout(add_button_layout)
 
         self.setLayout(vbox)
@@ -68,22 +79,12 @@ class AddUser(QWidget):
         self.setWindowTitle("Add user")
 
     def add_user(self):
-        group = Group.add(
-            {
-                "name":"Group",
-                "book_ct":2,
-                "book_bestseller_ct":1,
-                "journal_ct":2,
-                "av_ct":2
-            }
-        )
-
         dic = dict()
         dic["name"] = self.name_edit.text()
         dic["surname"] = self.surname_edit.text()
         dic["address"] = self.address_edit.text()
         dic["phone"] = int(self.phone_edit.text())
-        dic["group"] = group
+        dic["group"] = Group.get(Group.name == self.group_combo_box.currentText())
 
         User.add(dic)
         self.close()
