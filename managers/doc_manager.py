@@ -32,11 +32,11 @@ class Document(BaseModel):
 
     def enable_request(self):
         self.requested = True
-        self.update()
+        self.save()
     
     def cancel_request(self):
         self.requested = False
-        self.update()
+        self.save()
 
     @classmethod
     def get_by_id(cls, doc_id):
