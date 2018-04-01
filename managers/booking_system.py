@@ -104,7 +104,7 @@ class Booking_system:
         entry.copy.save()
         entry.user.fine += self.check_overdue(entry)
         entry.user.save()
-        if (entry.copy.get_doc().request == True):
+        if (entry.copy.get_doc().requested == True):
             doc = entry.copy.get_doc()
             user = Request.get_user(doc)
             self.check_out(doc, user, librarian)
@@ -133,14 +133,14 @@ class Booking_system:
             return(1, None)
         if (self.check_overdue(entry) != 0):
             return(2, None)
-        if (entry.copy.get_doc().request == True):
+        if (entry.copy.get_doc().requested == True):
             return(3, None)
         current_date = datetime.date.today()
         entry.date_return = str(current_date)
         entry.librarian_re = librarian
         entry.save()
         res = History.create(user=entry.user, copy=entry.entry, librarian_co=librarian, 
-                             date_check_out=current_date, renew=True)
+                             date_check_out=current_date, renewed=True)
         return(0, res)
 
     def renew_by_copy(self, copy, librarian):
@@ -153,14 +153,35 @@ class Booking_system:
         entry = query.get()
         return self.return_by_entry(entry, librarian)
     
-    def outstanding_request(self, doc, users, librarian): #TODO : FIX BUG!!! POSSIBLE THAT AFTER RED BUTTON THERE WILL BE FREE COPIES!!!!!!
-        """Places outstanding request for certain document for list of users"""
-        res = []
-        for user in users:
-            res.append(Request.place_request(doc, user, librarian))
-        #Remove everybody from queue
+    def outstanding_request(self, doc, users, librarian):
+        """Places outstanding request for certain document for list of users.
+        Returns (code, list of 'check outs' if there were free copies after removing queue, waiting list)"""
+        #Check if there is available copy
+        copies = doc.get_document_copies()
+        available_copies = []
+        #TODO : replace the following loop with one query
+        for copy in copies:
+            if (copy.checked_out == 0):
+                available_copies.append(copy)
+        if (len(available_copies) > 0):
+            return (1, None, None)
         Queue.red_button(doc)
-        return (0, res)
+        copies = doc.get_document_copies()  #update copies
+        user_idx = 0
+        received_copies = []    #List of users, who received copies after this method executed
+        waiting_copies = []     #List of users, who are waiting for copies
+        #if we have free copies after deleting queue, check out to users who are in request
+        for copy in copies:
+            if (copy.checked_out == 0):
+                received_copies.append(self.check_out(doc, users[user_idx], librarian))
+                user_idx += 1
+                if (user_idx == len(users)): 
+                    break
+        #Placing requests
+        users = users[user_idx:]
+        for user in users:
+            waiting_copies.append(Request.place_request(doc, user, librarian))
+        return (0, received_copies, waiting_copies)
 
     def get_list(self, rows_number, page, opened=0):
         """Returns a content from certain page of history check out
@@ -226,13 +247,14 @@ class Booking_system:
                                        int(date_splitted[1]),
                                        int(date_splitted[2]))
         user = entry.user
+        doc = entry.copy.get_doc()
         date_return = None
 
         period = 7 * 2 #Some default period
-        if (entry.renew == False):
-            period = user.group.get_checkout_time() * 7
+        if (entry.renewed == False):
+            period = user.group.get_checkout_time(doc) * 7
         else:
-            period = user.group.get_renew_time() * 7
+            period = user.group.get_renew_time(doc) * 7
         
         date_return = date_check_out + datetime.timedelta(days=period)
         return str(date_return)
@@ -241,10 +263,11 @@ class Booking_system:
         """Returns fine for overdue (0 if no fine)
         """
         period = 7 * 2 #Some default period
-        if (entry.renew == False):
-            period = entry.user.group.get_checkout_time() * 7
+        doc = entry.copy.get_doc()
+        if (entry.renewed == False):
+            period = entry.user.group.get_checkout_time(doc) * 7
         else:
-            period = entry.user.group.get_renew_time() * 7
+            period = entry.user.group.get_renew_time(doc) * 7
         date_return = entry.date_return
         if (date_return == None):   #if we are trying to check open entry
             date_return = str(datetime.date.today())
