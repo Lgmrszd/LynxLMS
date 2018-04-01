@@ -151,7 +151,7 @@ class Booking_system:
         if (len(query) > 1):
             return (5, None)
         entry = query.get()
-        return self.return_by_entry(entry, librarian)
+        return self.renew_by_entry(entry, librarian)
     
     def outstanding_request(self, doc, users, librarian):
         """Places outstanding request for certain document for list of users.
