@@ -6,6 +6,7 @@ import managers.doc_manager as doc_manager
 import datetime
 from managers.user_manager import Queue as Queue
 from managers.user_manager import Request as Request
+import managers.notifier
 
 
 class History(BaseModel):
@@ -114,6 +115,9 @@ class Booking_system:
         if queue_next == None:
             return 0
         #Inform user about free copy here <-
+        text = "Dear %s,\nQueued document \"%s\" for you is ready.\n"\
+               % (queue_next.name + " " + queue_next.surname, entry.copy.get_doc().title)
+        managers.notifier.send_message(entry.user.email, "Document queue abandoned", text)
         return 4 #assigned to someone in the queue
         
     def return_by_copy(self, copy, librarian):
