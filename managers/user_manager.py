@@ -139,8 +139,6 @@ class Queue(BaseModel):
             if (entry.priority > max_priority): #possible bug due to no entries
                 max_priority = entry.priority
         
-        print(max_priority)
-
         docClass = doc_manager.class_to_name()[type(doc)]
         docId = doc.DocumentID
 
@@ -186,7 +184,7 @@ class Queue(BaseModel):
         return users
     
     @classmethod
-    def red_button(cls, doc):   #TODO : HERE IS A BUG
+    def red_button(cls, doc):
         """Outstanding request to delete queue for specific document
         """
         docClass = doc_manager.class_to_name()[type(doc)]
@@ -201,7 +199,7 @@ class Queue(BaseModel):
         res = []
         for copy in copies:
             if (copy.checked_out == 1):
-                copy.check_out = 0
+                copy.checked_out = 0
                 copy.save()
                 res.append(copy)
         return res
@@ -209,7 +207,6 @@ class Queue(BaseModel):
 class Request(BaseModel):
     request_id = pw.PrimaryKeyField()
     user = pw.ForeignKeyField(User, related_name='requests')
-    #doc = pw.ForeignKeyField(doc_manager.Document, related_name='requests')
     docClass = pw.CharField()
     docId = pw.IntegerField()
     date = pw.DateField(formats = '%Y-%m-%d')
@@ -217,7 +214,7 @@ class Request(BaseModel):
     active = pw.BooleanField(default=True)
 
     @classmethod
-    def place_request(cls, user, doc, librarian):
+    def place_request(cls, doc, user, librarian):
         """Place outstanding request for certain user for certain document"""
         if (user.group == Group.get(Group.name == 'Deleted')):
             return 4
@@ -226,7 +223,7 @@ class Request(BaseModel):
         if 'reference' in doc.keywords:
             return 2
 
-        for entry in cls.get_user_history(user):
+        for entry in user.operations:
             if (entry.date_return == None and entry.copy.get_doc() == doc):
                 return 6
         
@@ -235,7 +232,7 @@ class Request(BaseModel):
         docClass = doc_manager.class_to_name()[type(doc)]
         docId = doc.DocumentID
         cls.create(user=user, docClass=docClass, docId=docId, date = str(current_date), librarian=librarian)
-        Queue.red_button(doc)
+        #Queue.red_button(doc)
         return 0
     
     @classmethod
@@ -261,7 +258,10 @@ class Request(BaseModel):
     @classmethod
     def get_user(cls, doc):
         """Get user from outstanding request for certain document"""
-        entry = Request.select().where(Request.doc == doc, Request.active == True)
+        docClass = doc_manager.class_to_name()[type(doc)]
+        docId = doc.DocumentID
+        entry = Request.select().where(Request.docClass == docClass, Request.docId == docId,
+                                       Request.active == True)
         if (len(entry) == 0):
             return None
-        return entry.get()
+        return entry.get().user
