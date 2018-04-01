@@ -53,15 +53,15 @@ class CopyInfo(QWidget):
         edit_button.setFixedHeight(25)
         edit_button.clicked.connect(self.edit)
 
-        book_button = QPushButton("Check out")
-        book_button.setFixedWidth(90)
-        book_button.setFixedHeight(25)
-        book_button.clicked.connect(self.check_out)
-
         return_button = QPushButton("Return copy")
         return_button.setFixedWidth(90)
         return_button.setFixedHeight(25)
         return_button.clicked.connect(self.return_book)
+
+        renew = QPushButton("Renew")
+        renew.setFixedWidth(90)
+        renew.setFixedHeight(25)
+        renew.clicked.connect(self.renew)
 
         if self.copy.active:
             self.delete_button = QPushButton("Delete")
@@ -75,8 +75,8 @@ class CopyInfo(QWidget):
         add_button_layout.addStretch()
         add_button_layout.addWidget(self.delete_button)
         add_button_layout.addWidget(edit_button)
+        add_button_layout.addWidget(renew)
         add_button_layout.addWidget(return_button)
-        add_button_layout.addWidget(book_button)
         vbox.addLayout(add_button_layout)
 
         self.setLayout(vbox)
@@ -123,34 +123,11 @@ class CopyInfo(QWidget):
         self.table.setItem(row, 1, QTableWidgetItem(str(int(self.his[row].user.card_id))))
         self.table.setItem(row, 2, QTableWidgetItem(str(self.his[row].date_check_out)))
         self.table.setItem(row, 3, QTableWidgetItem(str(self.his[row].librarian_co)))
-        self.table.setItem(row, 4, QTableWidgetItem(str(self.his[row].date_return)))
+        if self.his[row].date_return is None:
+            self.table.setItem(row, 4, QTableWidgetItem(str(self.bs.get_max_return_time(self.his[row]))))
+        else:
+            self.table.setItem(row, 4, QTableWidgetItem(str(self.his[row].date_return)))
         self.table.setItem(row, 5, QTableWidgetItem(str(self.his[row].librarian_re)))
-
-    def check_out(self):
-        id, okPressed = QInputDialog.getInt(self, "User", "User card ID")
-        if not okPressed:
-            return
-        usr = None
-        try:
-            usr = User.get_by_id(id)
-        except:
-            msg = QMessageBox()
-            msg.setText("Invalid user card")
-            msg.exec_()
-            return
-        (err, res) = self.bs.check_out(usr, self.copy, gui.MainWindow.MainWindow.librarian)
-        if err > 0:
-            msg = QMessageBox()
-            msgs = {6: "User already have copy of this document",
-                    4: "User is deleted", 3: "Copy is not active", 2: "Copy is referenced",
-                    1: "Copy is already checked out"}
-            msg.setText(msgs[err])
-            msg.exec_()
-            return
-        self.his = self.bs.get_copy_history(self.copy)
-        self.table.setRowCount(len(self.his))
-        self._row_update(len(self.his)-1)
-        self._on_edit()
 
     def update(self):
         self.copy = Copy.get_by_id(self.copy.CopyID)
@@ -199,6 +176,22 @@ class CopyInfo(QWidget):
                 Copy.restore(self.copy.CopyID)
             self._on_edit()
             self.close()
+
+    def renew(self):
+        (err, res) = self.bs.renew_by_copy(self.copy, gui.MainWindow.MainWindow.librarian)
+        if err > 0:
+            msg = QMessageBox()
+            msgs = {5: "Internal error",
+                    4: "Copy is not checked out", 3: "Document is requested", 2: "Copy is overdue",
+                    1: "Copy is not checked out"}
+            msg.setText(msgs[err])
+            msg.exec_()
+            return
+        self.his = self.bs.get_copy_history(self.copy)
+        self.table.setRowCount(len(self.his))
+        self._row_update(len(self.his) - 2)
+        self._row_update(len(self.his) - 1)
+        self._on_edit()
 
     def edit(self):
         # ToDo edit copy?
