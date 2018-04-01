@@ -20,6 +20,7 @@ class User(BaseModel):
               "surname": surname,
               "address": address,
               "phone": phone,
+              "email": email,
               "fine": fine,
               "group": group}
 
@@ -186,6 +187,11 @@ class Queue(BaseModel):
             time_out_date = datetime.datetime.strptime(entry.time_out,'%Y-%m-%d')
             if (current_date >= time_out_date):
                 #inform user here
+                doc_class = doc_manager.name_to_class()[entry.docClass]
+                doc = doc_class.get_by_id(entry.docId)
+                text = "Dear %s,\nYour request for document %s is overdue and has been removed"\
+                       % (entry.user.name + " " + entry.user.surname, doc.title)
+                managers.notifier.send_message(entry.user.email, "Removed from queue", text)
                 users.append(entry.user)
                 copy = entry.assigned_copy 
                 if (cls.get_user_from_queue(copy) == None):
