@@ -139,7 +139,7 @@ class Booking_system:
         entry.date_return = str(current_date)
         entry.librarian_re = librarian
         entry.save()
-        res = History.create(user=entry.user, copy=entry.entry, librarian_co=librarian, 
+        res = History.create(user=entry.user, copy=entry.copy, librarian_co=librarian, 
                              date_check_out=current_date, renewed=True)
         return(0, res)
 
