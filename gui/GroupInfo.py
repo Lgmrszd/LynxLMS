@@ -37,6 +37,14 @@ class GroupInfo(QWidget):
         journal_ct_label.setFixedWidth(100)
         av_ct_label = QLabel("av_ct : ")
         av_ct_label.setFixedWidth(100)
+        book_rt_label = QLabel("book_rt : ")
+        book_rt_label.setFixedWidth(100)
+        book_bestseller_rt_label = QLabel("book_bestseller_rt : ")
+        book_bestseller_rt_label.setFixedWidth(100)
+        journal_rt_label = QLabel("journal_rt : ")
+        journal_rt_label.setFixedWidth(100)
+        av_rt_label = QLabel("av_rt : ")
+        av_rt_label.setFixedWidth(100)
         priority_label = QLabel("priority : ")
         priority_label.setFixedWidth(100)
 
@@ -50,6 +58,14 @@ class GroupInfo(QWidget):
         self.journal_ct_label.setText(str(self.group.journal_ct))
         self.av_ct_label = QLabel()
         self.av_ct_label.setText(str(self.group.av_ct))
+        self.book_rt_label = QLabel()
+        self.book_rt_label.setText(str(self.group.book_rt))
+        self.book_bestseller_rt_label = QLabel()
+        self.book_bestseller_rt_label.setText(str(self.group.book_bestseller_rt))
+        self.journal_rt_label = QLabel()
+        self.journal_rt_label.setText(str(self.group.journal_rt))
+        self.av_rt_label = QLabel()
+        self.av_rt_label.setText(str(self.group.av_rt))
         self.priority_label = QLabel()
         self.priority_label.setText(str(self.group.priority))
 
@@ -85,6 +101,22 @@ class GroupInfo(QWidget):
         av_ct_layout.addWidget(av_ct_label)
         av_ct_layout.addWidget(self.av_ct_label)
 
+        book_rt_layout = QHBoxLayout()
+        book_rt_layout.addWidget(book_rt_label)
+        book_rt_layout.addWidget(self.book_rt_label)
+
+        book_bestseller_rt_layout = QHBoxLayout()
+        book_bestseller_rt_layout.addWidget(book_bestseller_rt_label)
+        book_bestseller_rt_layout.addWidget(self.book_bestseller_rt_label)
+
+        journal_rt_layout = QHBoxLayout()
+        journal_rt_layout.addWidget(journal_rt_label)
+        journal_rt_layout.addWidget(self.journal_rt_label)
+
+        av_rt_layout = QHBoxLayout()
+        av_rt_layout.addWidget(av_rt_label)
+        av_rt_layout.addWidget(self.av_rt_label)
+
         priority_layout = QHBoxLayout()
         priority_layout.addWidget(priority_label)
         priority_layout.addWidget(self.priority_label)
@@ -99,6 +131,10 @@ class GroupInfo(QWidget):
         vbox.addLayout(book_bestseller_ct_layout)
         vbox.addLayout(journal_ct_layout)
         vbox.addLayout(av_ct_layout)
+        vbox.addLayout(book_rt_layout)
+        vbox.addLayout(book_bestseller_rt_layout)
+        vbox.addLayout(journal_rt_layout)
+        vbox.addLayout(av_rt_layout)
         vbox.addLayout(priority_layout)
         vbox.addLayout(buttons_layout)
 
