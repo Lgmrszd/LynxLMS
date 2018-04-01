@@ -39,7 +39,6 @@ class User:
             setattr(user, k, v)
         return user
 
-
     @classmethod
     def _post_user(cls, args):
         response = requests.post("%s/lynx_lms/api/users" % _url, headers=_headers, json=args)
@@ -47,6 +46,16 @@ class User:
         if response.status_code != 201:
             raise TypeError
         return result["user"]
+
+    def post_user(self):
+        result = self._post_user({
+            "name": self.name,
+            "surname": self.surname,
+            "address": self.address,
+            "phone": self.phone,
+            "group": self.group
+        })
+        return result
 
 
 if __name__ == '__main__':
@@ -58,6 +67,6 @@ if __name__ == '__main__':
         phone=1234,
         group=1
     )
-    print(u.name, u.user_id)
+    u.post_user()
     u1 = User.get_user_by_id(30)
     print(u1.name, u1.user_id)
