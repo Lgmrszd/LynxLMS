@@ -4,26 +4,22 @@ from email.mime.text import MIMEText
 import config
 
 
-
-# msg = MIMEMultipart()
-# msg['From'] = fromaddr
-# msg['To'] = toaddr
-# msg['Subject'] = "Привет от питона"
-#
-# body = "Это пробный текст сообщения"
-# msg.attach(MIMEText(body, 'plain'))
-#
-# server = smtplib.SMTP('smtp.gmail.com', 587)
-# server.starttls()
-# server.login(fromaddr, mypass)
-# text = msg.as_string()
-# server.sendmail(fromaddr, toaddr, text)
-# server.quit()
+__email_settings = config.get_email_credentials()
+__address = __email_settings["email"]
+__password = __email_settings["pass"]
 
 
-class Notifier:
-    def __init__(self):
-        email_settings = config.get_email_credentials()
-        self.address = email_settings["email"]
-        self.password = email_settings["pass"]
+def send_message(email, subj, body):
+    msg = MIMEMultipart()
+    msg['From'] = __address
+    msg['To'] = email
+    msg['Subject'] = subj
+    msg.attach(MIMEText(body, 'plain'))
+
+    server = smtplib.SMTP('smtp.gmail.com', 587)
+    server.starttls()
+    server.login(__address, __password)
+    text = msg.as_string()
+    server.sendmail(__address, email, text)
+    server.quit()
 

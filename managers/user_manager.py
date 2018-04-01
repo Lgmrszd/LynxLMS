@@ -3,6 +3,7 @@ from managers.group_manager import Group
 from db_connect import BaseModel
 import managers.doc_manager as doc_manager
 import datetime
+import managers.notifier
 
 
 class User(BaseModel):
@@ -12,6 +13,7 @@ class User(BaseModel):
     surname = pw.CharField()
     address = pw.CharField()
     phone = pw.BigIntegerField()
+    email = pw.CharField()
     fine = pw.SmallIntegerField(default=0)
     group = pw.ForeignKeyField(Group, related_name="users")
     fields = {"name": name,
@@ -203,6 +205,9 @@ class Queue(BaseModel):
         #TODO : Replace code below with 2-3 queries!!!
         for entry in select_query:
             users.append(entry.user) #inform user
+            text = "Dear %s,\nQueue for the document \"%s\" have been abandoned due to outstanding request.\n"\
+                   % (entry.user.name + " " + entry.user.surname, doc.title)
+            managers.notifier.send_message(entry.user.email, "Document queue abandoned", text)
             entry.delete_instance()
         copies = doc.get_document_copies()
         res = []
