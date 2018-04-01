@@ -33,6 +33,8 @@ class AddUser(QWidget):
 
         items = []
         for item in Group.get_list(12345, 1):
+            if item.name == "Deleted":
+                continue
             items.append(item.name)
         self.group_combo_box.addItems(items)
 
