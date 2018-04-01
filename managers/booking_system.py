@@ -139,7 +139,7 @@ class Booking_system:
         entry.date_return = str(current_date)
         entry.librarian_re = librarian
         entry.save()
-        res = History.create(user=entry.user, copy=entry.entry, librarian_co=librarian, 
+        res = History.create(user=entry.user, copy=entry.copy, librarian_co=librarian, 
                              date_check_out=current_date, renewed=True)
         return(0, res)
 
@@ -151,7 +151,7 @@ class Booking_system:
         if (len(query) > 1):
             return (5, None)
         entry = query.get()
-        return self.return_by_entry(entry, librarian)
+        return self.renew_by_entry(entry, librarian)
     
     def outstanding_request(self, doc, users, librarian):
         """Places outstanding request for certain document for list of users.

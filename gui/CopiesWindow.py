@@ -67,8 +67,14 @@ class CopiesWindow(QWidget):
         add_button.setFixedHeight(25)
         add_button.clicked.connect(self.add_copy)
 
+        book_button = QPushButton("Check out")
+        book_button.setFixedWidth(90)
+        book_button.setFixedHeight(25)
+        book_button.clicked.connect(self.check_out)
+
         edit_button_layout = QHBoxLayout()
         edit_button_layout.addStretch()
+        edit_button_layout.addWidget(book_button)
         edit_button_layout.addWidget(add_button)
         vbox.addLayout(edit_button_layout)
 
@@ -123,3 +129,39 @@ class CopiesWindow(QWidget):
         for i in self.edits:
             i.close()
         ev.accept()
+
+    def check_out(self):
+        id, okPressed = QInputDialog.getInt(self, "User", "User card ID")
+        if not okPressed:
+            return
+        usr = None
+        try:
+            usr = User.get_by_id(id)
+        except:
+            msg = QMessageBox()
+            msg.setText("Invalid user card")
+            msg.exec_()
+            return
+        (err, res) = self.bs.check_out(self.doc, usr, gui.MainWindow.MainWindow.librarian)
+        if err > 0:
+            msg = QMessageBox()
+            msgs = {6: "User already has copy of this document",
+                    4: "User is deleted", 3: "Document is not active", 2: "Document is referenced",
+                    1: "There is no available copy"}
+            msg.setText(msgs[err])
+            msg.exec_()
+            return
+
+        for i in self.edits:
+            if i.copy.CopyID == res.copy.CopyID:
+                i.his = i.bs.get_copy_history(i.copy)
+                i.table.setRowCount(len(i.his))
+                i._row_update(len(i.his) - 1)
+                i._on_edit()
+                return
+
+        # if we do not have window we should manually update the state
+        for i in range(len(self.cl)):
+            if self.cl[i].CopyID == res.copy.CopyID:
+                self._copy_edited(i)
+                return

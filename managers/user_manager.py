@@ -218,6 +218,33 @@ class Queue(BaseModel):
                 res.append(copy)
         return res
 
+    @classmethod
+    def get_list(cls, rows_number, page, active=0): #TODO : rework arguments
+        """Returns a content from certain page of waiting list (queue)
+        Active - active=1, Not active - active=-1, All - active=0
+        """
+        select_query = None
+        if (active == 0):
+            select_query = cls.select()
+            query = select_query.offset(0 + (page-1)*rows_number).limit(rows_number).order_by(Queue.priority.asc(), Queue.QueueID.asc())
+        elif (active == 1):
+            select_query = cls.select().where(cls.active == True)
+            query = select_query.offset(0 + (page-1)*rows_number).limit(rows_number).order_by(Queue.priority.asc(), Queue.QueueID.asc())
+        elif (active == -1):
+            select_query = cls.select().where(cls.active == False)
+            query = select_query.offset(0 + (page-1)*rows_number).limit(rows_number).order_by(Queue.priority.asc(), Queue.QueueID.asc())
+        else:
+            return([], 0)
+        res = []
+        for entry in query:
+            res.append(entry)
+        #Counting number of pages
+        page_number = int(select_query.count()) // rows_number
+        if (select_query.count() % rows_number > 0):
+            page_number += 1
+        return res, page_number
+    
+
 class Request(BaseModel):
     request_id = pw.PrimaryKeyField()
     user = pw.ForeignKeyField(User, related_name='requests')
@@ -279,3 +306,30 @@ class Request(BaseModel):
         if (len(entry) == 0):
             return None
         return entry.get().user
+    
+    @classmethod
+    def get_list(cls, rows_number, page, active=0): #TODO : rework arguments
+        """Returns a content from certain page of requests list
+        Active - active=1, Not active - active=-1, All - active=0
+        """
+        select_query = None
+        if (active == 0):
+            select_query = cls.select()
+            query = select_query.offset(0 + (page-1)*rows_number).limit(rows_number)
+        elif (active == 1):
+            select_query = cls.select().where(cls.active == True)
+            query = select_query.offset(0 + (page-1)*rows_number).limit(rows_number)
+        elif (active == -1):
+            select_query = cls.select().where(cls.active == False)
+            query = select_query.offset(0 + (page-1)*rows_number).limit(rows_number)
+        else:
+            return([], 0)
+        res = []
+        for entry in query:
+            res.append(entry)
+        #Counting number of pages
+        page_number = int(select_query.count()) // rows_number
+        if (select_query.count() % rows_number > 0):
+            page_number += 1
+        return res, page_number
+    

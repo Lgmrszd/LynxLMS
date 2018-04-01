@@ -26,6 +26,7 @@ class BookEdit(QWidget):
         dic = type(self.doc).get_fields_dict()
         dic.pop("DocumentID")
         dic.pop("active")
+        dic.pop("requested")
 
         for i in dic:
             line_item = QLineEdit()
