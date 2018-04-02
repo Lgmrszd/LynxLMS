@@ -181,7 +181,8 @@ class CopyInfo(QWidget):
         (err, res) = self.bs.renew_by_copy(self.copy, gui.MainWindow.MainWindow.librarian)
         if err > 0:
             msg = QMessageBox()
-            msgs = {5: "Internal error",
+            msgs = {6: "Copy has already been renewed",
+                    5: "Internal error",
                     4: "Copy is not checked out", 3: "Document is requested", 2: "Copy is overdue",
                     1: "Copy is not checked out"}
             msg.setText(msgs[err])
