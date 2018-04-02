@@ -24,12 +24,16 @@ class AddUser(QWidget):
         phone_label.setFixedWidth(60)
         group_label = QLabel("group")
         group_label.setFixedWidth(60)
+        mail_label = QLabel("email")
+        mail_label.setFixedWidth(60)
 
         self.name_edit = QLineEdit()
         self.surname_edit = QLineEdit()
         self.address_edit = QLineEdit()
         self.phone_edit = QLineEdit()
+        self.mail_edit = QLineEdit()
         self.group_combo_box = QComboBox()
+
 
         items = []
         for item in Group.get_list(12345, 1):
@@ -61,6 +65,10 @@ class AddUser(QWidget):
         phone_layout.addWidget(phone_label)
         phone_layout.addWidget(self.phone_edit)
 
+        mail_layout = QHBoxLayout()
+        mail_layout.addWidget(mail_label)
+        mail_layout.addWidget(self.mail_edit)
+
         group_layout = QHBoxLayout()
         group_layout.addWidget(group_label)
         group_layout.addWidget(self.group_combo_box)
@@ -73,6 +81,7 @@ class AddUser(QWidget):
         vbox.addLayout(surname_layout)
         vbox.addLayout(address_layout)
         vbox.addLayout(phone_layout)
+        vbox.addLayout(mail_layout)
         vbox.addLayout(group_layout)
         vbox.addLayout(add_button_layout)
 
@@ -86,6 +95,7 @@ class AddUser(QWidget):
         dic["surname"] = self.surname_edit.text()
         dic["address"] = self.address_edit.text()
         dic["phone"] = int(self.phone_edit.text())
+        dic["email"] = self.mail_edit.text()
         dic["group"] = Group.get(Group.name == self.group_combo_box.currentText())
 
         User.add(dic)

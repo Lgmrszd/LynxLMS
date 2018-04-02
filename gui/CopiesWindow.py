@@ -147,7 +147,7 @@ class CopiesWindow(QWidget):
             msg = QMessageBox()
             msgs = {6: "User already has copy of this document",
                     4: "User is deleted", 3: "Document is not active", 2: "Document is referenced",
-                    1: "There is no available copy"}
+                    1: "User has been added to the queue"}
             msg.setText(msgs[err])
             msg.exec_()
             return

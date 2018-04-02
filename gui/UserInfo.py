@@ -53,6 +53,7 @@ class UserInfo(QWidget):
         self.user_id = QLabel("ID: " + str(self.userObj.card_id))
         self.address_label = QLabel("Address: " + str(self.userObj.address))
         self.phone_label = QLabel("Phone: " + str(self.userObj.phone))
+        self.mail_label = QLabel("Email: " + str(self.userObj.email))
 
         edit_button = QPushButton("Edit")
         edit_button.setFixedWidth(90)
@@ -93,6 +94,10 @@ class UserInfo(QWidget):
         phone_layout.addWidget(self.phone_label)
         phone_layout.addStretch()
 
+        mail_layout = QHBoxLayout()
+        mail_layout.addWidget(self.mail_label)
+        mail_layout.addStretch()
+
         last_layout = QHBoxLayout()
         last_layout.addStretch()
         last_layout.addWidget(self.delete_button)
@@ -106,6 +111,7 @@ class UserInfo(QWidget):
         vbox.addLayout(id_layout)
         vbox.addLayout(address_layout)
         vbox.addLayout(phone_layout)
+        vbox.addLayout(mail_layout)
         vbox.addWidget(history_table_group)
         vbox.addLayout(last_layout)
 
