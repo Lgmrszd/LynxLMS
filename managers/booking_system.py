@@ -139,6 +139,8 @@ class Booking_system:
             return(2, None)
         if (entry.copy.get_doc().requested == True):
             return(3, None)
+        if (entry.renewed == True):
+            return(6, None)
         current_date = datetime.date.today()
         entry.date_return = str(current_date)
         entry.librarian_re = librarian
