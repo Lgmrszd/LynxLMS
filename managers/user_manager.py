@@ -184,7 +184,7 @@ class Queue(BaseModel):
         current_date = datetime.date.today()
         users = []
         for entry in select_query:
-            time_out_date = datetime.datetime.strptime(entry.time_out,'%Y-%m-%d')
+            time_out_date = datetime.datetime.strptime(entry.time_out,'%Y-%m-%d').date()
             if (current_date >= time_out_date):
                 #inform user here
                 doc_class = doc_manager.name_to_class()[entry.docClass]
