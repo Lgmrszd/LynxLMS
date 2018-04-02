@@ -225,19 +225,21 @@ class Queue(BaseModel):
         return res
 
     @classmethod
-    def get_list(cls, rows_number, page, active=0): #TODO : rework arguments
+    def get_list(cls, doc, rows_number, page, active=0): #TODO : rework arguments
         """Returns a content from certain page of waiting list (queue)
         Active - active=1, Not active - active=-1, All - active=0
         """
+        docClass = doc_manager.class_to_name()[type(doc)]
+        docId = doc.DocumentID
         select_query = None
         if (active == 0):
-            select_query = cls.select()
-            query = select_query.offset(0 + (page-1)*rows_number).limit(rows_number).order_by(Queue.priority.asc(), Queue.QueueID.asc())
+            select_query = cls.select().where(cls.docClass == docClass, cls.docId == docId)
+            query = select_query.offset(0 + (page-1)*rows_number).limit(rows_number).order_by(Queue.priority.asc(), Queue.QueueID.asc(), Queue.active.asc())
         elif (active == 1):
-            select_query = cls.select().where(cls.active == True)
+            select_query = cls.select().where(cls.active == True, cls.docClass == docClass, cls.docId == docId)
             query = select_query.offset(0 + (page-1)*rows_number).limit(rows_number).order_by(Queue.priority.asc(), Queue.QueueID.asc())
         elif (active == -1):
-            select_query = cls.select().where(cls.active == False)
+            select_query = cls.select().where(cls.active == False, cls.docClass == docClass, cls.docId == docId)
             query = select_query.offset(0 + (page-1)*rows_number).limit(rows_number).order_by(Queue.priority.asc(), Queue.QueueID.asc())
         else:
             return([], 0)
