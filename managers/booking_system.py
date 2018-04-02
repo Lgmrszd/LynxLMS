@@ -58,7 +58,7 @@ class Booking_system:
                 return (0, res)
         res = Queue.push_to_queue(doc, user)
         if (res == None):
-            return (6, None) #Already in the queue
+            return (7, None) #Already in the queue
         return (1, None)
     
     def __check_out_reserved(self, doc, user, librarian):
