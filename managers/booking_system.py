@@ -109,6 +109,8 @@ class Booking_system:
         return self.proceed_free_copy(copy, librarian)
         
     def proceed_free_copy(self, copy, librarian):
+        """Proceed free copy. Assign to people in the queue or check out if it is requested
+        """
         if (copy.get_doc().requested == True):
             doc = copy.get_doc()
             user = Request.get_user(doc)
