@@ -2,6 +2,7 @@ import peewee as pw
 from db_connect import BaseModel
 import sys
 import inspect
+import managers.booking_system
 
 #OUTSTANDING REQUEST
 #it is on document
@@ -188,11 +189,15 @@ class Copy(BaseModel):
     def add(cls, doc, storage=''):
         """Add copy of specific document
         """
+        res = cls.create(docClass = class_to_name()[type(doc)], docId = doc.DocumentID)
         #Activate document if it is deactivated
         if (doc.active == False):
             doc.active = True
             doc.save()
-        return cls.create(docClass = class_to_name()[type(doc)], docId = doc.DocumentID)
+        bs = managers.booking_system.Booking_system()
+        code = bs.proceed_free_copy(res, 'System')
+        return (code, res)
+        #return res
     
     @classmethod
     def edit_storage(cls, copy_id, new_storage):
