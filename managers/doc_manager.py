@@ -2,7 +2,7 @@ import peewee as pw
 from db_connect import BaseModel
 import sys
 import inspect
-import managers.booking_system
+#import managers.booking_system
 
 #OUTSTANDING REQUEST
 #it is on document
@@ -194,10 +194,10 @@ class Copy(BaseModel):
         if (doc.active == False):
             doc.active = True
             doc.save()
-        bs = managers.booking_system.Booking_system()
-        code = bs.proceed_free_copy(res, 'System')
-        return (code, res)
-        #return res
+        #bs = managers.booking_system.Booking_system()
+        #code = bs.proceed_free_copy(res, 'System')
+        #return (code, res)
+        return res
     
     @classmethod
     def edit_storage(cls, copy_id, new_storage):
