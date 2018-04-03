@@ -105,21 +105,25 @@ class Booking_system:
         entry.copy.save()
         entry.user.fine += self.check_overdue(entry)
         entry.user.save()
-        if (entry.copy.get_doc().requested == True):
-            doc = entry.copy.get_doc()
+        copy = doc_manager.Copy.get_by_id(entry.copy.CopyID)
+        return self.proceed_free_copy(copy, librarian)
+        
+    def proceed_free_copy(self, copy, librarian):
+        if (copy.get_doc().requested == True):
+            doc = copy.get_doc()
             user = Request.get_user(doc)
             self.check_out(doc, user, librarian)
             Request.close_request(user, doc, librarian)
             return 5
-        queue_next = Queue.get_user_from_queue(entry.copy)
+        queue_next = Queue.get_user_from_queue(copy)
         if queue_next == None:
             return 0
         #Inform user about free copy here <-
         text = "Dear %s,\nQueued document \"%s\" for you is ready.\n"\
-               % (queue_next.name + " " + queue_next.surname, entry.copy.get_doc().title)
-        managers.notifier.send_message(entry.user.email, "Document queue abandoned", text)
+               % (queue_next.name + " " + queue_next.surname, copy.get_doc().title)
+        managers.notifier.send_message(queue_next.email, "Document queue abandoned", text)
         return 4 #assigned to someone in the queue
-        
+
     def return_by_copy(self, copy, librarian):
         """Return copy
         """
