@@ -159,7 +159,7 @@ class Booking_system:
         entry = query.get()
         return self.renew_by_entry(entry, librarian)
     
-    def outstanding_request(self, doc, users, librarian):
+    def __outstanding_request_old(self, doc, users, librarian):
         """Places outstanding request for certain document for list of users.
         Returns (code, list of 'check outs' if there were free copies after removing queue, waiting list)"""
         #Check if there is available copy
@@ -189,6 +189,32 @@ class Booking_system:
             waiting_copies.append(Request.place_request(doc, user, librarian))
         return (0, received_copies, waiting_copies)
 
+    def outstanding_request(self, doc, user, librarian):
+        """Places outstanding request for certain document for list of users.
+        Returns (code, history entry (if there was free copy after queue abandon) or request entry)"""
+        #If any request for this document exists, cancel it
+        entry = Request.get_user(doc)
+        if (entry != None):
+            entry.active = False
+            entry.save()
+            if (Request.get_user(doc) != None):
+                print('Houston, we have a problems. Outstanding request, booking system')
+        #Check if there is available copy
+        copies = doc.get_document_copies()
+        for copy in copies:
+            if (copy.checked_out == 0):
+                return(2, None)
+        Queue.red_button(doc)
+        copies = doc.get_document_copies()  #update copies
+        #if we have free copies after deleting queue, check out to users who are in request
+        for copy in copies:
+            if (copy.checked_out == 0):
+                res = self.check_out(doc, user,librarian)
+                return(1, res)
+        #Placing requests
+        res = Request.place_request(doc, user, librarian)
+        return (0, res)
+    
     def get_list(self, rows_number, page, opened=0):
         """Returns a content from certain page of history check out
         Overdue opened=2, Opened - opened=1, All - opened=0, Closed - opened=-1
