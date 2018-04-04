@@ -193,7 +193,7 @@ class TestCases2(unittest.TestCase):
         self.assertEqual(overdue_fine, overdue_fine_expected)
 
         # s
-        overdue_fine_expected = {(self.d1, 7, 700), (self.d2, 21, 1700)}
+        overdue_fine_expected = {(self.d1, 7, 700), (self.d2, 14, 1400)}
         operations = list(self.s.operations)
         self.assertEqual(len(operations), 2)
         overdue_fine = set()
@@ -201,12 +201,10 @@ class TestCases2(unittest.TestCase):
             date_return = self.bsystem.get_max_return_time(c)
             delay = (datetime.date.today() - datetime.datetime.strptime(date_return, "%Y-%m-%d").date()).days
             overdue_fine.add((c.copy.get_doc(), max(0, delay), self.bsystem.check_overdue(c)))
-        print(overdue_fine)
         self.assertEqual(overdue_fine, overdue_fine_expected)
 
-        # TODO: FIX
         # v
-        # overdue_fine_expected = {(self.d1, 7, 700), (self.d2, 21, 1700)}
+        overdue_fine_expected = {(self.d1, 21, 2100), (self.d2, 21, 1700)}
         operations = list(self.v.operations)
         self.assertEqual(len(operations), 2)
         overdue_fine = set()
@@ -214,32 +212,102 @@ class TestCases2(unittest.TestCase):
             date_return = self.bsystem.get_max_return_time(c)
             delay = (datetime.date.today() - datetime.datetime.strptime(date_return, "%Y-%m-%d").date()).days
             overdue_fine.add((c.copy.get_doc(), max(0, delay), self.bsystem.check_overdue(c)))
-        print(overdue_fine)
-        # self.assertEqual(overdue_fine, overdue_fine_expected)
+        self.assertEqual(overdue_fine, overdue_fine_expected)
 
     def test_case_3(self):
         self.prepare_database()
 
-        # check out d1
-        res = self.bsystem.check_out(self.d1, self.p1, "Librarian")
-        self.assertEqual(res[0], 0)
-        # (act like it checkouted 4 weeks ago)
-        c = res[1]
-        c.date_check_out = str(datetime.date.fromordinal(c.date_check_out.toordinal()-4))
-        c.save()
-        self.bsystem.renew_by_entry(c, "Librarian_2")
+        # checkout 4 days ago and renew today
+        def check_out_old_renew_today(d, p):
+            res = self.bsystem.check_out(d, p, "Librarian")
+            self.assertEqual(res[0], 0)
+            # (act like it checkouted 4 days ago)
+            c = res[1]
+            c.date_check_out = str(datetime.date.fromordinal(c.date_check_out.toordinal()-4))
+            c.save()
+            # renew today
+            self.bsystem.renew_by_entry(c, "Librarian_2")
 
-        res = self.bsystem.check_out(self.d2, self.s, "Librarian")
-        self.assertEqual(res[0], 0)
-        c = res[1]
-        c.date_check_out = str(datetime.date.fromordinal(c.date_check_out.toordinal()-4))
-        c.save()
+        # check out d1 to p1
+        check_out_old_renew_today(self.d1, self.p1)
 
-        res = self.bsystem.check_out(self.d2, self.v, "Librarian")
+        # check out d2 to s
+        check_out_old_renew_today(self.d2, self.s)
+
+        # check out d2 to v
+        check_out_old_renew_today(self.d2, self.v)
+
+        #####
+
+        # p1
+        doc_date_expected = (self.d1, datetime.date.fromordinal(datetime.date.today().toordinal()+4*7))
+        operations = list(self.p1.operations.where(booking_system.History.date_return.is_null(True)))
+        self.assertEqual(len(operations), 1)
+        c = operations[0]
+        doc_date = (c.copy.get_doc(), datetime.datetime.strptime(self.bsystem.get_max_return_time(c), "%Y-%m-%d").date())
+        self.assertEqual(doc_date, doc_date_expected)
+
+        # s
+        doc_date_expected = (self.d2, datetime.date.fromordinal(datetime.date.today().toordinal()+2*7))
+        operations = list(self.s.operations.where(booking_system.History.date_return.is_null(True)))
+        self.assertEqual(len(operations), 1)
+        c = operations[0]
+        doc_date = (c.copy.get_doc(), datetime.datetime.strptime(self.bsystem.get_max_return_time(c), "%Y-%m-%d").date())
+        self.assertEqual(doc_date, doc_date_expected)
+
+        # v
+        doc_date_expected = (self.d2, datetime.date.fromordinal(datetime.date.today().toordinal()+7))
+        operations = list(self.v.operations.where(booking_system.History.date_return.is_null(True)))
+        self.assertEqual(len(operations), 1)
+        c = operations[0]
+        doc_date = (c.copy.get_doc(), datetime.datetime.strptime(self.bsystem.get_max_return_time(c), "%Y-%m-%d").date())
+        self.assertEqual(doc_date, doc_date_expected)
+
+    def test_case_4(self):
+        self.prepare_database()
+
+        # checkout 4 days ago and renew today
+        def check_out_old_renew_today(d, p):
+            res = self.bsystem.check_out(d, p, "Librarian")
+            self.assertEqual(res[0], 0)
+            # (act like it checkouted 4 days ago)
+            c = res[1]
+            c.date_check_out = str(datetime.date.fromordinal(c.date_check_out.toordinal()-4))
+            c.save()
+            # renew today
+            self.bsystem.renew_by_entry(c, "Librarian_2")
+
+        # check out d1 to p1
+        check_out_old_renew_today(self.d1, self.p1)
+
+        # check out d2 to s
+        check_out_old_renew_today(self.d2, self.s)
+
+        # check out d2 to v
+        check_out_old_renew_today(self.d2, self.v)
+
+        ###
+
+        # self.bsystem.outstanding_request(self.d2, self.p1)
+
+    def test_case_5(self):
+        self.prepare_database()
+
+        # check out d3 to p1
+        res = self.bsystem.check_out(self.d3, self.p1, "Librarian")
         self.assertEqual(res[0], 0)
-        c = res[1]
-        c.date_check_out = str(datetime.date.fromordinal(c.date_check_out.toordinal()-4))
-        c.save()
+
+        # check out d3 to s
+        res = self.bsystem.check_out(self.d3, self.s, "Librarian")
+        self.assertEqual(res[0], 0)
+
+        # check out d3 to v
+        res = self.bsystem.check_out(self.d3, self.v, "Librarian")
+        self.assertEqual(res[0], 1)
+
+        d3_waiting_list = user_manager.Queue.get_list(self.d3, 10, 1)[0]
+        self.assertEqual(len(d3_waiting_list), 1)
+        # self.assertEqual(d3_waiting_list[0], self.d3)
 
 
 if __name__ == '__main__':
