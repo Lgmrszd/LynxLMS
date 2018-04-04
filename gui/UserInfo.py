@@ -1,13 +1,15 @@
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel, QPushButton, QMessageBox, QTableWidget, \
-    QGroupBox, QTableWidgetItem, QAbstractItemView
+    QGroupBox, QTableWidgetItem, QAbstractItemView, QInputDialog
 from managers.user_manager import User
 from gui.UserEdit import UserEdit
 from managers.booking_system import Booking_system
 
 
 class UserInfo(QWidget):
-    def __init__(self, userObj):
+    def __init__(self, userObj, upd_fine):
         super().__init__()
+        self.upd_fine = upd_fine
+        self.bs = Booking_system()
         self.userObj = userObj
         self.user_edit = UserEdit(self.userObj)
         self._set_up_ui()
@@ -65,6 +67,11 @@ class UserInfo(QWidget):
         self.delete_button.setFixedHeight(25)
         self.delete_button.clicked.connect(self.delete_user)
 
+        fine_button = QPushButton("Pay fine")
+        fine_button.setFixedWidth(90)
+        fine_button.setFixedHeight(25)
+        fine_button.clicked.connect(self.pay_fine)
+
         history = Booking_system().get_user_history(self.userObj)
         self.history_table = QTableWidget()
         self.history_table.setRowCount(len(history))
@@ -102,6 +109,7 @@ class UserInfo(QWidget):
         last_layout.addStretch()
         last_layout.addWidget(self.delete_button)
         last_layout.addWidget(edit_button)
+        last_layout.addWidget(fine_button)
 
         history_table_group = QGroupBox()
         table_layout = QVBoxLayout()
@@ -132,3 +140,10 @@ class UserInfo(QWidget):
         self.address_label.setText("Address: " + str(self.userObj.address))
         self.phone_label.setText("Phone: " + str(self.userObj.phone))
         self.setWindowTitle(self.userObj.name + " " + self.userObj.surname + " information")
+
+    def pay_fine(self):
+        mo, okPressed = QInputDialog.getInt(self, "Amount", "How much")
+        if not okPressed:
+            return
+        self.bs.pay_fine(self.userObj, mo)
+        self.upd_fine()
