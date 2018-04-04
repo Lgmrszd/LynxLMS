@@ -105,21 +105,27 @@ class Booking_system:
         entry.copy.save()
         entry.user.fine += self.check_overdue(entry)
         entry.user.save()
-        if (entry.copy.get_doc().requested == True):
-            doc = entry.copy.get_doc()
+        copy = doc_manager.Copy.get_by_id(entry.copy.CopyID)
+        return self.proceed_free_copy(copy, librarian)
+        
+    def proceed_free_copy(self, copy, librarian):
+        """Proceed free copy. Assign to people in the queue or check out if it is requested
+        """
+        if (copy.get_doc().requested == True):
+            doc = copy.get_doc()
             user = Request.get_user(doc)
             self.check_out(doc, user, librarian)
             Request.close_request(user, doc, librarian)
             return 5
-        queue_next = Queue.get_user_from_queue(entry.copy)
+        queue_next = Queue.get_user_from_queue(copy)
         if queue_next == None:
             return 0
         #Inform user about free copy here <-
         text = "Dear %s,\nQueued document \"%s\" for you is ready.\n"\
-               % (queue_next.name + " " + queue_next.surname, entry.copy.get_doc().title)
-        managers.notifier.send_message(entry.user.email, "Document queue abandoned", text)
+               % (queue_next.name + " " + queue_next.surname, copy.get_doc().title)
+        managers.notifier.send_message(queue_next.email, "Document queue abandoned", text)
         return 4 #assigned to someone in the queue
-        
+
     def return_by_copy(self, copy, librarian):
         """Return copy
         """
@@ -159,7 +165,7 @@ class Booking_system:
         entry = query.get()
         return self.renew_by_entry(entry, librarian)
     
-    def outstanding_request(self, doc, users, librarian):
+    def __outstanding_request_old(self, doc, users, librarian):
         """Places outstanding request for certain document for list of users.
         Returns (code, list of 'check outs' if there were free copies after removing queue, waiting list)"""
         #Check if there is available copy
@@ -189,6 +195,32 @@ class Booking_system:
             waiting_copies.append(Request.place_request(doc, user, librarian))
         return (0, received_copies, waiting_copies)
 
+    def outstanding_request(self, doc, user, librarian):
+        """Places outstanding request for certain document for list of users.
+        Returns (code, history entry (if there was free copy after queue abandon) or request entry)"""
+        #If any request for this document exists, cancel it
+        entry = Request.get_user(doc)
+        if (entry != None):
+            entry.active = False
+            entry.save()
+            if (Request.get_user(doc) != None):
+                print('Houston, we have a problems. Outstanding request, booking system')
+        #Check if there is available copy
+        copies = doc.get_document_copies()
+        for copy in copies:
+            if (copy.checked_out == 0):
+                return(2, None)
+        Queue.red_button(doc)
+        copies = doc.get_document_copies()  #update copies
+        #if we have free copies after deleting queue, check out to users who are in request
+        for copy in copies:
+            if (copy.checked_out == 0):
+                res = self.check_out(doc, user,librarian)
+                return(1, res)
+        #Placing requests
+        res = Request.place_request(doc, user, librarian)
+        return (0, res)
+    
     def get_list(self, rows_number, page, opened=0):
         """Returns a content from certain page of history check out
         Overdue opened=2, Opened - opened=1, All - opened=0, Closed - opened=-1
