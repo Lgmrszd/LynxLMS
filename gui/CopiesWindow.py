@@ -158,6 +158,7 @@ class CopiesWindow(QWidget):
             msg.exec_()
             return
         (err, res) = self.bs.check_out(self.doc, usr, gui.MainWindow.MainWindow.librarian)
+        self.queue.get_result()
         if err > 0:
             msg = QMessageBox()
             msgs = {7: "User is already in the queue",
@@ -168,7 +169,6 @@ class CopiesWindow(QWidget):
             msg.exec_()
             return
 
-        self.queue.get_result()
 
         for i in self.edits:
             if i.copy.CopyID == res.copy.CopyID:
