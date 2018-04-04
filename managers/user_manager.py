@@ -234,13 +234,13 @@ class Queue(BaseModel):
         select_query = None
         if (active == 0):
             select_query = cls.select().where(cls.docClass == docClass, cls.docId == docId)
-            query = select_query.offset(0 + (page-1)*rows_number).limit(rows_number).order_by(Queue.priority.asc(), Queue.QueueID.asc(), Queue.active.asc())
+            query = select_query.offset(0 + (page-1)*rows_number).limit(rows_number).order_by(Queue.priority.asc(), Queue.QueueID.desc(), Queue.active.asc())
         elif (active == 1):
             select_query = cls.select().where(cls.active == True, cls.docClass == docClass, cls.docId == docId)
-            query = select_query.offset(0 + (page-1)*rows_number).limit(rows_number).order_by(Queue.priority.asc(), Queue.QueueID.asc())
+            query = select_query.offset(0 + (page-1)*rows_number).limit(rows_number).order_by(Queue.priority.asc(), Queue.QueueID.desc())
         elif (active == -1):
             select_query = cls.select().where(cls.active == False, cls.docClass == docClass, cls.docId == docId)
-            query = select_query.offset(0 + (page-1)*rows_number).limit(rows_number).order_by(Queue.priority.asc(), Queue.QueueID.asc())
+            query = select_query.offset(0 + (page-1)*rows_number).limit(rows_number).order_by(Queue.priority.asc(), Queue.QueueID.desc())
         else:
             return([], 0)
         res = []
