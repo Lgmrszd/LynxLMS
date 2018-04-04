@@ -34,8 +34,8 @@ def create_tables():
 
     students_group = len(managers.group_manager.Group.select().where(managers.group_manager.Group.name == 'Students'))
     if (students_group == 0):
-        managers.group_manager.Group.create(name='Students', book_ct=3, book_bestseller_ct=1, journal_ct=2, av_ct=2,
-                                        book_rt=3, book_bestseller_rt=1, journal_rt=2, av_rt=2, priority=1)
+        managers.group_manager.Group.create(name='Students', book_ct=3, book_bestseller_ct=2, journal_ct=2, av_ct=2,
+                                        book_rt=3, book_bestseller_rt=2, journal_rt=2, av_rt=2, priority=1)
 
     faculty_group = len(managers.group_manager.Group.select().where(managers.group_manager.Group.name == 'Faculty'))
     if (faculty_group == 0):
@@ -44,7 +44,7 @@ def create_tables():
 
     vp_group = len(managers.group_manager.Group.select().where(managers.group_manager.Group.name == 'Visiting professors'))
     if (vp_group == 0):
-        managers.group_manager.Group.create(name='Visiting professors', book_ct=4, book_bestseller_ct=4, journal_ct=2, av_ct=2,
+        managers.group_manager.Group.create(name='Visiting professors', book_ct=1, book_bestseller_ct=1, journal_ct=1, av_ct=1,
                                         book_rt=1, book_bestseller_rt=1, journal_rt=1, av_rt=1, priority=0)
 
 
