@@ -120,3 +120,4 @@ main.spec
 
 # test
 tests/test_database.db
+/tests/data/config.json
