@@ -225,20 +225,20 @@ class TestCases2(unittest.TestCase):
         self.assertEqual(res[0], 0)
         # (act like it checkouted 4 weeks ago)
         c = res[1]
-        c.date_check_out = datetime.date.fromordinal(c.date_check_out.toordinal()-4)
+        c.date_check_out = str(datetime.date.fromordinal(c.date_check_out.toordinal()-4))
         c.save()
         self.bsystem.renew_by_entry(c, "Librarian_2")
 
         res = self.bsystem.check_out(self.d2, self.s, "Librarian")
         self.assertEqual(res[0], 0)
         c = res[1]
-        c.date_check_out = datetime.date.fromordinal(c.date_check_out.toordinal()-4)
+        c.date_check_out = str(datetime.date.fromordinal(c.date_check_out.toordinal()-4))
         c.save()
 
         res = self.bsystem.check_out(self.d2, self.v, "Librarian")
         self.assertEqual(res[0], 0)
         c = res[1]
-        c.date_check_out = datetime.date.fromordinal(c.date_check_out.toordinal()-4)
+        c.date_check_out = str(datetime.date.fromordinal(c.date_check_out.toordinal()-4))
         c.save()
 
 
