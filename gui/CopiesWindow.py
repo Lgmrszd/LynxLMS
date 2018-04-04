@@ -1,7 +1,4 @@
-from PyQt5.QtGui import QColor
-from PyQt5.QtWidgets import *
-from managers.booking_system import *
-from managers.doc_manager import *
+from gui.Queue_window import *
 from gui.CopyInfo import *
 
 class CopiesWindow(QWidget):
@@ -14,13 +11,17 @@ class CopiesWindow(QWidget):
         self.bs = Booking_system()
         self.cl = self.bs.get_document_copies(self.doc)
         self.edits = []
+        self.queue = QueueWindow(doc)
         self._set_up_ui()
 
     def _row_update(self, row):
         self.cl[row] = Copy.get(Copy.CopyID == self.cl[row].CopyID)
         self.table.setItem(row, 0, QTableWidgetItem(str(self.cl[row].CopyID)))
         self.table.setItem(row, 1, QTableWidgetItem(str(self.cl[row].storage)))
-        self.table.setItem(row, 2, QTableWidgetItem(str(int(self.cl[row].checked_out))))
+        state = {0: "free",
+                 1: "assigned",
+                 2: "checked out"}
+        self.table.setItem(row, 2, QTableWidgetItem(state[int(self.cl[row].checked_out)]))
         if not self.cl[row].active:
             self.table.item(row, 0).setBackground(self.__inactive_color)
             self.table.item(row, 1).setBackground(self.__inactive_color)
@@ -40,7 +41,7 @@ class CopiesWindow(QWidget):
         book_name_item = QTableWidgetItem("Storage")
         table.setHorizontalHeaderItem(1, book_name_item)
 
-        author_item = QTableWidgetItem("Checked out")
+        author_item = QTableWidgetItem("State")
         table.setHorizontalHeaderItem(2, author_item)
 
         table.setColumnWidth(0, 80)
@@ -72,8 +73,14 @@ class CopiesWindow(QWidget):
         book_button.setFixedHeight(25)
         book_button.clicked.connect(self.check_out)
 
+        queue_button = QPushButton("Queue")
+        queue_button.setFixedWidth(90)
+        queue_button.setFixedHeight(25)
+        queue_button.clicked.connect(self.show_queue)
+
         edit_button_layout = QHBoxLayout()
         edit_button_layout.addStretch()
+        edit_button_layout.addWidget(queue_button)
         edit_button_layout.addWidget(book_button)
         edit_button_layout.addWidget(add_button)
         vbox.addLayout(edit_button_layout)
@@ -121,6 +128,13 @@ class CopiesWindow(QWidget):
         c = Copy.add(self.doc)
         c.storage = str(loc)
         c.save()
+        # !!!
+        # !!!
+        self.bs.proceed_free_copy(c, gui.MainWindow.MainWindow.librarian)
+        # Kostyl ochen' bolshoy
+        # !!!
+        # !!!
+        self.queue.get_result()
         self.cl = self.bs.get_document_copies(self.doc)
         self.table.setRowCount(len(self.cl))
         self._copy_edited(len(self.cl)-1)
@@ -128,6 +142,7 @@ class CopiesWindow(QWidget):
     def closeEvent(self, ev):
         for i in self.edits:
             i.close()
+        self.queue.close()
         ev.accept()
 
     def check_out(self):
@@ -143,14 +158,17 @@ class CopiesWindow(QWidget):
             msg.exec_()
             return
         (err, res) = self.bs.check_out(self.doc, usr, gui.MainWindow.MainWindow.librarian)
+        self.queue.get_result()
         if err > 0:
             msg = QMessageBox()
-            msgs = {6: "User already has copy of this document",
+            msgs = {7: "User is already in the queue",
+                    6: "User already has copy of this document",
                     4: "User is deleted", 3: "Document is not active", 2: "Document is referenced",
                     1: "User has been added to the queue"}
             msg.setText(msgs[err])
             msg.exec_()
             return
+
 
         for i in self.edits:
             if i.copy.CopyID == res.copy.CopyID:
@@ -165,3 +183,6 @@ class CopiesWindow(QWidget):
             if self.cl[i].CopyID == res.copy.CopyID:
                 self._copy_edited(i)
                 return
+
+    def show_queue(self):
+        self.queue.setVisible(not self.queue.isVisible())
