@@ -307,7 +307,7 @@ class TestCases2(unittest.TestCase):
 
         d3_waiting_list = user_manager.Queue.get_list(self.d3, 10, 1)[0]
         self.assertEqual(len(d3_waiting_list), 1)
-        # self.assertEqual(d3_waiting_list[0], self.d3)
+        self.assertEqual(d3_waiting_list[0].get_doc(), self.d3)
 
 
 if __name__ == '__main__':
