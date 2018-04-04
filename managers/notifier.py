@@ -19,6 +19,8 @@ def send_message(email, subj, body):
     server = smtplib.SMTP('smtp.gmail.com', 587)
     server.starttls()
     server.login(__address, __password)
+    # TODO: fast
+    # TODO: after checkout
     text = msg.as_string()
     server.sendmail(__address, email, text)
     server.quit()

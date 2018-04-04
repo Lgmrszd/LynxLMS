@@ -270,6 +270,14 @@ class TestCases3(unittest.TestCase):
             c.date_check_out = str(datetime.date.fromordinal(c.date_check_out.toordinal()-4))
             c.save()
 
+        def check_operations(user, doc_date_expected):
+            operations = list(user.operations.where(booking_system.History.date_return.is_null(True)))
+            self.assertEqual(len(operations), 1)
+            c = operations[0]
+            doc_date = (c.copy.get_doc(), datetime.datetime.strptime(self.bsystem.get_max_return_time(c), "%Y-%m-%d").date())
+            print(doc_date)
+            self.assertEqual(doc_date, doc_date_expected)
+
         # check out d1 to p1
         check_out_old(self.d1, self.p1)
 
@@ -281,20 +289,30 @@ class TestCases3(unittest.TestCase):
 
         ###
 
-        # TODO: ASK TA
-
-        # self.bsystem.outstanding_request(self.d2, self.p1)
+        # self.bsystem.outstanding_request(self.d2, self.p2, "Librarian_out")
+        self.d2.enable_request()
 
         def renew_single_doc(user):
             opers = user.operations.where(booking_system.History.date_return.is_null(True))
-            print(len(opers))
             c = opers[0]
-            self.bsystem.renew_by_entry(c, "Librarian_2")
+            res = self.bsystem.renew_by_entry(c, "Librarian_2")
+            print(res)
 
         renew_single_doc(self.p1)
         renew_single_doc(self.s)
         renew_single_doc(self.v)
 
+        # p1
+        doc_date_expected = (self.d1, datetime.date.fromordinal(datetime.date.today().toordinal()+4*7))
+        check_operations(self.p1, doc_date_expected)
+
+        # s
+        doc_date_expected = (self.d2, datetime.date.fromordinal(datetime.date.today().toordinal()+2*7-4))
+        check_operations(self.s, doc_date_expected)
+
+        # v
+        doc_date_expected = (self.d2, datetime.date.fromordinal(datetime.date.today().toordinal()+7-4))
+        check_operations(self.v, doc_date_expected)
 
     def test_case_5(self):
         self.prepare_database()
@@ -347,11 +365,14 @@ class TestCases3(unittest.TestCase):
     def test_case_7(self):
         self.test_case_6()
 
+        self.bsystem.outstanding_request(self.d3, self.p2, "Librarian_out")
+
+        # waiting list for d3 is empty
         d3_waiting_list = user_manager.Queue.get_list(self.d3, 10, 1)[0]
         d3_waiting_list_users = [i.user for i in d3_waiting_list]
         d3_waiting_list_users_expected = []
 
-        # self.assertEqual(d3_waiting_list_users, d3_waiting_list_users_expected)
+        self.assertEqual(d3_waiting_list_users, d3_waiting_list_users_expected)
 
 
     def test_case_8(self):
