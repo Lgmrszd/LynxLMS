@@ -305,11 +305,9 @@ class TestCases2(unittest.TestCase):
         res = self.bsystem.check_out(self.d3, self.v, "Librarian")
         self.assertEqual(res[0], 1)
 
-        print(user_manager.Queue.get_list(self.d3, 10, 10))
-
-
-
-
+        d3_waiting_list = user_manager.Queue.get_list(self.d3, 10, 1)[0]
+        self.assertEqual(len(d3_waiting_list), 1)
+        # self.assertEqual(d3_waiting_list[0], self.d3)
 
 
 if __name__ == '__main__':
