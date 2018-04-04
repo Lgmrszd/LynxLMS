@@ -80,7 +80,7 @@ class CopiesWindow(QWidget):
         queue_button.clicked.connect(self.show_queue)
 
         or_button = QPushButton("OR")
-        or_button.setStyleSheet("background-color: red; ")
+        or_button.setStyleSheet("background-color: red;")
         or_button.setFixedWidth(90)
         or_button.setFixedHeight(25)
         or_button.clicked.connect(self.make_or)
@@ -215,4 +215,6 @@ class CopiesWindow(QWidget):
         msg.setText(msgs[code])
         msg.exec_()
         if code < 2:
-            self.close()
+            for i in range(0, len(self.cl)):
+                self._row_update(i)
+            self.queue.get_result()
