@@ -42,7 +42,7 @@ class BookInfo(QWidget):
         dic = type(self.doc).get_fields_dict()
         dic.pop("DocumentID")
         dic.pop("active")
-        # dic.pop("requested")
+        dic.pop("requested")
 
         self.fields = dict()
         for i in dic:
