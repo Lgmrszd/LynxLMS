@@ -380,6 +380,58 @@ class TestCases2(unittest.TestCase):
     def test_case_10(self):
         self.prepare_database()
 
+        res = self.bsystem.check_out(self.d1, self.p1, "Librarian")
+        self.assertEqual(res[0], 0)
+        # checkout week ago
+        c = res[1]
+        c.date_check_out = str(datetime.date.fromordinal(c.date_check_out.toordinal()-7))
+        c.save()
+
+        res = self.bsystem.check_out(self.d1, self.v, "Librarian")
+        self.assertEqual(res[0], 0)
+        # checkout week ago
+        c2 = res[1]
+        c2.date_check_out = str(datetime.date.fromordinal(c2.date_check_out.toordinal()-7))
+        c2.save()
+
+        # renew 4 days ago
+        res = self.bsystem.renew_by_entry(c, "Librarian_2")
+        c = res[1]
+        c.date_check_out = str(datetime.date.fromordinal(c.date_check_out.toordinal()-4))
+        c.save()
+
+        # renew 4 days ago
+        res = self.bsystem.renew_by_entry(c2, "Librarian_2")
+        c2 = res[1]
+        c2.date_check_out = str(datetime.date.fromordinal(c2.date_check_out.toordinal()-4))
+        c2.save()
+
+        ####
+        # renew today
+
+        # try renew again today (fails)
+        res = self.bsystem.renew_by_entry(c, "Librarian_3")
+        self.assertEqual(res[0], 6)
+
+        # try renew again today (fails)
+        res = self.bsystem.renew_by_entry(c2, "Librarian_3")
+        self.assertEqual(res[0], 6)
+
+        def check_operations(user, doc_date_expected):
+            operations = list(user.operations.where(booking_system.History.date_return.is_null(True)))
+            self.assertEqual(len(operations), 1)
+            c = operations[0]
+            doc_date = (c.copy.get_doc(), datetime.datetime.strptime(self.bsystem.get_max_return_time(c), "%Y-%m-%d").date())
+            print(doc_date)
+            self.assertEqual(doc_date, doc_date_expected)
+
+        # p1
+        doc_date_expected = (self.d1, datetime.date.fromordinal(datetime.date.today().toordinal()+4*7-4))
+        check_operations(self.p1, doc_date_expected)
+
+        # v
+        doc_date_expected = (self.d1, datetime.date.fromordinal(datetime.date.today().toordinal()+1*7-4))
+        check_operations(self.v, doc_date_expected)
 
 
 
