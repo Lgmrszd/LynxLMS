@@ -7,7 +7,7 @@ import db_config
 import datetime
 
 
-class TestCases2(unittest.TestCase):
+class TestCases3(unittest.TestCase):
     def prepare_database(self):
         db_fname = "test_database.db"
         db_config.init_db(db_fname)
@@ -262,28 +262,39 @@ class TestCases2(unittest.TestCase):
         self.prepare_database()
 
         # checkout 4 days ago and renew today
-        def check_out_old_renew_today(d, p):
+        def check_out_old(d, p):
             res = self.bsystem.check_out(d, p, "Librarian")
             self.assertEqual(res[0], 0)
             # (act like it checkouted 4 days ago)
             c = res[1]
             c.date_check_out = str(datetime.date.fromordinal(c.date_check_out.toordinal()-4))
             c.save()
-            # renew today
-            self.bsystem.renew_by_entry(c, "Librarian_2")
 
         # check out d1 to p1
-        check_out_old_renew_today(self.d1, self.p1)
+        check_out_old(self.d1, self.p1)
 
         # check out d2 to s
-        check_out_old_renew_today(self.d2, self.s)
+        check_out_old(self.d2, self.s)
 
         # check out d2 to v
-        check_out_old_renew_today(self.d2, self.v)
+        check_out_old(self.d2, self.v)
 
         ###
 
+        # TODO: ASK TA
+
         # self.bsystem.outstanding_request(self.d2, self.p1)
+
+        def renew_single_doc(user):
+            opers = user.operations.where(booking_system.History.date_return.is_null(True))
+            print(len(opers))
+            c = opers[0]
+            self.bsystem.renew_by_entry(c, "Librarian_2")
+
+        renew_single_doc(self.p1)
+        renew_single_doc(self.s)
+        renew_single_doc(self.v)
+
 
     def test_case_5(self):
         self.prepare_database()
@@ -333,8 +344,15 @@ class TestCases2(unittest.TestCase):
 
         self.assertEqual(d3_waiting_list_users, d3_waiting_list_users_expected)
 
-    # def test_case_7(self):
-    #     self.test_case_6()
+    def test_case_7(self):
+        self.test_case_6()
+
+        d3_waiting_list = user_manager.Queue.get_list(self.d3, 10, 1)[0]
+        d3_waiting_list_users = [i.user for i in d3_waiting_list]
+        d3_waiting_list_users_expected = []
+
+        # self.assertEqual(d3_waiting_list_users, d3_waiting_list_users_expected)
+
 
     def test_case_8(self):
         self.test_case_6()
