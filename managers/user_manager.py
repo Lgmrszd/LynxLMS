@@ -106,6 +106,12 @@ class Queue(BaseModel):
     time_out = pw.DateField(formats='%Y-%m-%d', null=True)
     active = pw.BooleanField(default=True) #if user is in queue    
     
+    def get_doc(self):
+        """Get the document to which this copy referred
+        """
+        doc_class = doc_manager.name_to_class()[self.docClass]
+        return doc_class.get_by_id(self.docId)    
+
     @classmethod
     def push_to_queue(cls, doc, user):
         """Pushes user to queue for specific document
