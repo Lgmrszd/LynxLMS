@@ -96,7 +96,7 @@ class ManageUsersWindow(QWidget):
 
     def cell_clicked_event(self, event):
         if self.list is not None and len(self.list) > event.row():
-            user_info = UserInfo(self.list[event.row()])
+            user_info = UserInfo(self.list[event.row()], lambda: self.upd(event.row()))
             user_info.show()
             self.user_infos.append(user_info)
 
@@ -118,6 +118,9 @@ class ManageUsersWindow(QWidget):
             self.page_num = self.page_num - 1
             self.get_result()
         self.update_page()
+
+    def upd(self, r):
+        self.result_table.setItem(r, 5, QTableWidgetItem(str(self.list[r].fine)))
 
     def get_result(self):
         self.list = User.get_list(15, self.page_num)
