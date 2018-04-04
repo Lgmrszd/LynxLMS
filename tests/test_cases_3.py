@@ -54,7 +54,7 @@ class TestCases2(unittest.TestCase):
                 "address": "Via Margutta, 3",
                 "phone": 30001,
                 "group": self.g_f,
-                "email": "test"
+                "email": "m.bobrov@innopolis.ru"
             }
         )
         self.p2 = user_manager.User.add(
@@ -64,7 +64,7 @@ class TestCases2(unittest.TestCase):
                 "address": "Via Sacra, 13",
                 "phone": 30002,
                 "group": self.g_f,
-                "email": "test"
+                "email": "m.bobrov@innopolis.ru"
             }
         )
         self.p3 = user_manager.User.add(
@@ -74,7 +74,7 @@ class TestCases2(unittest.TestCase):
                 "address": "Via del Corso, 22",
                 "phone": 30003,
                 "group": self.g_f,
-                "email": "test"
+                "email": "m.bobrov@innopolis.ru"
             }
         )
         self.s = user_manager.User.add(
@@ -84,7 +84,7 @@ class TestCases2(unittest.TestCase):
                 "address": "Avenida Mazatlan 250",
                 "phone": 30004,
                 "group": self.g_s,
-                "email": "test"
+                "email": "m.bobrov@innopolis.ru"
             }
         )
         self.v = user_manager.User.add(
@@ -94,7 +94,7 @@ class TestCases2(unittest.TestCase):
                 "address": "Stret Atocha, 27",
                 "phone": 30005,
                 "group": self.g_v,
-                "email": "test"
+                "email": "m.bobrov@innopolis.ru"
             }
         )
         self.d1c1 = doc_manager.Copy.add(self.d1)
@@ -239,29 +239,24 @@ class TestCases2(unittest.TestCase):
 
         #####
 
+        def check_operations(user, doc_date_expected):
+            operations = list(user.operations.where(booking_system.History.date_return.is_null(True)))
+            self.assertEqual(len(operations), 1)
+            c = operations[0]
+            doc_date = (c.copy.get_doc(), datetime.datetime.strptime(self.bsystem.get_max_return_time(c), "%Y-%m-%d").date())
+            self.assertEqual(doc_date, doc_date_expected)
+
         # p1
         doc_date_expected = (self.d1, datetime.date.fromordinal(datetime.date.today().toordinal()+4*7))
-        operations = list(self.p1.operations.where(booking_system.History.date_return.is_null(True)))
-        self.assertEqual(len(operations), 1)
-        c = operations[0]
-        doc_date = (c.copy.get_doc(), datetime.datetime.strptime(self.bsystem.get_max_return_time(c), "%Y-%m-%d").date())
-        self.assertEqual(doc_date, doc_date_expected)
+        check_operations(self.p1, doc_date_expected)
 
         # s
         doc_date_expected = (self.d2, datetime.date.fromordinal(datetime.date.today().toordinal()+2*7))
-        operations = list(self.s.operations.where(booking_system.History.date_return.is_null(True)))
-        self.assertEqual(len(operations), 1)
-        c = operations[0]
-        doc_date = (c.copy.get_doc(), datetime.datetime.strptime(self.bsystem.get_max_return_time(c), "%Y-%m-%d").date())
-        self.assertEqual(doc_date, doc_date_expected)
+        check_operations(self.s, doc_date_expected)
 
         # v
         doc_date_expected = (self.d2, datetime.date.fromordinal(datetime.date.today().toordinal()+7))
-        operations = list(self.v.operations.where(booking_system.History.date_return.is_null(True)))
-        self.assertEqual(len(operations), 1)
-        c = operations[0]
-        doc_date = (c.copy.get_doc(), datetime.datetime.strptime(self.bsystem.get_max_return_time(c), "%Y-%m-%d").date())
-        self.assertEqual(doc_date, doc_date_expected)
+        check_operations(self.v, doc_date_expected)
 
     def test_case_4(self):
         self.prepare_database()
@@ -308,6 +303,84 @@ class TestCases2(unittest.TestCase):
         d3_waiting_list = user_manager.Queue.get_list(self.d3, 10, 1)[0]
         self.assertEqual(len(d3_waiting_list), 1)
         self.assertEqual(d3_waiting_list[0].get_doc(), self.d3)
+
+        d3_waiting_list_users = [i.user for i in d3_waiting_list]
+        d3_waiting_list_users_expected = [self.v]
+
+        self.assertEqual(d3_waiting_list_users, d3_waiting_list_users_expected)
+
+    def test_case_6(self):
+        self.prepare_database()
+
+        # check out d3 to p1
+        res = self.bsystem.check_out(self.d3, self.p1, "Librarian")
+
+        # check out d3 to p2
+        res = self.bsystem.check_out(self.d3, self.p2, "Librarian")
+
+        # check out d3 to s
+        res = self.bsystem.check_out(self.d3, self.s, "Librarian")
+
+        # check out d3 to v
+        res = self.bsystem.check_out(self.d3, self.v, "Librarian")
+
+        # check out d3 to p3
+        res = self.bsystem.check_out(self.d3, self.p3, "Librarian")
+
+        d3_waiting_list = user_manager.Queue.get_list(self.d3, 10, 1)[0]
+        d3_waiting_list_users = [i.user for i in d3_waiting_list]
+        d3_waiting_list_users_expected = [self.s, self.v, self.p3]
+
+        self.assertEqual(d3_waiting_list_users, d3_waiting_list_users_expected)
+
+    # def test_case_7(self):
+    #     self.test_case_6()
+
+    def test_case_8(self):
+        self.test_case_6()
+
+        c = list(self.p2.operations)
+        c = [i for i in c if i.copy.get_doc() == self.d3]
+        self.assertEqual(len(c), 1)
+        self.bsystem.return_by_entry(c[0], "librarian_re")
+
+        operations = list(self.p2.operations.where(booking_system.History.date_return.is_null(True)))
+        self.assertEqual(operations, [])
+
+        d3_waiting_list = user_manager.Queue.get_list(self.d3, 10, 1)[0]
+        d3_waiting_list_users = [i.user for i in d3_waiting_list]
+        d3_waiting_list_users_expected = [self.s, self.v, self.p3]
+
+        self.assertEqual(d3_waiting_list_users, d3_waiting_list_users_expected)
+
+    def test_case_9(self):
+        self.test_case_6()
+
+        oper = list(self.p1.operations.where(booking_system.History.date_return.is_null(True)))[0]
+        self.assertEqual(oper.copy.get_doc(), self.d3)
+        self.bsystem.renew_by_entry(oper, "Librarian_2")
+
+        operations = list(self.p2.operations.where(booking_system.History.date_return.is_null(True)))
+        self.assertEqual(len(operations), 1)
+
+        # TODO: ASK TA ABOUT THIS TEST
+        doc_date_expected = (self.d3, datetime.date.fromordinal(datetime.date.today().toordinal()+2*7))
+        operations = list(self.p1.operations.where(booking_system.History.date_return.is_null(True)))
+        self.assertEqual(len(operations), 1)
+        c = operations[0]
+        doc_date = (c.copy.get_doc(), datetime.datetime.strptime(self.bsystem.get_max_return_time(c), "%Y-%m-%d").date())
+        self.assertEqual(doc_date, doc_date_expected)
+
+        d3_waiting_list = user_manager.Queue.get_list(self.d3, 10, 1)[0]
+        d3_waiting_list_users = [i.user for i in d3_waiting_list]
+        d3_waiting_list_users_expected = [self.s, self.v, self.p3]
+
+        self.assertEqual(d3_waiting_list_users, d3_waiting_list_users_expected)
+
+    def test_case_10(self):
+        self.prepare_database()
+
+
 
 
 if __name__ == '__main__':
