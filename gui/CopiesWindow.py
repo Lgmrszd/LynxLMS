@@ -1,6 +1,7 @@
 from gui.Queue_window import *
 from gui.CopyInfo import *
 
+
 class CopiesWindow(QWidget):
     __inactive_color = QColor(230, 230, 230)
 
@@ -78,8 +79,15 @@ class CopiesWindow(QWidget):
         queue_button.setFixedHeight(25)
         queue_button.clicked.connect(self.show_queue)
 
+        or_button = QPushButton("OR")
+        or_button.setStyleSheet("background-color: red; ")
+        or_button.setFixedWidth(90)
+        or_button.setFixedHeight(25)
+        or_button.clicked.connect(self.make_or)
+
         edit_button_layout = QHBoxLayout()
         edit_button_layout.addStretch()
+        edit_button_layout.addWidget(or_button)
         edit_button_layout.addWidget(queue_button)
         edit_button_layout.addWidget(book_button)
         edit_button_layout.addWidget(add_button)
@@ -186,3 +194,25 @@ class CopiesWindow(QWidget):
 
     def show_queue(self):
         self.queue.setVisible(not self.queue.isVisible())
+
+    def make_or(self):
+        id, okPressed = QInputDialog.getInt(self, "User", "User card ID")
+        if not okPressed:
+            return
+        usr = None
+        try:
+            usr = User.get_by_id(id)
+        except:
+            msg = QMessageBox()
+            msg.setText("Invalid user card")
+            msg.exec_()
+            return
+        (code, res) = self.bs.outstanding_request(self.doc, usr, gui.MainWindow.MainWindow.librarian)
+        msg = QMessageBox()
+        msgs = {1: "Copy of a document has been checked out",
+                   2: "There is a free copy",
+                   0: "Requested"}
+        msg.setText(msgs[code])
+        msg.exec_()
+        if code < 2:
+            self.close()
