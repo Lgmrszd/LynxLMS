@@ -131,15 +131,22 @@ class Queue(BaseModel):
         return Queue.create(docClass=docClass, docId=docId , user=user, priority = user.group.priority)
     
     @classmethod
-    def remove_from_queue(cls, doc):
-        """Removes user from queue
+    def get_to_remove(cls, doc, user):
+        """Get entry from queue that should be deleted after check out
         """
-        entry = cls.get_queue_entry(doc)
-        if (entry == None):
+        docClass = doc_manager.class_to_name()[type(doc)]
+        docId = doc.DocumentID
+        #Get all entries from queue containing this user and document
+        ent = Queue.select().where(Queue.user == user,
+                                   Queue.docClass == docClass, Queue.docId == docId,
+                                   Queue.active == False)
+        if (len(ent) == 0):
+            return None #Nothing to check out
+        if (len(ent) > 1):
+            #Problem in the database or with peewee
+            print('Houston, we have a problem in queue in get_to_remove')
             return None
-        res = entry.user
-        entry.delete_instance()
-        return res
+        return ent.get()
     
     @classmethod
     def get_queue_entry(cls, doc):
@@ -270,25 +277,14 @@ class Request(BaseModel):
 
     @classmethod
     def place_request(cls, doc, user, librarian):
-        """Place outstanding request for certain user for certain document"""
-        if (user.group == Group.get(Group.name == 'Deleted')):
-            return 4
-        if doc.active == False:
-            return 3
-        if 'reference' in doc.keywords:
-            return 2
-
-        for entry in user.operations:
-            if (entry.date_return == None and entry.copy.get_doc() == doc):
-                return 6
-        
+        """Place outstanding request for certain user for certain document (conditions should be checked)"""
         doc.enable_request()
         current_date = datetime.date.today()
         docClass = doc_manager.class_to_name()[type(doc)]
         docId = doc.DocumentID
-        cls.create(user=user, docClass=docClass, docId=docId, date = str(current_date), librarian=librarian)
+        res = cls.create(user=user, docClass=docClass, docId=docId, date = str(current_date), librarian=librarian)
         #Queue.red_button(doc)
-        return 0
+        return res 
     
     @classmethod
     def close_request(cls, user, doc, librarian):
