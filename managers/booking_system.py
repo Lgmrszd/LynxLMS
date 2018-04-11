@@ -30,15 +30,15 @@ class Booking_system:
         """Check outs copy by document and user entries. If there is no available copy, user is placed in queue
         """
         if (user.group == group_manager.Group.get(group_manager.Group.name == 'Deleted')):
-            return (4, None)
+            return (4, None)    #User is deleted
         if doc.active == False:
-            return (3, None)
+            return (3, None)    #Inactive document
         if 'reference' in doc.keywords:
-            return (2, None)
+            return (2, None)    #Document is reference
 
         for entry in self.get_user_history(user):
             if (entry.date_return == None and entry.copy.get_doc() == doc):
-                return (6, None)
+                return (6, None)    #User has a copy of this document
         
         #Check if copy reserved. If it is not reserved, method check_out_reserved returns error
         #and checks out document otherwise
@@ -50,35 +50,33 @@ class Booking_system:
         #TODO : replace with one query
         copies = doc.get_document_copies()
         for entry in copies:
+            if (entry.active == False):
+                continue
             if (entry.checked_out == 0):
                 entry.checked_out = 2
                 entry.save()
                 current_date = datetime.date.today()
                 res = History.create(user = user, copy = entry, librarian_co = librarian, date_check_out = current_date)
-                return (0, res)
+                return (0, res) #successfully checked out
         res = Queue.push_to_queue(doc, user)
         if (res == None):
-            return (7, None) #Already in the queue
-        return (1, None)
+            return (7, None) #Already is in the queue
+        return (1, None)    #Placed in the queue
     
     def __check_out_reserved(self, doc, user, librarian):
-        """Checks out reserved copy of document
+        """Checks out reserved copy of document (Supposed to be called only from check_out method)
         """
+        #TODO : Move the following to Queue class and leave only operations with history and copy
         docClass = doc_manager.class_to_name()[type(doc)]
         docId = doc.DocumentID
+        #Get all entries from queue containing this user and document
         ent = Queue.select().where(Queue.user == user,
                                    Queue.docClass == docClass, Queue.docId == docId,
                                    Queue.active == False)
-        
-        # if (user.group == group_manager.Group.get(group_manager.Group.name == 'Deleted')):
-        #     return (4, None)
-        # if doc.active == False:
-        #     return (3, None)
-        # if 'reference' in doc.keywords:
-        #     return (2, None)
         if (len(ent) == 0):
             return (1, None) #Nothing to check out
         if (len(ent) > 1):
+            #Problem in the database or with peewee
             print('Houston, we have a problem in booking system in check_out_reserved')
             return (1, None)
 
@@ -89,14 +87,14 @@ class Booking_system:
         current_date = datetime.date.today()
         res = History.create(user=user, copy=copy, librarian_co=librarian, date_check_out=current_date)
         ent.delete_instance()
-        return(0, res)
+        return(0, res)  #successfully checked out
     
 
     def return_by_entry(self, entry, librarian):
         """Return copy by "History" entry
         """
         if (entry.date_return != None):
-            return 1
+            return 1    #Copy is already returned
         current_date = datetime.date.today()
         entry.date_return = str(current_date)
         entry.librarian_re = librarian
@@ -116,24 +114,25 @@ class Booking_system:
             user = Request.get_user(doc)
             self.check_out(doc, user, librarian)
             Request.close_request(user, doc, librarian)
-            return 5
+            return 5    #Checked out to user in outstanding request
         queue_next = Queue.get_user_from_queue(copy)
         if queue_next == None:
-            return 0
+            return 0    #Successfully returned
         #Inform user about free copy here <-
         text = "Dear %s,\nQueued document \"%s\" for you is ready.\n"\
                % (queue_next.name + " " + queue_next.surname, copy.get_doc().title)
-        managers.notifier.send_message(queue_next.email, "Document queue abandoned", text)
-        return 4 #assigned to someone in the queue
+        managers.notifier.send_message(queue_next.email, "Document is ready", text)
+        return 4 #Assigned to someone in the queue
 
     def return_by_copy(self, copy, librarian):
         """Return copy
         """
         query = History.select().where((History.date_return.is_null(True)) &  (History.copy == copy))
         if (len(query) == 0):
-            return 3
+            return 3    #No entry found
         if (len(query) > 1):
-            return 2
+            print('Houston, we have a problems. Return_by_copy, booking system')
+            return 2    #Internal error
         entry = query.get()
         return self.return_by_entry(entry, librarian)
     
