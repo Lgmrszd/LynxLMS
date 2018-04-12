@@ -8,6 +8,6 @@ class App:
         QApplication.setStyle(QStyleFactory.create('Fusion'))
 
         main_window = MainWindow()
-        main_window.show()
+        main_window.show() # Test Branches
 
         sys.exit(app.exec_())#will not end until you close the program
