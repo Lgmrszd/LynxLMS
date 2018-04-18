@@ -4,12 +4,14 @@ import sys
 from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QLCDNumber
 from db_connect import BaseModel
 import time
+import datetime
 
 
 class Event(BaseModel):
     event_id = pw.PrimaryKeyField()
     datetime = pw.DateTimeField()
     event_name = pw.CharField()
+    event_args = pw.CharField()
 
 
 class _EventManager:
@@ -32,6 +34,18 @@ class _EventManager:
             else:
                 for listener in listeners:
                     result = listener()
+
+    def schedule_event(self, name, date_time, *args):
+        if len(args) == 0:
+            args = ""
+        else:
+            args = ""
+        ev = Event(
+            datetime=date_time,
+            event_name=name,
+            event_args=args
+        )
+        ev.save()
 
 
 EventManager = _EventManager()
