@@ -2,14 +2,10 @@ import peewee as pw
 from db_connect import BaseModel
 import sys
 import inspect
+from managers.auth import require_auth_class
 #import managers.booking_system
 
-#OUTSTANDING REQUEST
-#it is on document
-#need to track it
-#if people for whom this outstanding request have made take a book, the request is canceled
-#queue is removed
-#during request people can't renew
+# @require_auth_class()
 class Document(BaseModel):
     """Base data model for all document classes
     """
@@ -82,14 +78,14 @@ class Document(BaseModel):
         """
         select_query = None
         if (active == 0):
-            select_query = cls.select()
-            query = select_query.offset(0 + (page-1)*rows_number).limit(rows_number).order_by(cls.title.asc())
+            select_query = cls.select().order_by(cls.title.asc())
+            query = select_query.offset(0 + (page-1)*rows_number).limit(rows_number)
         elif (active == 1):
-            select_query = cls.select().where(cls.active == True)
-            query = select_query.offset(0 + (page-1)*rows_number).limit(rows_number).order_by(cls.title.asc())
+            select_query = cls.select().where(cls.active == True).order_by(cls.title.asc())
+            query = select_query.offset(0 + (page-1)*rows_number).limit(rows_number)
         elif (active == -1):
-            select_query = cls.select().where(cls.active == False)
-            query = select_query.offset(0 + (page-1)*rows_number).limit(rows_number).order_by(cls.title.asc())
+            select_query = cls.select().where(cls.active == False).order_by(cls.title.asc())
+            query = select_query.offset(0 + (page-1)*rows_number).limit(rows_number)
         else:
             return([], 0)
         res = []
@@ -140,7 +136,7 @@ class Document(BaseModel):
         return res
 
 
-
+@require_auth_class()
 class Book(Document):
     """Data model for Book
     """
@@ -148,7 +144,7 @@ class Book(Document):
     publisher = pw.CharField()
     year = pw.IntegerField()
 
-
+@require_auth_class()
 class JournalArticle(Document):
     """Data model for Journal Article
     """
@@ -156,13 +152,13 @@ class JournalArticle(Document):
     issue = pw.CharField()
     editor = pw.CharField()
 
-
+@require_auth_class()
 class AVMaterial(Document):
     """Data model for Audio Video Material
     """
     pass
 
-
+@require_auth_class()
 class Copy(BaseModel):
     """Data model for Copy
     """
