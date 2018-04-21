@@ -4,8 +4,10 @@ from db_connect import BaseModel
 import managers.doc_manager as doc_manager
 import datetime
 import managers.notifier
+from managers.auth import require_auth_class
 
 
+@require_auth_class()
 class User(BaseModel):
     """Data model for users and user's cards"""
     card_id = pw.PrimaryKeyField()
