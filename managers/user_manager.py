@@ -5,6 +5,7 @@ import managers.doc_manager as doc_manager
 import datetime
 import managers.notifier
 from managers.auth import require_auth_class
+import logging
 
 
 @require_auth_class()
@@ -127,7 +128,8 @@ class Queue(BaseModel):
         if (len(select_query) == 1):
             return None
         elif (len(select_query) > 1):
-            print('Houston, we have a problem in booking system in push_to_queue')
+            #print('Houston, we have a problem in booking system in push_to_queue')
+            logging.error('Queue.push_to_queue, 2 or more same active entries (2 same users in the queue)')
             return None
         
         return Queue.create(docClass=docClass, docId=docId , user=user, priority = user.group.priority)
@@ -146,7 +148,8 @@ class Queue(BaseModel):
             return None #Nothing to check out
         if (len(ent) > 1):
             #Problem in the database or with peewee
-            print('Houston, we have a problem in queue in get_to_remove')
+            #print('Houston, we have a problem in queue in get_to_remove')
+            logging.error('Queue.get_to_remove(), 2 same entries in the queue!')
             return None
         return ent.get()
     
@@ -296,7 +299,8 @@ class Request(BaseModel):
         entry = Request.select().where(Request.user == user, Request.docClass == docClass,
                                        Request.docId == docId, Request.active == True)
         if (entry.count() > 1):
-            print("Houston, check close_request in Request")
+            #print("Houston, check close_request in Request")
+            logging.error('Request.close_request(), 2 same active entries in the Request table')
             return 1
         if (entry.count() == 0):
             return 1
