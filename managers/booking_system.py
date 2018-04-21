@@ -1,4 +1,5 @@
 import datetime
+import logging
 import peewee as pw
 import managers.user_manager as user_manager
 import managers.group_manager as group_manager
@@ -125,7 +126,8 @@ class Booking_system:
         if (len(query) == 0):
             return 3  # No entry found
         if (len(query) > 1):
-            print('Houston, we have a problems. Return_by_copy, booking system')
+            #print('Houston, we have a problems. Return_by_copy, booking system')
+            logging.error('booking_system.Booking_system.return_by_copy(), copy is checked out to 2 or more users at the same time!')
             return 2  # Internal error
         entry = query.get()
         return self.return_by_entry(entry)
@@ -178,7 +180,8 @@ class Booking_system:
             entry.active = False
             entry.save()
             if (Request.get_user(doc) != None):
-                print('Houston, we have a problems. Outstanding request, booking system')
+                #print('Houston, we have a problems. Outstanding request, booking system')
+                logging.error('booking_system.Booking_system.outstanding_request(), 2 users in outstanding request')
         # Check if there is available copy
         copies = doc.get_document_copies()
         for copy in copies:
