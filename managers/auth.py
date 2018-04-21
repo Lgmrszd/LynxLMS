@@ -4,6 +4,7 @@ import random
 import datetime
 import json
 import inspect
+import logging
 from db_connect import BaseModel
 
 class Auth:
@@ -42,7 +43,8 @@ class Auth:
                     return 0
             return -1
         else:
-            print('Houston, problem in auth.Auth.authentication')
+            #print('Houston, problem in auth.Auth.authentication')
+            logging.error('Auth.login(), too much users with same id!')
             return -1
 
     @classmethod
@@ -90,12 +92,48 @@ class Auth:
         cls.access_level = None
         return True
 
-def require_auth(cls, func):
+def require_auth(cls, func):    #TODO : add Queue and Request to the access map
     """Decorator that checks if user has permissions to use this method
     """
     def wrapper(*args, **kwargs):
-        if (Auth.get_access(cls.__name__, func.__name__)):
-            return func(*args, **kwargs) 
+        module_name = cls.__name__
+        method_name = func.__name__
+        #Putting all arguments into the string
+        arguments = ''
+        for arg in args:
+            if not inspect.isclass(arg):
+                arg_type = type(arg).__name__ 
+                if (arg_type is 'Book' or  arg_type is 'AVMaterial' or
+                    arg_type is 'JournalArticle'):
+                    arguments = arguments + arg_type + '[' + str(arg.DocumentID) + '] '
+                elif arg_type is 'History':
+                    arguments = arguments + arg_type + '[' + str(arg.OperationID) + '] '
+                elif arg_type is 'Copy':
+                    arguments = arguments + arg_type + '[' + str(arg.CopyID) + '] '
+                elif arg_type is 'Queue':
+                    arguments = arguments + arg_type + '[' + str(arg.QueueID) + '] '
+                elif arg_type is 'Request':
+                    arguments = arguments + arg_type + '[' + str(arg.request_id) + '] '
+                elif arg_type is 'User':
+                    arguments = arguments + arg_type + '[' + str(arg.card_id) + '] '
+                elif arg_type is 'Group':
+                    arguments = arguments + arg_type + '[' + str(arg.id) + '] '
+                elif isinstance(arg, int):
+                    arguments = arguments + arg_type + '(' + str(arg) + ') '
+                elif isinstance(arg, str):
+                    arguments = arguments + "'" + arg + "' "
+        #Checking access
+        if (Auth.get_access(module_name, method_name)):
+            res = func(*args, **kwargs)
+            #Logging the operation
+            if (method_name is 'add'):  #If we perform add operation, output ID of inserted element
+                last_id = type(res).select().count()    #TODO : Rework it
+                logging.info('AG %s.%s ( %s): id=%s', module_name, method_name, arguments, str(last_id))
+            else:
+                logging.info('AG %s.%s ( %s)', module_name, method_name, arguments)
+            return res
+        #Logging operation where access was denied
+        logging.info('AD %s.%s ( %s)', module_name, method_name, arguments)
         return None
     return wrapper
 
@@ -137,7 +175,8 @@ class AuthUsers (BaseModel):
             (current_time - cls.last_wrong_access_time).seconds < cls.admin_delay):
             return False
         if (len(query) == 0):
-            print('Houston, we have problems. admin_check in auth')
+            #print('Houston, we have problems. admin_check in auth')
+            logging.error('Auth.admin_check, no admin exists!')
             return False
         admin_info = query.get()
         if (admin_info.login == login and bcrypt.checkpw(str(password).encode(), admin_info.password.encode())):
@@ -171,7 +210,8 @@ class AuthUsers (BaseModel):
             elif (len(query) == 0):
                 return 2
             elif (len(query) > 1):
-                print('Houston, huge problems. auth.AuthUsers.remove')
+                #print('Houston, huge problems. auth.AuthUsers.remove')
+                logging.error('AuthUsers.remove(), several users with same id!')
                 return 1
         else:
             return 1
