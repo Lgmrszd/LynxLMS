@@ -110,12 +110,12 @@ class Document(BaseModel):
         fields = cls._get_fields_dict_raw()
         for key in search.keys():
             if key in fields.keys():
-                if (isinstance(fields[key].field, pw.IntegerField) or isinstance(fields[key].field, pw.BigIntegerField)):
+                if (isinstance(fields[key], pw.IntegerField) or isinstance(fields[key], pw.BigIntegerField)):
                     query = query.where(fields[key] == int(search[key]))
-                elif (isinstance(fields[key].field, pw.CharField) or isinstance(fields[key].field, pw.TextField)):
+                elif (isinstance(fields[key], pw.CharField) or isinstance(fields[key], pw.TextField)):
                     search_string = '%' + str(search[key]) + '%'
                     query = query.where(fields[key] ** search_string)
-                elif (isinstance(fields[key].field, pw.BooleanField)):
+                elif (isinstance(fields[key], pw.BooleanField)):
                     query = query.where(fields[key] == bool(search[key]))
         return query
 
@@ -142,7 +142,7 @@ class Document(BaseModel):
         res = {}
         for key in temp.keys():
             if (isinstance(temp[key], pw.FieldDescriptor)):
-                res[key] = temp[key]
+                res[key] = temp[key].field
         return res
 
     @classmethod
