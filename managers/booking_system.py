@@ -119,10 +119,11 @@ class Booking_system:
         if queue_next == None:
             return 0  # Successfully returned
         # Inform user about free copy here <-
-        text = "Dear %s,\nQueued document \"%s\" for you is ready.\n" \
-               % (queue_next.name + " " + queue_next.surname, copy.get_doc().title)
-        managers.notifier.send_message(
-            queue_next.email, "Document is ready", text)
+        # text = "Dear %s,\nQueued document \"%s\" for you is ready.\n" \
+        #        % (queue_next.name + " " + queue_next.surname, copy.get_doc().title)
+        # managers.notifier.send_message(
+        #     queue_next.email, "Document is ready", text)
+        managers.notifier.notify_free_copy([queue_next], copy.gey_doc())
         return 4  # Assigned to someone in the queue
 
     def return_by_copy(self, copy):
