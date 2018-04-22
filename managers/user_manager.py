@@ -6,6 +6,7 @@ import datetime
 import managers.notifier
 from managers.auth import require_auth_class
 import logging
+from managers import event_manager
 
 
 @require_auth_class()
@@ -95,6 +96,15 @@ class User(BaseModel):
         for entry in query:
             res.append(entry)
         return res
+
+
+def remove_from_group(group_id):
+    users = User.select().where(User.group == group_id)
+    for user in users:
+        User.remove(user.card_id)
+
+
+event_manager.register_listener("remove_users_from_group", remove_from_group)
 
 
 class Queue(BaseModel):
