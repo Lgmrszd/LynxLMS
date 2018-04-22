@@ -1,6 +1,5 @@
 import sys
 from PyQt5.QtWidgets import QDesktopWidget, QVBoxLayout
-
 from gui.AddUser import AddUser
 from gui.ManageUsersWindow import ManageUsersWindow
 from gui.AddGroup import AddGroup
