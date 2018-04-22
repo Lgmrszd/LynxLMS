@@ -5,7 +5,6 @@ import managers.user_manager as user_manager
 import managers.group_manager as group_manager
 import managers.doc_manager as doc_manager
 import managers.notifier
-from common import Response
 from db_connect import BaseModel
 from managers.user_manager import Queue as Queue
 from managers.user_manager import Request as Request
