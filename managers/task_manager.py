@@ -21,11 +21,13 @@ class Task(BaseModel):
     status = pw.SmallIntegerField(default=WAITING)
     args = pw.CharField()
     important = pw.BooleanField(default=False)
+    message = pw.CharField(default="")
 
-    def __init__(self, **kwargs):
-        if kwargs.get("parameters"):
-            kwargs["args"] = json.dumps(kwargs["parameters"])
-        super().__init__(**kwargs)
+    @classmethod
+    def create(cls, **query):
+        if query.get("parameters"):
+            query["args"] = json.dumps(query["parameters"])
+        return super().create(**query)
 
     def get_id(self):
         return self.task_id
@@ -34,9 +36,15 @@ class Task(BaseModel):
         return json.loads(self.args)
 
     def run(self):
+        self.status = RUNNING
+        self.save()
         func = _tasks_functions[self.func_name]
-        status, message = func(self.get_id(), self.get_arguments())
+        try:
+            status, message = func(self.get_id(), self.get_arguments())
+        except Exception as ex:
+            status, message = ERROR, str(ex)
         self.status = status
+        self.message = message
         self.save()
         return status, message
 
@@ -51,3 +59,12 @@ def inform_completeness(percentage):
 
 def get_tasks():
     return Task.select().order_by(Task.datetime.asc)
+
+
+def timer_function():
+    now = datetime.datetime.now()
+    auto_tasks = Task.select().where(Task.datetime < now).\
+        where(Task.status == WAITING).\
+        where(Task.important == False).order_by(Task.datetime.asc())
+    for task in auto_tasks:
+        task.run()
