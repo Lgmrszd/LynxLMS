@@ -1,12 +1,14 @@
+import datetime
+import logging
 import peewee as pw
-from db_connect import BaseModel
 import managers.user_manager as user_manager
 import managers.group_manager as group_manager
 import managers.doc_manager as doc_manager
-import datetime
+import managers.notifier
+from db_connect import BaseModel
 from managers.user_manager import Queue as Queue
 from managers.user_manager import Request as Request
-import managers.notifier
+from managers.auth import require_auth_class
 
 
 class History(BaseModel):
@@ -22,12 +24,16 @@ class History(BaseModel):
     date_return = pw.DateField(formats='%Y-%m-%d', null=True)
 
 
+@require_auth_class()
 class Booking_system:
     """Booking system class
     """
-    __fine = 100
+    __fine = 100  # Fine for the one day of overdue
 
-    def check_out(self, doc, user, librarian):
+    def __init__(self, librarian):
+        self.librarian = librarian
+
+    def check_out(self, doc, user):
         """Check outs copy by document and user entries. If there is no available copy, user is placed in queue
         """
         if (user.group == group_manager.Group.get(group_manager.Group.name == 'Deleted')):
@@ -43,7 +49,7 @@ class Booking_system:
 
         # Check if copy reserved. If it is not reserved, method check_out_reserved returns error
         # and checks out document otherwise
-        reserved = self.__check_out_reserved(doc, user, librarian)
+        reserved = self._check_out_reserved(doc, user)
         if (reserved[0] == 0):
             return reserved
 
@@ -55,7 +61,8 @@ class Booking_system:
             copy.checked_out = 2
             copy.save()
             current_date = datetime.date.today()
-            res = History.create(user=user, copy=copy, librarian_co=librarian, date_check_out=current_date)
+            res = History.create(
+                user=user, copy=copy, librarian_co=self.librarian, date_check_out=current_date)
             return (0, res)  # successfully checked out
 
         # Push to the queue if there is no free copy
@@ -64,7 +71,7 @@ class Booking_system:
             return (7, None)  # Already is in the queue
         return (1, None)  # Placed in the queue
 
-    def __check_out_reserved(self, doc, user, librarian):
+    def _check_out_reserved(self, doc, user):
         """Checks out reserved copy of document (Supposed to be called only from check_out method)
         """
         # Get Queue entry and check out assigned copy
@@ -75,34 +82,35 @@ class Booking_system:
         copy.checked_out = 2
         copy.save()
         current_date = datetime.date.today()
-        res = History.create(user=user, copy=copy, librarian_co=librarian, date_check_out=current_date)
+        res = History.create(
+            user=user, copy=copy, librarian_co=self.librarian, date_check_out=current_date)
         entry.delete_instance()  # Delete entry after check out
         return (0, res)  # successfully checked out
 
-    def return_by_entry(self, entry, librarian):
+    def return_by_entry(self, entry):
         """Return copy by "History" entry
         """
         if (entry.date_return != None):
             return 1  # Copy is already returned
         current_date = datetime.date.today()
         entry.date_return = str(current_date)
-        entry.librarian_re = librarian
+        entry.librarian_re = self.librarian
         entry.save()
         entry.copy.checked_out = 0
         entry.copy.save()
         entry.user.fine += self.check_overdue(entry)
         entry.user.save()
         copy = doc_manager.Copy.get_by_id(entry.copy.CopyID)
-        return self.proceed_free_copy(copy, librarian)
+        return self.proceed_free_copy(copy)
 
-    def proceed_free_copy(self, copy, librarian):
+    def proceed_free_copy(self, copy):
         """Proceed free copy. Assign to people in the queue or check out if it is requested
         """
         if (copy.get_doc().requested == True):
             doc = copy.get_doc()
             user = Request.get_user(doc)
-            self.check_out(doc, user, librarian)
-            Request.close_request(user, doc, librarian)
+            self.check_out(doc, user)
+            Request.close_request(user, doc, self.librarian)
             return 5  # Checked out to user in outstanding request
         queue_next = Queue.get_user_from_queue(copy)
         if queue_next == None:
@@ -110,22 +118,26 @@ class Booking_system:
         # Inform user about free copy here <-
         text = "Dear %s,\nQueued document \"%s\" for you is ready.\n" \
                % (queue_next.name + " " + queue_next.surname, copy.get_doc().title)
-        managers.notifier.send_message(queue_next.email, "Document is ready", text)
+        managers.notifier.send_message(
+            queue_next.email, "Document is ready", text)
         return 4  # Assigned to someone in the queue
 
-    def return_by_copy(self, copy, librarian):
+    def return_by_copy(self, copy):
         """Return copy
         """
-        query = History.select().where((History.date_return.is_null(True)) & (History.copy == copy))
+        query = History.select().where(
+            (History.date_return.is_null(True)) & (History.copy == copy))
         if (len(query) == 0):
             return 3  # No entry found
         if (len(query) > 1):
-            print('Houston, we have a problems. Return_by_copy, booking system')
+            #print('Houston, we have a problems. Return_by_copy, booking system')
+            logging.error(
+                'booking_system.Booking_system.return_by_copy(), copy is checked out to 2 or more users at the same time!')
             return 2  # Internal error
         entry = query.get()
-        return self.return_by_entry(entry, librarian)
+        return self.return_by_entry(entry)
 
-    def renew_by_entry(self, entry, librarian):
+    def renew_by_entry(self, entry):
         """Renew copy for certain user using History entry"""
         if (entry.date_return != None):
             return (1, None)  # Copy is already returned
@@ -133,27 +145,28 @@ class Booking_system:
             return (2, None)  # Copy is overdued
         if (entry.copy.get_doc().requested == True):
             return (3, None)  # Document is under outstanding request
-        if (entry.renewed == True):
+        if (entry.renewed == True):  # TODO: check if copy is deleted
             return (6, None)  # Copy has been already renewed
         current_date = datetime.date.today()
         entry.date_return = str(current_date)
-        entry.librarian_re = librarian
+        entry.librarian_re = self.librarian
         entry.save()
-        res = History.create(user=entry.user, copy=entry.copy, librarian_co=librarian,
+        res = History.create(user=entry.user, copy=entry.copy, librarian_co=self.librarian,
                              date_check_out=current_date, renewed=True)
         return (0, res)
 
-    def renew_by_copy(self, copy, librarian):
+    def renew_by_copy(self, copy):
         """Renew by copy"""
-        query = History.select().where((History.date_return.is_null(True)) & (History.copy == copy))
+        query = History.select().where(
+            (History.date_return.is_null(True)) & (History.copy == copy))
         if (len(query) == 0):
             return (4, None)  # Copy is not checked out
         if (len(query) > 1):
             return (5, None)  # Internal error
         entry = query.get()
-        return self.renew_by_entry(entry, librarian)
+        return self.renew_by_entry(entry)
 
-    def outstanding_request(self, doc, user, librarian):
+    def outstanding_request(self, doc, user):
         """Places outstanding request for certain document for list of users.
         Returns (code, history entry (if there was free copy after queue abandon) or request entry)"""
         if (user.group == group_manager.Group.get(group_manager.Group.name == 'Deleted')):
@@ -173,7 +186,9 @@ class Booking_system:
             entry.active = False
             entry.save()
             if (Request.get_user(doc) != None):
-                print('Houston, we have a problems. Outstanding request, booking system')
+                #print('Houston, we have a problems. Outstanding request, booking system')
+                logging.error(
+                    'booking_system.Booking_system.outstanding_request(), 2 users in outstanding request')
         # Check if there is available copy
         copies = doc.get_document_copies()
         for copy in copies:
@@ -184,10 +199,11 @@ class Booking_system:
         # if we have free copies after deleting queue, check out to users who are in request
         for copy in copies:
             if (copy.active == True and copy.checked_out == 0):
-                res = self.check_out(doc, user, librarian)
-                return (1, res)  # One of copies became free after flushing the queue
+                res = self.check_out(doc, user)
+                # One of copies became free after flushing the queue
+                return (1, res)
         # Placing request
-        res = Request.place_request(doc, user, librarian)
+        res = Request.place_request(doc, user, self.librarian)
         return (0, res)  # Request is placed
 
     def get_list(self, rows_number, page, opened=0):
@@ -218,7 +234,8 @@ class Booking_system:
         page_number = int(select_query.count()) // rows_number
         if (select_query.count() % rows_number > 0):
             page_number += 1
-        query = select_query.offset(0 + (page - 1) * rows_number).limit(rows_number)
+        query = select_query.offset(
+            0 + (page - 1) * rows_number).limit(rows_number)
         for entry in query:
             res.append(entry)
         return res, page_number
@@ -278,15 +295,18 @@ class Booking_system:
         date_return = entry.date_return
         if (date_return == None):  # if we are trying to check open entry
             date_return = str(datetime.date.today())
-        res = min(self.overdue(entry.date_check_out, date_return, period), entry.copy.get_doc().cost)
+        res = min(self.overdue(entry.date_check_out, date_return,
+                               period), entry.copy.get_doc().cost)
         return res
 
     def overdue(self, date_check_out, date_return, period):
         """Calculates fine
         """
         date_return_d = datetime.datetime.strptime(date_return, '%Y-%m-%d')
-        date_check_out_d = datetime.datetime.strptime(date_check_out, '%Y-%m-%d')
-        res = max((date_return_d - date_check_out_d).days - period, 0) * self.__fine
+        date_check_out_d = datetime.datetime.strptime(
+            date_check_out, '%Y-%m-%d')
+        res = max((date_return_d - date_check_out_d).days -
+                  period, 0) * self.__fine
         return res
 
     def pay_fine(self, usr, amount):

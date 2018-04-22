@@ -2,8 +2,9 @@ from peewee import *
 from playhouse.migrate import *
 from db_connect import BaseModel
 from managers.doc_manager import class_to_name
+from managers.auth import require_auth_class
 
-
+@require_auth_class()
 class Group(BaseModel):
     id = PrimaryKeyField()
     name = TextField()
