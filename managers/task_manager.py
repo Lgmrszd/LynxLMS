@@ -57,7 +57,13 @@ def inform_completeness(percentage):
 
 
 def get_tasks():
-    return Task.select().order_by(Task.datetime.asc)
+    tasks = list(Task.select().order_by(Task.datetime.asc))
+    return tasks
+
+
+def run_task(task_id):
+    task = Task.get(Task.task_id == task_id)
+    return task.run()
 
 
 def timer_function():
