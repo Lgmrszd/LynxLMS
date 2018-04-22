@@ -71,22 +71,25 @@ class Document(BaseModel):
         temp.save()
 
     @classmethod
-    def get_list(cls, rows_number, page, active=0):  # TODO : rework arguments
+    def get_list(cls, rows_number, page, active=0, search={}):  # TODO : rework arguments
         """Returns a content from certain page of document list
         Active - active=1, Not active - active=-1, All - active=0
         """
         select_query = None
         if (active == 0):
-            select_query = cls.select().order_by(cls.title.asc())
-            query = select_query.offset(
+            select_query = cls.select()
+            select_query = cls.search(select_query, search)
+            query = select_query.order_by(cls.title.asc()).offset(
                 0 + (page-1)*rows_number).limit(rows_number)
         elif (active == 1):
-            select_query = cls.select().where(cls.active == True).order_by(cls.title.asc())
-            query = select_query.offset(
+            select_query = cls.select().where(cls.active == True)
+            select_query = cls.search(select_query, search)
+            query = select_query.order_by(cls.title.asc()).offset(
                 0 + (page-1)*rows_number).limit(rows_number)
         elif (active == -1):
-            select_query = cls.select().where(cls.active == False).order_by(cls.title.asc())
-            query = select_query.offset(
+            select_query = cls.select().where(cls.active == False)
+            select_query = cls.search(select_query, search)
+            query = select_query.order_by(cls.title.asc()).offset(
                 0 + (page-1)*rows_number).limit(rows_number)
         else:
             return([], 0)
@@ -98,6 +101,23 @@ class Document(BaseModel):
         if (select_query.count() % rows_number > 0):
             page_number += 1
         return res, page_number
+    
+    @classmethod
+    def search(cls, query, search):
+        """Accorfing to fields and values in search dictionary,
+           use additional conditions on the query
+        """
+        fields = cls._get_fields_dict_raw()
+        for key in search.keys():
+            if key in fields.keys():
+                if (isinstance(fields[key].field, pw.IntegerField) or isinstance(fields[key].field, pw.BigIntegerField)):
+                    query = query.where(fields[key] == int(search[key]))
+                elif (isinstance(fields[key].field, pw.CharField) or isinstance(fields[key].field, pw.TextField)):
+                    search_string = '%' + str(search[key]) + '%'
+                    query = query.where(fields[key] ** search_string)
+                elif (isinstance(fields[key].field, pw.BooleanField)):
+                    query = query.where(fields[key] == bool(search[key]))
+        return query
 
     @classmethod
     def get_fields(cls):
@@ -113,8 +133,21 @@ class Document(BaseModel):
         return res
 
     @classmethod
+    def _get_fields_dict_raw(cls):
+        """Returns dictionary with field name as a key and peewee type of the field as a value
+        """
+        temp = {**Document.__dict__, **cls.__dict__}
+        temp.pop('__doc__')
+        temp.pop('__module__')
+        res = {}
+        for key in temp.keys():
+            if (isinstance(temp[key], pw.FieldDescriptor)):
+                res[key] = temp[key]
+        return res
+
+    @classmethod
     def get_fields_dict(cls):
-        """Returns dictionary with field name as a key and type of field as a value
+        """Returns dictionary with field name as a key and type of the field as a value
         """
         map_to_types = {
             pw.IntegerField: int,
