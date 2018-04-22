@@ -217,9 +217,7 @@ class Queue(BaseModel):
                 #inform user here
                 doc_class = doc_manager.name_to_class()[entry.docClass]
                 doc = doc_class.get_by_id(entry.docId)
-                text = "Dear %s,\nYour request for document %s is overdue and has been removed"\
-                       % (entry.user.name + " " + entry.user.surname, doc.title)
-                managers.notifier.send_message(entry.user.email, "Removed from queue", text)
+                managers.notifier.notify_request_overdue([entry.user], doc)
                 users.append(entry.user)
                 copy = entry.assigned_copy 
                 if (cls.get_user_from_queue(copy) == None):
@@ -239,10 +237,11 @@ class Queue(BaseModel):
         #TODO : Replace code below with 2-3 queries!!!
         for entry in select_query:
             users.append(entry.user) #inform user
-            text = "Dear %s,\nQueue for the document \"%s\" have been abandoned due to outstanding request.\n"\
-                   % (entry.user.name + " " + entry.user.surname, doc.title)
-            managers.notifier.send_message(entry.user.email, "Document queue abandoned", text)
+            # text = "Dear %s,\nQueue for the document \"%s\" have been abandoned due to outstanding request.\n"\
+            #        % (entry.user.name + " " + entry.user.surname, doc.title)
+            # managers.notifier.send_message(entry.user.email, "Document queue abandoned", text)
             entry.delete_instance()
+        managers.notifier.notify_doc_abandon(users, doc)
         copies = doc.get_document_copies()
         res = []
         for copy in copies:
