@@ -13,7 +13,7 @@ class SearchWindow(Window):
     def __init__(self, app):
         super().__init__(app)
         self.app.el.register(self.get_result, EventManager.Events.doc_added, self)
-        self.app.el.register(self.change_listener, EventManager.Events.doc_state_changed, self)
+        self.app.el.register(self.change_listener, EventManager.Events.doc_deletion_state_changed, self)
         self.app.el.register(self.change_listener, EventManager.Events.doc_changed, self)
 
     def change_listener(self, id):

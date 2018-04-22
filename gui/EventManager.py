@@ -25,10 +25,13 @@ class EventManager:
     def fire(self, event: int, param: dict) -> None:
         if self.listeners.get(event) is not None:
             for i in self.listeners[event]:
-                print("fired: "+str(i))
                 i[0](**param)
 
     class Events:
         doc_added = 0
-        doc_state_changed = 1
+        doc_deletion_state_changed = 1
         doc_changed = 2
+        copy_added = 3
+        copy_state_changed = 4
+        copy_deletion_state_changed = 5
+        queue_changed = 6
