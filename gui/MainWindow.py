@@ -1,27 +1,27 @@
 import sys
 from PyQt5.QtWidgets import QWidget, QDesktopWidget, QVBoxLayout, QLineEdit, QHBoxLayout, QLabel
 from gui.GUITools import add_button
+from gui.Window import Window
+from gui.AddDocument import AddDocument
+from gui.SearchWindow import SearchWindow
 
 
-class MainWindow(QWidget):
+class MainWindow(Window):
     librarian = ""
-
-    def __init__(self):
-        super().__init__()
-        # self.search_window = SearchWindow(self._s_copy_changed, self)
-        # self.history_window = HistoryWindow(self._h_copy_changed)
-        # self.manage_users = ManageUsersWindow()
-        # self.manage_groups = ManageGroupsWindow()
-        self._set_up_ui()
 
     def closeEvent(self, QCloseEvent):
         """вызывается при close event"""
+        super(MainWindow, self).closeEvent(QCloseEvent)
         sys.exit(0)
 
     def librarian_update(self):
         MainWindow.librarian = str(self.librarian_field.text())
 
     def _set_up_ui(self):
+        self.search_window = self.app.open_window(SearchWindow, {})
+        # self.history_window = HistoryWindow(self._h_copy_changed)
+        # self.manage_users = ManageUsersWindow()
+        # self.manage_groups = ManageGroupsWindow()
         window_size_x = 400
         window_size_y = 400
 
@@ -50,6 +50,8 @@ class MainWindow(QWidget):
         self._center()
         self.setWindowTitle('Librarian application')
 
+        self.show()
+
     def _center(self):
         """ставит окно в центр"""
         qr = self.frameGeometry()
@@ -69,12 +71,7 @@ class MainWindow(QWidget):
         self.search_window.update_page()
 
     def open_add_document_window(self):
-        # add_document = AddDocument(lambda: self._add_window_closed(add_document))
-        # if add_document.type is None:
-        #     return
-        # add_document.show()
-        # self.add_documents.append(add_document)
-        pass
+        self.app.open_window(AddDocument, {})
 
     def open_manage_users_window(self):
         if self.manage_users.isHidden():
