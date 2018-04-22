@@ -15,7 +15,7 @@ class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
         self.search_window = SearchWindow(self._s_copy_changed, self)
-        self.history_window = HistoryWindow(self._h_copy_changed)
+        self.history_window = HistoryWindow(self._h_copy_changed, self.librarian)
         self.manage_users = ManageUsersWindow()
         self.manage_groups = ManageGroupsWindow()
         self.add_documents = []

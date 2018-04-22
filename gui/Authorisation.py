@@ -1,7 +1,8 @@
 import sys
 from PyQt5.QtWidgets import QWidget, QDesktopWidget, QPushButton, QVBoxLayout, QLineEdit, QHBoxLayout, QLabel
-from managers.auth import Auth
+from managers.auth import Auth, AccessError
 from gui.MainWindow import MainWindow
+from managers import booking_system
 
 class Authorization(QWidget):
     def __init__(self):
@@ -62,7 +63,12 @@ class Authorization(QWidget):
             self.status.setText("<font color='red'> Empty password field </font>")
             return
         print(login + " " + password)
-        Auth.login(login, password)
+
+        if Auth.login(login, password) != 0:
+            self.status.setText("<font color='red'> Incorrect login / password </font>")
+            return
+
         self.main_window = MainWindow()
+
         self.main_window.show()
         self.hide()
