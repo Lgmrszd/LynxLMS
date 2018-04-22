@@ -3,6 +3,7 @@ from PyQt5.QtWidgets import QApplication, QStyleFactory
 from gui.MainWindow import MainWindow
 from gui.EventManager import EventManager
 
+from gui.Authorisation import Authorization
 
 class App:
     def __init__(self):
@@ -12,7 +13,10 @@ class App:
         app = QApplication(sys.argv)
         QApplication.setStyle(QStyleFactory.create('Fusion'))
 
+        auth = Authorization()
+        auth.show()
         self.open_window(MainWindow, {})
+        # ToDo open after authorization
 
         sys.exit(app.exec_())  # will not end until you close the program
 
