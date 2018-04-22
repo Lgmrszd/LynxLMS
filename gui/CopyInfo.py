@@ -1,5 +1,5 @@
-from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel, QLineEdit, QPushButton, QMessageBox, \
-    QTableWidget, QAbstractItemView, QTableWidgetItem, QInputDialog
+from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout, QLabel, QPushButton, QMessageBox, \
+    QTableWidget, QAbstractItemView, QTableWidgetItem
 from managers.doc_manager import *
 from managers.booking_system import *
 from gui.Window import Window
@@ -10,7 +10,7 @@ import gui.MainWindow
 class CopyInfo(Window):
     def __init__(self, app, copy):
         self.copy = copy
-        self.bs = Booking_system()
+        self.bs = self.app.bs
         self.his = self.bs.get_copy_history(copy)
         super().__init__(app)
         self.app.el.register(self.update, EventManager.Events.copy_state_changed, self)

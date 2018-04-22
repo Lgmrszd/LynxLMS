@@ -1,5 +1,5 @@
 import sys
-from PyQt5.QtWidgets import QDesktopWidget, QVBoxLayout, QLineEdit, QHBoxLayout, QLabel
+from PyQt5.QtWidgets import QDesktopWidget, QVBoxLayout
 
 from gui.AddUser import AddUser
 from gui.ManageUsersWindow import ManageUsersWindow
@@ -13,15 +13,10 @@ from gui.SearchWindow import SearchWindow
 
 
 class MainWindow(Window):
-    librarian = ""
-
     def closeEvent(self, QCloseEvent):
         """вызывается при close event"""
         super(MainWindow, self).closeEvent(QCloseEvent)
         sys.exit(0)
-
-    def librarian_update(self):
-        MainWindow.librarian = str(self.librarian_field.text())
 
     def _set_up_ui(self):
         self.search_window = self.app.open_window(SearchWindow, {})
@@ -31,16 +26,8 @@ class MainWindow(Window):
         window_size_x = 400
         window_size_y = 400
 
-        hbox = QHBoxLayout()
-        self.librarian_field = QLineEdit("")
-        self.librarian_field.textEdited.connect(self.librarian_update)
-        lab = QLabel("Librarian: ")
-        hbox.addWidget(lab)
-        hbox.addWidget(self.librarian_field)
-
         vbox = QVBoxLayout()
         vbox.setSpacing(10)
-        vbox.addLayout(hbox)
         add_button(vbox, "Search documents", self.switch_search_window)
         add_button(vbox, "Add document", self.open_add_document_window)
         add_button(vbox, "Manage groups", self.open_groups_window)

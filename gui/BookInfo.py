@@ -1,14 +1,12 @@
 from PyQt5.QtGui import QColor
 from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout, QLabel, QPushButton, QMessageBox, \
                                                 QTableWidget, QAbstractItemView, QTableWidgetItem, QInputDialog
-
 from gui.CopyInfo import CopyInfo
 from gui.EventManager import EventManager
 from gui.QueueWindow import QueueWindow
 from gui.Window import Window
 from gui.BookEdit import BookEdit
-from managers.doc_manager import Copy, Document
-from managers.booking_system import Booking_system
+from managers.doc_manager import Copy
 from gui.GUITools import add_button
 from managers.user_manager import User
 
@@ -18,7 +16,7 @@ class BookInfo(Window):
 
     def __init__(self, app, doc):
         self.doc = doc
-        self.bs = Booking_system()
+        self.bs = app.bs
         self.cl = self.bs.get_document_copies(doc)
         super().__init__(app)
         app.el.register(self._update, EventManager.Events.doc_changed, self)
@@ -128,8 +126,7 @@ class BookInfo(Window):
             msg.setText("Invalid user card")
             msg.exec_()
             return
-        (code, res) = self.bs.outstanding_request(self.doc, usr, "")
-        # ToDo librarian
+        (code, res) = self.bs.outstanding_request(self.doc, usr)
         msg = QMessageBox()
         msgs = {1: "Copy of a document has been checked out",
                 2: "There is a free copy",
@@ -153,8 +150,7 @@ class BookInfo(Window):
             msg.setText("Invalid user card")
             msg.exec_()
             return
-        (err, res) = self.bs.check_out(self.doc, usr, "")
-        # ToDo librarian
+        (err, res) = self.bs.check_out(self.doc, usr)
         if err > 0:
             msg = QMessageBox()
             msgs = {7: "User is already in the queue",
@@ -191,8 +187,7 @@ class BookInfo(Window):
         c.save()
         # !!!
         # !!!
-        self.bs.proceed_free_copy(c, "")
-        # ToDo librarian
+        self.bs.proceed_free_copy(c)
         # Kostyl ochen' bolshoy
         # !!!
         # !!!

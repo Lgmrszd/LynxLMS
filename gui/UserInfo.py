@@ -1,18 +1,16 @@
-from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel, QPushButton, QMessageBox, QTableWidget, \
+from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout, QLabel, QPushButton, QTableWidget, \
     QGroupBox, QTableWidgetItem, QAbstractItemView, QInputDialog
 
-from gui.CopyInfo import CopyInfo
 from gui.UserEdit import UserEdit
 from gui.Window import Window
 from gui.EventManager import EventManager
 from managers.user_manager import User
 # from gui.UserEdit import UserEdit
-from managers.booking_system import Booking_system
 
 
 class UserInfo(Window):
     def __init__(self, app, user):
-        self.bs = Booking_system()
+        self.bs = self.app.bs
         self.user = user
         super().__init__(app)
         self.app.el.register(self.reopen, EventManager.Events.user_changed, self)
@@ -84,7 +82,7 @@ class UserInfo(Window):
         fine_button.setFixedHeight(25)
         fine_button.clicked.connect(self.pay_fine)
 
-        history = Booking_system().get_user_history(self.user)
+        history = self.app.bs.get_user_history(self.user)
         self.history_table = QTableWidget()
         self.history_table.setRowCount(len(history))
         self.set_up_table(self.history_table)

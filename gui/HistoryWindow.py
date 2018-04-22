@@ -1,7 +1,6 @@
 from PyQt5.QtGui import QColor
-from PyQt5.QtWidgets import QWidget, QLabel, QComboBox, QTableWidget, QPushButton, QHBoxLayout, QVBoxLayout, QGroupBox, \
+from PyQt5.QtWidgets import QLabel, QComboBox, QTableWidget, QPushButton, QHBoxLayout, QVBoxLayout, QGroupBox, \
     QTableWidgetItem, QAbstractItemView
-from managers.booking_system import Booking_system
 from gui.CopyInfo import CopyInfo
 from gui.Window import Window
 from gui.EventManager import EventManager
@@ -24,7 +23,7 @@ class HistoryWindow(Window):
         window_size_x = 700
         window_size_y = 650
 
-        self.bs = Booking_system()
+        self.bs = self.app.bs
         self.number = 0
 
         self.active = 2
