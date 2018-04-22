@@ -17,6 +17,11 @@ class ManageUsersWindow(Window):
         self.app.el.register(self.listener, EventManager.Events.fine_paid, self)
         self.app.el.register(self.get_result, EventManager.Events.user_added, self)
 
+    def closeEvent(self, QCloseEvent):
+        # To keep it in list of windows in App and EventManager
+        # I wish we made this project in Java
+        pass
+
     def listener(self, id):
         self.get_result()
 
