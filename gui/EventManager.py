@@ -35,3 +35,6 @@ class EventManager:
         copy_state_changed = 4
         copy_deletion_state_changed = 5
         queue_changed = 6
+        group_added = 7
+        group_deleted = 8
+        group_changed = 9

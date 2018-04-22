@@ -1,6 +1,10 @@
 import sys
-from PyQt5.QtWidgets import QWidget, QDesktopWidget, QVBoxLayout, QLineEdit, QHBoxLayout, QLabel
+from PyQt5.QtWidgets import QDesktopWidget, QVBoxLayout, QLineEdit, QHBoxLayout, QLabel
+
+from gui.AddGroup import AddGroup
 from gui.GUITools import add_button
+from gui.HistoryWindow import HistoryWindow
+from gui.ManageGroupsWindow import ManageGroupsWindow
 from gui.Window import Window
 from gui.AddDocument import AddDocument
 from gui.SearchWindow import SearchWindow
@@ -19,9 +23,9 @@ class MainWindow(Window):
 
     def _set_up_ui(self):
         self.search_window = self.app.open_window(SearchWindow, {})
-        # self.history_window = HistoryWindow(self._h_copy_changed)
+        self.history_window = self.app.open_window(HistoryWindow, {})
         # self.manage_users = ManageUsersWindow()
-        # self.manage_groups = ManageGroupsWindow()
+        self.manage_groups = self.app.open_window(ManageGroupsWindow, {})
         window_size_x = 400
         window_size_y = 400
 
@@ -98,7 +102,4 @@ class MainWindow(Window):
             self.manage_groups.hide()
 
     def open_add_group(self):
-        # add_group = AddGroup()
-        # add_group.show()
-        # self.add_groups.append(add_group)
-        pass
+        self.app.open_window(AddGroup, {})
