@@ -62,7 +62,7 @@ def __send_messages_task_func(task_id, args):
             server.sendmail(__address, email, text)
         except smtplib.SMTPException as ex:
             status = task_manager.ERROR
-            message = "Unknown error: "+str(ex)
+            message = f"Unknown error: {str(ex)}. Please check email adress {email} for user {credentials}"
             new_users = user[i:]
             task_manager.Task.create(
                 datetime=datetime.datetime.now()+datetime.timedelta(minutes=5),
