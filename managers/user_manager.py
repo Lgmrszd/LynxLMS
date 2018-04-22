@@ -288,17 +288,12 @@ def __update_queue_task_func(task_id, args):
         datetime=new_date,
         func_name="update_queue",
         display_name="Update queue",
-        parameters=[]
+        parameters=[True]
     )
     return task_manager.FINISHED, "Queue updated"
 
 
 task_manager.register_task_function("update_queue", __update_queue_task_func)
-task_manager.Task.create(
-        datetime=datetime.datetime.now(),
-        func_name="update_queue",
-        display_name="Update queue",
-        parameters=[])
 
 
 class Request(BaseModel):

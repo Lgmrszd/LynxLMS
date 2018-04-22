@@ -2,6 +2,7 @@ import managers.doc_manager
 import managers.user_manager
 import managers.group_manager
 import managers.booking_system
+import managers.task_manager
 import managers.auth
 import bcrypt
 from db_connect import db
@@ -28,7 +29,8 @@ def create_tables():
                       managers.booking_system.History,
                       managers.user_manager.Queue,
                       managers.user_manager.Request,
-                      managers.auth.AuthUsers], safe=True)
+                      managers.auth.AuthUsers,
+                      managers.task_manager.Task], safe=True)
     #deleted_group = managers.group_manager.Group.get(managers.group_manager.Group.name == 'Deleted')
     deleted_group = len(managers.group_manager.Group.select().where(managers.group_manager.Group.name == 'Deleted'))
     if (deleted_group == 0):
