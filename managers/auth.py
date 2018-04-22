@@ -7,6 +7,14 @@ import inspect
 import logging
 from db_connect import BaseModel
 
+class AccessError(Exception):
+    """Exception raised for authorization errors
+    module - class in which method exception was raised
+    method - the name of method
+    """
+    def __init__(self, module, method):
+        self.module = module
+        self.method = method
 
 class Auth:
     """Class that manages authentication and authorization 
@@ -31,21 +39,26 @@ class Auth:
         # Get the user
         query = AuthUsers.select().where(AuthUsers.login == login)
         if (len(query) == 0):
+            logging.info('Auth.login( ): fail <%s>', login)
             return -1
         # Check the password
         elif (len(query) == 1):
             entry = query.get()
             if (bcrypt.checkpw(str(password).encode(), entry.password.encode())):
+                # Logging correct login
+                logging.info('Auth.login( ): success <%s>', login)
                 if (entry.auth_user_id == 1):
                     cls.access_level = ('admin', 99)
                     return 0
                 else:
                     cls.access_level = ('librarian', entry.privilege)
                     return 0
+            # Logging incorrect login
+            logging.info('Auth.login( ): fail <%s>', login)
             return -1
         else:
             #print('Houston, problem in auth.Auth.authentication')
-            logging.error('Auth.login(), too much users with same id!')
+            logging.error('Auth.login( ), too much users with same id!')
             return -1
 
     @classmethod
@@ -94,7 +107,9 @@ class Auth:
         """Log out from the system
         """
         if cls.access_level is None:
+            logging.info('Auth.log_out( ): fail')
             return False
+        logging.info('Auth.log_out( ): success')
         cls.access_level = None
         return True
 
@@ -141,15 +156,15 @@ def require_auth(cls, func):  # TODO : add Queue and Request to the access map
             # Logging the operation
             if (method_name is 'add'):  # If we perform add operation, output ID of inserted element
                 last_id = type(res).select().count()  # TODO : Rework it
-                logging.info('AG %s.%s ( %s): id=%s', module_name,
+                logging.info('AG %s.%s( %s): id=%s', module_name,
                              method_name, arguments, str(last_id))
             else:
-                logging.info('AG %s.%s ( %s)', module_name,
+                logging.info('AG %s.%s( %s)', module_name,
                              method_name, arguments)
             return res
         # Logging operation where access was denied
-        logging.info('AD %s.%s ( %s)', module_name, method_name, arguments)
-        return None
+        logging.info('AD %s.%s( %s)', module_name, method_name, arguments)
+        raise AccessError(module_name, method_name)
     return wrapper
 
 
@@ -193,7 +208,7 @@ class AuthUsers (BaseModel):
             return False
         if (len(query) == 0):
             #print('Houston, we have problems. admin_check in auth')
-            logging.error('Auth.admin_check, no admin exists!')
+            logging.error('Auth.admin_check(), no admin exists!')
             return False
         admin_info = query.get()
         if (admin_info.login == login and bcrypt.checkpw(str(password).encode(), admin_info.password.encode())):
@@ -206,12 +221,15 @@ class AuthUsers (BaseModel):
         """
         if (cls.admin_check(admin[0], admin[1])):
             if (privilege < 0 or privilege > 3):
-                return 1
+                logging.info('AuthUsers.add( ): wrong privilege')
+                return 2
             hashed = bcrypt.hashpw(str(password).encode(), bcrypt.gensalt())
             AuthUsers.create(login=login, password=hashed,
                              privilege=privilege, info=info)
+            logging.info('AuthUsers.add( ):  <%s> added', login)
             return 0
         else:
+            logging.info('AuthUsers.add( ): Admin check failed')
             return 1
 
     @classmethod
@@ -226,22 +244,25 @@ class AuthUsers (BaseModel):
                 query.get().delete_instance()
                 return 0
             elif (len(query) == 0):
+                logging.info('AuthUsers.remove( ): fail')
                 return 2
             elif (len(query) > 1):
                 #print('Houston, huge problems. auth.AuthUsers.remove')
                 logging.error(
-                    'AuthUsers.remove(), several users with same id!')
+                    'AuthUsers.remove( ), several users with same id!')
                 return 1
-        else:
-            return 1
+        logging.info('AuthUsers.remove( ): Admin check failed')
+        return 1
 
     @classmethod
     def get_list(cls, admin):
         """Get the list of all users
         """
-        if (cls.admin_check(admin[0], admin[1])):
+        if cls.admin_check(admin[0], admin[1]):
+            logging.info('AuthUsers.get_list( ): success')
             query = cls.select(cls.auth_user_id, cls.login,
                                cls.privilege, cls.info)
             res = list(query)
-            return (0, res)
-        return (1, None)
+            return 0, res
+        logging.info('AuthUsers.get_list( ): Admin check failed')
+        return 1, None
