@@ -9,7 +9,7 @@ class HistoryWindow(QWidget):
     __overdue_color = QColor(255, 230, 230)
     __active_color = QTableWidgetItem("").background()
 
-    def __init__(self, copy_state_changed_listener):
+    def __init__(self, copy_state_changed_listener, librarian):
         super().__init__()
 
         self._copy_state_changed_listener = copy_state_changed_listener
@@ -17,7 +17,7 @@ class HistoryWindow(QWidget):
         window_size_x = 700
         window_size_y = 650
 
-        self.bs = Booking_system()
+        self.bs = Booking_system(librarian)
         self.list = None
         self.edits = list()
         self.number = 0

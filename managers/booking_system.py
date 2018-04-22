@@ -5,6 +5,7 @@ import managers.user_manager as user_manager
 import managers.group_manager as group_manager
 import managers.doc_manager as doc_manager
 import managers.notifier
+import managers.event_manager as event_manager
 from db_connect import BaseModel
 from managers.user_manager import Queue as Queue
 from managers.user_manager import Request as Request
@@ -32,6 +33,8 @@ class Booking_system:
 
     def __init__(self, librarian):
         self.librarian = librarian
+        #Adding listener to proceed free copies via event_manager
+        event_manager.register_listener('free_copy', self.proceed_free_copy)
 
     def check_out(self, doc, user):
         """Check outs copy by document and user entries. If there is no available copy, user is placed in queue
