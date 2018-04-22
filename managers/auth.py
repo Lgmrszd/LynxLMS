@@ -7,6 +7,14 @@ import inspect
 import logging
 from db_connect import BaseModel
 
+class AccessError(Exception):
+    """Exception raised for authorization errors
+    module - class in which method exception was raised
+    method - the name of method
+    """
+    def __init__(self, module, method):
+        self.module = module
+        self.method = method
 
 class Auth:
     """Class that manages authentication and authorization 
@@ -156,7 +164,7 @@ def require_auth(cls, func):  # TODO : add Queue and Request to the access map
             return res
         # Logging operation where access was denied
         logging.info('AD %s.%s( %s)', module_name, method_name, arguments)
-        return None
+        raise AccessError(module_name, method_name)
     return wrapper
 
 
@@ -250,11 +258,11 @@ class AuthUsers (BaseModel):
     def get_list(cls, admin):
         """Get the list of all users
         """
-        if (cls.admin_check(admin[0], admin[1])):
+        if cls.admin_check(admin[0], admin[1]):
             logging.info('AuthUsers.get_list( ): success')
             query = cls.select(cls.auth_user_id, cls.login,
                                cls.privilege, cls.info)
             res = list(query)
-            return (0, res)
+            return 0, res
         logging.info('AuthUsers.get_list( ): Admin check failed')
-        return (1, None)
+        return 1, None
