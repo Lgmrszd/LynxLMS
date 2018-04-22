@@ -1,6 +1,8 @@
 import sys
 from PyQt5.QtWidgets import QDesktopWidget, QVBoxLayout, QLineEdit, QHBoxLayout, QLabel
 
+from gui.AddUser import AddUser
+from gui.ManageUsersWindow import ManageUsersWindow
 from gui.AddGroup import AddGroup
 from gui.GUITools import add_button
 from gui.HistoryWindow import HistoryWindow
@@ -24,7 +26,7 @@ class MainWindow(Window):
     def _set_up_ui(self):
         self.search_window = self.app.open_window(SearchWindow, {})
         self.history_window = self.app.open_window(HistoryWindow, {})
-        # self.manage_users = ManageUsersWindow()
+        self.manage_users = self.app.open_window(ManageUsersWindow, {})
         self.manage_groups = self.app.open_window(ManageGroupsWindow, {})
         window_size_x = 400
         window_size_y = 400
@@ -84,10 +86,7 @@ class MainWindow(Window):
             self.manage_users.hide()
 
     def open_add_user_window(self):
-        # add_user = AddUser()
-        # add_user.show()
-        # self.add_users.append(add_user)
-        pass
+        self.app.open_window(AddUser, {})
 
     def open_history_window(self):
         if self.history_window.isHidden():

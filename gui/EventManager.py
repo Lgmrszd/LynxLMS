@@ -38,3 +38,7 @@ class EventManager:
         group_added = 7
         group_deleted = 8
         group_changed = 9
+        user_added = 10
+        user_deleted = 11
+        user_changed = 12
+        fine_paid = 13
