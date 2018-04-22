@@ -1,9 +1,8 @@
-from db_connect import BaseModel
-import peewee as pw
-import time
 import datetime
 import json
+import peewee as pw
 from managers import event_manager
+from db_connect import BaseModel
 
 WAITING = 0
 RUNNING = 1
@@ -65,6 +64,6 @@ def timer_function():
     now = datetime.datetime.now()
     auto_tasks = Task.select().where(Task.datetime < now).\
         where(Task.status == WAITING).\
-        where(Task.important == False).order_by(Task.datetime.asc())
+        where(Task.important is not False).order_by(Task.datetime.asc())
     for task in auto_tasks:
         task.run()
