@@ -69,7 +69,6 @@ def run_task(task_id):
 def timer_function():
     now = datetime.datetime.now()
     auto_tasks = Task.select().where(Task.datetime < now).\
-        where(Task.status == WAITING).\
-        where(Task.important is not False).order_by(Task.datetime.asc())
+        where(Task.status == WAITING).order_by(Task.datetime.asc())
     for task in auto_tasks:
         task.run()
