@@ -3,6 +3,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import config
 from managers import task_manager
+from managers import user_manager
 import datetime
 
 
@@ -46,9 +47,10 @@ def __send_messages_task_func(task_id, args):
 
     users_amount = len(users_info)
     task_manager.inform_completeness(0)
-    for i, user in enumerate(users_info):
-        email = user["email"]
-        credentials = user["name"]
+    for i, user_info in enumerate(users_info):
+        user = user_manager.User.get(user_manager.User.card_id == user_info["card_id"])
+        email = user.email
+        credentials = f"{user.name} {user.surname}"
         body = body_template.format(credentials)
         msg = MIMEMultipart()
         msg['From'] = __address
@@ -62,7 +64,13 @@ def __send_messages_task_func(task_id, args):
             status = task_manager.ERROR
             message = "Unknown error: "+str(ex)
             new_users = user[i:]
-            __send_messages(display_name, new_users, subj, body)
+            task_manager.Task.create(
+                datetime=datetime.datetime.now()+datetime.timedelta(minutes=5),
+                func_name="send_messages",
+                display_name=display_name,
+                parameters=[display_name, new_users, subj, body],
+                important=True
+            )
             return status, message
         percentage = 100*(i+1) / users_amount
         task_manager.inform_completeness(percentage)
@@ -92,7 +100,7 @@ def notify_free_copy(users, doc):
     body = "Dear {},\nQueued document \"%s\" for you is ready.\n" % doc_name
     users_info = []
     for user in users:
-        user_info = {"email": user.email, "name": f"{user.name} {user.surname}"}
+        user_info = {"card_id": user.card_id}
         users_info.append(user_info)
     __send_messages(display_name, users_info, subj, body)
 
@@ -104,7 +112,7 @@ def notify_request_overdue(users, doc):
     body = "Dear {},\nYour request for document \"%s\" is overdue and has been removed" % doc_name
     users_info = []
     for user in users:
-        user_info = {"email": user.email, "name": f"{user.name} {user.surname}"}
+        user_info = {"card_id": user.card_id}
         users_info.append(user_info)
     __send_messages(display_name, users_info, subj, body)
 
@@ -116,7 +124,7 @@ def notify_doc_abandon(users, doc):
     body = "Dear {},\nQueue for the document \"%s\" have been abandoned due to outstanding request.\n" % doc_name
     users_info = []
     for user in users:
-        user_info = {"email": user.email, "name": f"{user.name} {user.surname}"}
+        user_info = {"card_id": user.card_id}
         users_info.append(user_info)
     __send_messages(display_name, users_info, subj, body)
 
