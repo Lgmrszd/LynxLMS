@@ -6,7 +6,7 @@ import datetime
 import managers.notifier
 from managers.auth import require_auth_class
 import logging
-from managers import event_manager
+from managers import event_manager, task_manager
 
 
 @require_auth_class()
@@ -279,7 +279,27 @@ class Queue(BaseModel):
         if (select_query.count() % rows_number > 0):
             page_number += 1
         return res, page_number
-    
+
+
+def __update_queue_task_func(task_id, args):
+    Queue.update_queue()
+    new_date = datetime.datetime.now().replace(minute=0, second=0, microsecond=0)+datetime.timedelta(days=1)
+    task_manager.Task.create(
+        datetime=new_date,
+        func_name="update_queue",
+        display_name="Update queue",
+        parameters=[]
+    )
+    return task_manager.FINISHED, "Queue updated"
+
+
+task_manager.register_task_function("update_queue", __update_queue_task_func)
+task_manager.Task.create(
+        datetime=datetime.datetime.now(),
+        func_name="update_queue",
+        display_name="Update queue",
+        parameters=[])
+
 
 class Request(BaseModel):
     request_id = pw.PrimaryKeyField()
