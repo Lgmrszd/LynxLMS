@@ -123,7 +123,7 @@ class Booking_system:
         #        % (queue_next.name + " " + queue_next.surname, copy.get_doc().title)
         # managers.notifier.send_message(
         #     queue_next.email, "Document is ready", text)
-        managers.notifier.notify_free_copy([queue_next], copy.gey_doc())
+        managers.notifier.notify_free_copy([queue_next], copy.get_doc())
         return 4  # Assigned to someone in the queue
 
     def return_by_copy(self, copy):
