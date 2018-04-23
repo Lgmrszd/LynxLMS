@@ -74,6 +74,10 @@ class Document(BaseModel):
     def get_list(cls, rows_number, page, active=0, search={}):  # TODO : rework arguments
         """Returns a content from certain page of document list
         Active - active=1, Not active - active=-1, All - active=0
+        Search query structure :
+        {'Field name': ('Your query', 'strict')}, where strict, means
+        strict search for strings for True and otherwise for False.
+        For other types it could be either True or False
         """
         select_query = None
         if (active == 0):
@@ -109,14 +113,25 @@ class Document(BaseModel):
         """
         fields = cls._get_fields_dict_raw()
         for key in search.keys():
+            search_query = search[key][0]
+            strict = search[key][1]
             if key in fields.keys():
-                if (isinstance(fields[key], pw.IntegerField) or isinstance(fields[key], pw.BigIntegerField)):
-                    query = query.where(fields[key] == int(search[key]))
-                elif (isinstance(fields[key], pw.CharField) or isinstance(fields[key], pw.TextField)):
-                    search_string = '%' + str(search[key]) + '%'
-                    query = query.where(fields[key] ** search_string)
-                elif (isinstance(fields[key], pw.BooleanField)):
-                    query = query.where(fields[key] == bool(search[key]))
+                field = fields[key]
+                if (isinstance(field, pw.IntegerField) or isinstance(field, pw.BigIntegerField)):
+                    query = query.where(field == int(search_query))
+                elif (isinstance(field, pw.CharField) or isinstance(field, pw.TextField)):
+                    if key is 'keywords':   #TODO : Find better solution if possible
+                        for keyword in search_query:
+                            search_string = '%' + str(keyword).strip() + '%'
+                            query = query.where(field ** search_string)
+                    else:
+                        if strict:
+                            query = query.where(field == str(search_query).strip())
+                        else:
+                            search_string = '%' + str(search_query).strip() + '%'
+                            query = query.where(fields[key] ** str(search_string).strip())
+                elif (isinstance(field, pw.BooleanField)):
+                    query = query.where(field == bool(search_query))
         return query
 
     @classmethod
