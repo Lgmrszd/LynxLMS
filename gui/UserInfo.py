@@ -10,7 +10,7 @@ from managers.user_manager import User
 
 class UserInfo(Window):
     def __init__(self, app, user):
-        self.bs = self.app.bs
+        self.bs = app.bs
         self.user = user
         super().__init__(app)
         self.app.el.register(self.reopen, EventManager.Events.user_changed, self)
