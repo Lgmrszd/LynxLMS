@@ -42,3 +42,8 @@ class EventManager:
         user_deleted = 11
         user_changed = 12
         fine_paid = 13
+
+        task_started = 101
+        task_crashed = 102
+        task_finished = 103
+        task_completeness = 104
