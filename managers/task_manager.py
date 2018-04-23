@@ -92,3 +92,8 @@ def timer_function():
 def add_EventManager(EM):
     global _EM
     _EM = EM
+
+
+def tick():
+    if _EM:
+        timer_function()
