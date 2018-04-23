@@ -113,7 +113,7 @@ class Booking_system:
             doc = copy.get_doc()
             user = Request.get_user(doc)
             self.check_out(doc, user)
-            Request.close_request(user, doc, self.librarian)
+            Request.close_request(user, doc)
             return 5  # Checked out to user in outstanding request
         queue_next = Queue.get_user_from_queue(copy)
         if queue_next == None:
