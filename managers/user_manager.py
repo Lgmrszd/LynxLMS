@@ -48,7 +48,7 @@ class User(BaseModel):
         """Remove excising user from database"""
         # Delete entries in queues
         current_user = cls.get_by_id(card_id)
-        Queue.delete().where(Queue.user == current_user, Queue.active is True).execute()
+        Queue.delete().where(Queue.user == current_user, Queue.active == True).execute()
         select_query = Queue.select().where(Queue.user == current_user)
         for entry in select_query:
             copy = entry.assigned_copy
@@ -57,17 +57,17 @@ class User(BaseModel):
             # Maybe inform user at this point
         Queue.delete().where(Queue.user == current_user).execute()
         # Cancel outstanding request
-        select_query = Request.select().where(Request.user == current_user, Request.active is True)
+        select_query = Request.select().where(Request.user == current_user, Request.active == True)
         for entry in select_query:
             # Check if it is only active entry in requests with such document and cancel request
             if (len(Request.select().where(Request.docClass == entry.docClass,
                                            Request.docId == entry.docId,
-                                           Request.active is True)) == 1):
+                                           Request.active == True)) == 1):
                 # getting document from request entry
                 doc = doc_manager.name_to_class()[entry.docClass].get_by_id(entry.docId)
                 doc.cancel_request()
         Request.update(active=False).where(Request.user == current_user,
-                                           Request.active is True).execute()  # Possible bug here!
+                                           Request.active == True).execute()  # Possible bug here!
         # Deleting user (moving to group deleted)
         deleted = Group.get_deleted()
         cls.edit(card_id, {"group": deleted})
@@ -177,7 +177,7 @@ class Queue(BaseModel):
         # Check if user is already in queue
         doc_class = doc_manager.class_to_name()[type(doc)]
         doc_id = doc.DocumentID
-        select_query = Queue.select().where(Queue.user == user, Queue.active is True,
+        select_query = Queue.select().where(Queue.user == user, Queue.active == True,
                                             Queue.docClass == doc_class,
                                             Queue.docId == doc_id)
         if len(select_query) == 1:
@@ -198,7 +198,7 @@ class Queue(BaseModel):
         # Get all entries from queue containing this user and document
         ent = Queue.select().where(Queue.user == user,
                                    Queue.docClass == doc_class, Queue.docId == doc_id,
-                                   Queue.active is False)
+                                   Queue.active == False)
         if len(ent) == 0:
             return None  # Nothing to check out
         if len(ent) > 1:
@@ -215,7 +215,7 @@ class Queue(BaseModel):
         # Find earliest with higher prority
         select_query = Queue.select(Queue.priority).where(Queue.docClass == doc_manager.class_to_name()[type(doc)],
                                                           Queue.docId == doc.DocumentID,
-                                                          Queue.active is True).distinct()
+                                                          Queue.active == True).distinct()
         # if queue is empty
         if len(select_query) == 0:
             return None
@@ -230,7 +230,7 @@ class Queue(BaseModel):
 
         entry = Queue.select().where(Queue.docClass == doc_class, Queue.docId == doc_id,
                                      Queue.priority == max_priority,
-                                     Queue.active is True).get()  # check if return least id
+                                     Queue.active == True).get()  # check if return least id
         # TODO : Try to optimize
         return entry
 
@@ -255,7 +255,7 @@ class Queue(BaseModel):
     def update_queue(cls):
         """Update queue. Delete all overdue entries
         """
-        select_query = Queue.select().where(Queue.active is False)
+        select_query = Queue.select().where(Queue.active == False)
         current_date = datetime.date.today()
         users = []
         for entry in select_query:
@@ -311,11 +311,11 @@ class Queue(BaseModel):
                                                                                                   Queue.QueueID.desc(),
                                                                                                   Queue.active.asc())
         elif active == 1:
-            select_query = cls.select().where(cls.active is True, cls.docClass == doc_class, cls.docId == doc_id)
+            select_query = cls.select().where(cls.active == True, cls.docClass == doc_class, cls.docId == doc_id)
             query = select_query.offset(0 + (page - 1) * rows_number).limit(rows_number).order_by(Queue.priority.asc(),
                                                                                                   Queue.QueueID.desc())
         elif active == -1:
-            select_query = cls.select().where(cls.active is False, cls.docClass == doc_class, cls.docId == doc_id)
+            select_query = cls.select().where(cls.active == False, cls.docClass == doc_class, cls.docId == doc_id)
             query = select_query.offset(0 + (page - 1) * rows_number).limit(rows_number).order_by(Queue.priority.asc(),
                                                                                                   Queue.QueueID.desc())
         else:
@@ -371,7 +371,7 @@ class Request(BaseModel):
         doc_class = doc_manager.class_to_name()[type(doc)]
         doc_id = doc.DocumentID
         entry = Request.select().where(Request.user == user, Request.docClass == doc_class,
-                                       Request.docId == doc_id, Request.active is True)
+                                       Request.docId == doc_id, Request.active == True)
         if entry.count() > 1:
             # print("Houston, check close_request in Request")
             logging.error('Request.close_request(), 2 same active entries in the Request table')
@@ -382,7 +382,7 @@ class Request(BaseModel):
         entry.active = False
         entry.save()
         if (len(Request.select().where(Request.docClass == doc_class, Request.docId == doc_id,
-                                       Request.active is True)) == 0):
+                                       Request.active == True)) == 0):
             doc.cancel_request()
         return 0
 
@@ -392,7 +392,7 @@ class Request(BaseModel):
         doc_class = doc_manager.class_to_name()[type(doc)]
         doc_id = doc.DocumentID
         entry = Request.select().where(Request.docClass == doc_class, Request.docId == doc_id,
-                                       Request.active is True)
+                                       Request.active == True)
         if len(entry) == 0:
             return None
         return entry.get().user
@@ -406,10 +406,10 @@ class Request(BaseModel):
             select_query = cls.select()
             query = select_query.offset(0 + (page - 1) * rows_number).limit(rows_number)
         elif active == 1:
-            select_query = cls.select().where(cls.active is True)
+            select_query = cls.select().where(cls.active == True)
             query = select_query.offset(0 + (page - 1) * rows_number).limit(rows_number)
         elif active == -1:
-            select_query = cls.select().where(cls.active is False)
+            select_query = cls.select().where(cls.active == False)
             query = select_query.offset(0 + (page - 1) * rows_number).limit(rows_number)
         else:
             return [], 0
