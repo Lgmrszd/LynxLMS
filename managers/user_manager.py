@@ -84,7 +84,10 @@ class User(BaseModel):
 
     @classmethod
     def get_list(cls, rows_number, page, search=None):
-        """Returns a content from certain page of user list"""
+        """Returns a content from certain page of user list
+        where search is dictionary with search parameters:
+        {"field_name" : [search_parameter, is_full_match]}
+        e.g. {"name": ["Vasya", True], "group": [2, False]}"""
         query = cls.select().where(cls.group != 1)
         if search:
             query = cls.search(query, search)
