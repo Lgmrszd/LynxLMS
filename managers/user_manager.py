@@ -48,7 +48,7 @@ class User(BaseModel):
         """Remove excising user from database"""
         # Delete entries in queues
         current_user = cls.get_by_id(card_id)
-        Queue.delete().where(Queue.user == current_user, Queue.active == True).execute()
+        Queue.delete().where(Queue.user == current_user, Queue.active is True).execute()
         select_query = Queue.select().where(Queue.user == current_user)
         for entry in select_query:
             copy = entry.assigned_copy
@@ -57,17 +57,17 @@ class User(BaseModel):
             # Maybe inform user at this point
         Queue.delete().where(Queue.user == current_user).execute()
         # Cancel outstanding request
-        select_query = Request.select().where(Request.user == current_user, Request.active == True)
+        select_query = Request.select().where(Request.user == current_user, Request.active is True)
         for entry in select_query:
             # Check if it is only active entry in requests with such document and cancel request
             if (len(Request.select().where(Request.docClass == entry.docClass,
                                            Request.docId == entry.docId,
-                                           Request.active == True)) == 1):
+                                           Request.active is True)) == 1):
                 # getting document from request entry
                 doc = doc_manager.name_to_class()[entry.docClass].get_by_id(entry.docId)
                 doc.cancel_request()
         Request.update(active=False).where(Request.user == current_user,
-                                           Request.active == True).execute()  # Possible bug here!
+                                           Request.active is True).execute()  # Possible bug here!
         # Deleting user (moving to group deleted)
         deleted = Group.get_deleted()
         cls.edit(card_id, {"group": deleted})
@@ -135,7 +135,7 @@ class User(BaseModel):
         temp.pop('__module__')
         res = {}
         for key in temp.keys():
-            if (isinstance(temp[key], pw.FieldDescriptor)):
+            if isinstance(temp[key], pw.FieldDescriptor):
                 res[key] = temp[key].field
         res["group"] = managers.group_manager.Group
         return res
@@ -175,12 +175,12 @@ class Queue(BaseModel):
         # Check if user is already in queue
         docClass = doc_manager.class_to_name()[type(doc)]
         docId = doc.DocumentID
-        select_query = Queue.select().where(Queue.user == user, Queue.active == True,
+        select_query = Queue.select().where(Queue.user == user, Queue.active is True,
                                             Queue.docClass == docClass,
                                             Queue.docId == docId)
-        if (len(select_query) == 1):
+        if len(select_query) == 1:
             return None
-        elif (len(select_query) > 1):
+        elif len(select_query) > 1:
             # print('Houston, we have a problem in booking system in push_to_queue')
             logging.error('Queue.push_to_queue, 2 or more same active entries (2 same users in the queue)')
             return None
@@ -196,10 +196,10 @@ class Queue(BaseModel):
         # Get all entries from queue containing this user and document
         ent = Queue.select().where(Queue.user == user,
                                    Queue.docClass == docClass, Queue.docId == docId,
-                                   Queue.active == False)
-        if (len(ent) == 0):
+                                   Queue.active is False)
+        if len(ent) == 0:
             return None  # Nothing to check out
-        if (len(ent) > 1):
+        if len(ent) > 1:
             # Problem in the database or with peewee
             # print('Houston, we have a problem in queue in get_to_remove')
             logging.error('Queue.get_to_remove(), 2 same entries in the queue!')
@@ -213,14 +213,14 @@ class Queue(BaseModel):
         # Find earliest with higher prority
         select_query = Queue.select(Queue.priority).where(Queue.docClass == doc_manager.class_to_name()[type(doc)],
                                                           Queue.docId == doc.DocumentID,
-                                                          Queue.active == True).distinct()
+                                                          Queue.active is True).distinct()
         # if queue is empty
-        if (len(select_query) == 0):
+        if len(select_query) == 0:
             return None
         # Find max priority
         max_priority = -1
         for entry in select_query:
-            if (entry.priority > max_priority):  # possible bug due to no entries
+            if entry.priority > max_priority:  # possible bug due to no entries
                 max_priority = entry.priority
 
         docClass = doc_manager.class_to_name()[type(doc)]
@@ -228,7 +228,7 @@ class Queue(BaseModel):
 
         entry = Queue.select().where(Queue.docClass == docClass, Queue.docId == docId,
                                      Queue.priority == max_priority,
-                                     Queue.active == True).get()  # check if return least id
+                                     Queue.active is True).get()  # check if return least id
         # TODO : Try to optimize
         return entry
 
@@ -238,7 +238,7 @@ class Queue(BaseModel):
         """
         doc = copy.get_doc()
         res = cls.get_queue_entry(doc)
-        if (res == None):
+        if res is None:
             return None
         time_out_date = datetime.date.today() + datetime.timedelta(days=1)
         res.time_out = str(time_out_date)
@@ -253,19 +253,19 @@ class Queue(BaseModel):
     def update_queue(cls):
         """Update queue. Delete all overdue entries
         """
-        select_query = Queue.select().where(Queue.active == False)
+        select_query = Queue.select().where(Queue.active is False)
         current_date = datetime.date.today()
         users = []
         for entry in select_query:
             time_out_date = datetime.datetime.strptime(entry.time_out, '%Y-%m-%d').date()
-            if (current_date >= time_out_date):
+            if current_date >= time_out_date:
                 # inform user here
                 doc_class = doc_manager.name_to_class()[entry.docClass]
                 doc = doc_class.get_by_id(entry.docId)
                 managers.notifier.notify_request_overdue([entry.user], doc)
                 users.append(entry.user)
                 copy = entry.assigned_copy
-                if (cls.get_user_from_queue(copy) == None):
+                if cls.get_user_from_queue(copy) == None:
                     copy.checked_out = 0
                     copy.save()
                 entry.delete_instance()
@@ -304,27 +304,27 @@ class Queue(BaseModel):
         docClass = doc_manager.class_to_name()[type(doc)]
         docId = doc.DocumentID
         select_query = None
-        if (active == 0):
+        if active == 0:
             select_query = cls.select().where(cls.docClass == docClass, cls.docId == docId)
             query = select_query.offset(0 + (page - 1) * rows_number).limit(rows_number).order_by(Queue.priority.asc(),
                                                                                                   Queue.QueueID.desc(),
                                                                                                   Queue.active.asc())
-        elif (active == 1):
-            select_query = cls.select().where(cls.active == True, cls.docClass == docClass, cls.docId == docId)
+        elif active == 1:
+            select_query = cls.select().where(cls.active is True, cls.docClass == docClass, cls.docId == docId)
             query = select_query.offset(0 + (page - 1) * rows_number).limit(rows_number).order_by(Queue.priority.asc(),
                                                                                                   Queue.QueueID.desc())
-        elif (active == -1):
-            select_query = cls.select().where(cls.active == False, cls.docClass == docClass, cls.docId == docId)
+        elif active == -1:
+            select_query = cls.select().where(cls.active is False, cls.docClass == docClass, cls.docId == docId)
             query = select_query.offset(0 + (page - 1) * rows_number).limit(rows_number).order_by(Queue.priority.asc(),
                                                                                                   Queue.QueueID.desc())
         else:
-            return ([], 0)
+            return [], 0
         res = []
         for entry in query:
             res.append(entry)
         # Counting number of pages
         page_number = int(select_query.count()) // rows_number
-        if (select_query.count() % rows_number > 0):
+        if select_query.count() % rows_number > 0:
             page_number += 1
         return res, page_number
 
@@ -370,18 +370,18 @@ class Request(BaseModel):
         docClass = doc_manager.class_to_name()[type(doc)]
         docId = doc.DocumentID
         entry = Request.select().where(Request.user == user, Request.docClass == docClass,
-                                       Request.docId == docId, Request.active == True)
-        if (entry.count() > 1):
+                                       Request.docId == docId, Request.active is True)
+        if entry.count() > 1:
             # print("Houston, check close_request in Request")
             logging.error('Request.close_request(), 2 same active entries in the Request table')
             return 1
-        if (entry.count() == 0):
+        if entry.count() == 0:
             return 1
         entry = entry.get()
         entry.active = False
         entry.save()
         if (len(Request.select().where(Request.docClass == docClass, Request.docId == docId,
-                                       Request.active == True)) == 0):
+                                       Request.active is True)) == 0):
             doc.cancel_request()
         return 0
 
@@ -391,8 +391,8 @@ class Request(BaseModel):
         docClass = doc_manager.class_to_name()[type(doc)]
         docId = doc.DocumentID
         entry = Request.select().where(Request.docClass == docClass, Request.docId == docId,
-                                       Request.active == True)
-        if (len(entry) == 0):
+                                       Request.active is True)
+        if len(entry) == 0:
             return None
         return entry.get().user
 
@@ -401,23 +401,22 @@ class Request(BaseModel):
         """Returns a content from certain page of requests list
         Active - active=1, Not active - active=-1, All - active=0
         """
-        select_query = None
-        if (active == 0):
+        if active == 0:
             select_query = cls.select()
             query = select_query.offset(0 + (page - 1) * rows_number).limit(rows_number)
-        elif (active == 1):
-            select_query = cls.select().where(cls.active == True)
+        elif active == 1:
+            select_query = cls.select().where(cls.active is True)
             query = select_query.offset(0 + (page - 1) * rows_number).limit(rows_number)
-        elif (active == -1):
-            select_query = cls.select().where(cls.active == False)
+        elif active == -1:
+            select_query = cls.select().where(cls.active is False)
             query = select_query.offset(0 + (page - 1) * rows_number).limit(rows_number)
         else:
-            return ([], 0)
+            return [], 0
         res = []
         for entry in query:
             res.append(entry)
         # Counting number of pages
         page_number = int(select_query.count()) // rows_number
-        if (select_query.count() % rows_number > 0):
+        if select_query.count() % rows_number > 0:
             page_number += 1
         return res, page_number
