@@ -80,9 +80,13 @@ class User(BaseModel):
         user.save()
 
     @classmethod
-    def get_list(cls, rows_number, page):
+    def get_list(cls, rows_number, page, search=None):
         """Returns a content from certain page of user list"""
-        query = cls.select().where(cls.group != 1).offset(0 + (page-1)*rows_number).limit(rows_number).order_by(cls.name.asc())
+        # query = cls.select().where(cls.group != 1).offset(0 + (page-1)*rows_number).limit(rows_number).order_by(cls.name.asc())
+        query = cls.select().where(cls.group != 1)
+        if search:
+            query = cls.search(query, search)
+        query = query.order_by(cls.name.asc()).offset(0 + (page-1)*rows_number).limit(rows_number)
         res = []
         for entry in query:
             res.append(entry)
@@ -95,6 +99,42 @@ class User(BaseModel):
         res = []
         for entry in query:
             res.append(entry)
+        return res
+
+    @classmethod
+    def search(cls, query, search):
+        """According to fields and values in search dictionary,
+           use additional conditions on the query
+        """
+        fields = cls._get_fields_dict_raw()
+        for key in search.keys():
+            if key in fields.keys():
+                if isinstance(fields[key], pw.IntegerField) or isinstance(fields[key], pw.BigIntegerField):
+                    query = query.where(fields[key] == int(search[key][0]))
+                elif isinstance(fields[key], pw.CharField) or isinstance(fields[key], pw.TextField):
+                    if search[key][1]:
+                        query = query.where(fields[key] == search[key][0])
+                    else:
+                        search_string = '%' + str(search[key][0]) + '%'
+                        query = query.where(fields[key] ** search_string)
+                elif isinstance(fields[key], pw.BooleanField):
+                    query = query.where(fields[key] == bool(search[key][0]))
+                elif fields[key] == managers.group_manager.Group:
+                    query = query.where(User.group == search[key][0])
+        return query
+
+    @classmethod
+    def _get_fields_dict_raw(cls):
+        """Returns dictionary with field name as a key and peewee type of the field as a value
+        """
+        temp = {**User.__dict__, **cls.__dict__}
+        temp.pop('__doc__')
+        temp.pop('__module__')
+        res = {}
+        for key in temp.keys():
+            if (isinstance(temp[key], pw.FieldDescriptor)):
+                res[key] = temp[key].field
+        res["group"] = managers.group_manager.Group
         return res
 
 
@@ -117,7 +157,7 @@ class Queue(BaseModel):
     docId = pw.IntegerField()
     assigned_copy = pw.ForeignKeyField(doc_manager.Copy, related_name='reserved', null=True)
     time_out = pw.DateField(formats='%Y-%m-%d', null=True)
-    active = pw.BooleanField(default=True) #if user is in queue    
+    active = pw.BooleanField(default=True)  # if user is in
     
     def get_doc(self):
         """Get the document to which this copy referred
