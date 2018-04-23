@@ -10,7 +10,7 @@ import gui.MainWindow
 class CopyInfo(Window):
     def __init__(self, app, copy):
         self.copy = copy
-        self.bs = self.app.bs
+        self.bs = app.bs
         self.his = self.bs.get_copy_history(copy)
         super().__init__(app)
         self.app.el.register(self.update, EventManager.Events.copy_state_changed, self)
