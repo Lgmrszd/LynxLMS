@@ -1,6 +1,7 @@
 import datetime
 import json
 import peewee as pw
+from PyQt5.QtCore import QTimer, QThread, pyqtSignal
 from managers import event_manager
 from db_connect import BaseModel
 
@@ -9,14 +10,7 @@ RUNNING = 1
 ERROR = 2
 FINISHED = 3
 
-# Niyaz-specified codes
-task_started = 101
-task_crashed = 102
-task_finished = 103
-task_completeness = 104
-
 _tasks_functions = {}
-_EM = None
 
 
 class Task(BaseModel):
@@ -60,9 +54,8 @@ class Task(BaseModel):
         # Save status about current task
         self.status = RUNNING
         self.save()
-        # Send event signal (using GUI's EventManager) about task with its info
-        if _EM:
-            _EM.fire(task_started, {"info": self.display_name})
+        event_manager.send_event(f"task_started", self.display_name)
+        # Send event signal about task with its info
         func = _tasks_functions[self.func_name]  # Get function by name
         # Try to execute task function normally and collect info about it (even if it fails)
         try:
@@ -73,9 +66,8 @@ class Task(BaseModel):
         self.status = status
         self.message = message
         self.save()
-        # Send event signal (using GUI's EventManager) about task with its execution result
-        if _EM:
-            _EM.fire(status+100, {"message": message})
+        # Send event signal about task with its execution result
+        event_manager.send_event(f"task_ended", status, message)
         # return execution result
         return status, message
 
@@ -100,9 +92,6 @@ def inform_completeness(percentage):
     """
     # Send event signal
     event_manager.send_event(f"task_completeness", percentage)
-    # Send same event signal, but using GUI's EventManager
-    if _EM:
-        _EM.fire(task_completeness, {"percentage": percentage})
 
 
 def get_tasks():
@@ -137,20 +126,34 @@ def timer_function():
         task.run()
 
 
-def add_EventManager(EM):
-    """
-    Register GUI's EventManager
-    :param EM: EventManager
-    :return:
-    """
-    global _EM
-    _EM = EM
+class TimerThread(QThread):
+    __startSignal = pyqtSignal(str)
+    __updateSignal = pyqtSignal(int)
+    __endSignal = pyqtSignal(int, str)
 
+    def __init__(self, start_slot, update_slot, end_slot):
+        super().__init__()
+        self.__startSignal.connect(start_slot)
+        self.__updateSignal.connect(update_slot)
+        self.__endSignal.connect(end_slot)
+        event_manager.register_listener("task_started", self.start_signal)
+        event_manager.register_listener("task_completeness", self.update_signal)
+        event_manager.register_listener("task_ended", self.end_signal)
+        # self.updateSignal.connect()
+        # self.started.connect(lambda: )
 
-def tick():
-    """
-    Same as timer_function, but works only if GUI's EventManager registered
-    :return: None
-    """
-    if _EM:
-        timer_function()
+    def start_signal(self, display_name):
+        self.__startSignal.emit(display_name)
+
+    def update_signal(self, percentage):
+        self.__updateSignal.emit(percentage)
+
+    def end_signal(self, status, message):
+        self.__endSignal.emit(status, message)
+
+    def run(self):
+        print("startKek")
+        timer = QTimer()
+        timer.timeout.connect(timer_function)
+        timer.start(1000)
+        self.exec_()
