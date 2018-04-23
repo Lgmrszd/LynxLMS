@@ -44,7 +44,8 @@ class Task(BaseModel):
     def run(self):
         self.status = RUNNING
         self.save()
-        _EM.fire(task_started, {"info": self.display_name})
+        if _EM:
+            _EM.fire(task_started, {"info": self.display_name})
         func = _tasks_functions[self.func_name]
         try:
             status, message = func(self.get_id(), self.get_arguments())
@@ -53,7 +54,8 @@ class Task(BaseModel):
         self.status = status
         self.message = message
         self.save()
-        _EM.fire(status+100, {"message": message})
+        if _EM:
+            _EM.fire(status+100, {"message": message})
         return status, message
 
 
@@ -64,7 +66,8 @@ def register_task_function(name, func):
 def inform_completeness(percentage):
     event_manager.send_event(f"task_completeness", percentage)
     # Special for Niyaz
-    _EM.fire(task_completeness, {"percentage": percentage})
+    if _EM:
+        _EM.fire(task_completeness, {"percentage": percentage})
 
 
 def get_tasks():
