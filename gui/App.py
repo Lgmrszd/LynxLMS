@@ -1,7 +1,3 @@
-import datetime
-
-from PyQt5.QtCore import QTimer
-
 from gui.MainWindow import MainWindow
 from gui.EventManager import EventManager
 from managers import task_manager
@@ -13,15 +9,7 @@ class App:
         self.el = EventManager()
         self.windows = dict()
 
-        task_manager.Task.create(
-            datetime=datetime.datetime.now(),
-            func_name="update_queue",
-            display_name="Update queue",
-            parameters=[True])
-
-        t = QTimer()
-        t.timeout.connect(task_manager.timer_function)
-        t.start(1000)
+        task_manager.add_EventManager(self.el)
 
         self.open_window(MainWindow, {})
 

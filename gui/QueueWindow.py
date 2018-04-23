@@ -1,5 +1,5 @@
 from PyQt5.QtGui import QColor
-from PyQt5.QtWidgets import QWidget, QLabel, QComboBox, QTableWidget, QPushButton, QHBoxLayout, QVBoxLayout, QGroupBox, \
+from PyQt5.QtWidgets import QLabel, QComboBox, QTableWidget, QPushButton, QHBoxLayout, QVBoxLayout, QGroupBox, \
     QTableWidgetItem, QAbstractItemView
 from managers.user_manager import Queue
 from gui.Window import Window

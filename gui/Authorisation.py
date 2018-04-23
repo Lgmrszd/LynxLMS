@@ -68,5 +68,5 @@ class Authorization(QWidget):
             self.status.setText("<font color='red'> Incorrect login / password </font>")
             return
 
+        self.close()
         app = App(Booking_system(login))
-        self.hide()

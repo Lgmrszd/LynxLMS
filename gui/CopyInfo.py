@@ -30,7 +30,7 @@ class CopyInfo(Window):
         else:
             self.book_id = QLabel("<font color='red'>ID: " + str(self.copy.CopyID)+"</font>")
         top = QHBoxLayout()
-        top.addStretch(1)
+        top.addaddStretch(1)
         top.addWidget(self.book_id)
         vbox.addLayout(top)
 

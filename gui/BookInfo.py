@@ -157,10 +157,10 @@ class BookInfo(Window):
                     6: "User already has copy of this document",
                     4: "User is deleted", 3: "Document is not active", 2: "Document is referenced",
                     1: "User has been added to the queue"}
-            if err == 1:
-                self.app.el.fire(EventManager.Events.queue_changed, {"id": self.doc.DocumentID})
             msg.setText(msgs[err])
             msg.exec_()
+            if err == 1:
+                self.app.el.fire(EventManager.Events.queue_changed, {"id": self.doc.DocumentID})
             return
         self.app.el.fire(EventManager.Events.copy_state_changed, {"id": res.copy.CopyID})
 
@@ -185,12 +185,7 @@ class BookInfo(Window):
         c = Copy.add(self.doc)
         c.storage = str(loc)
         c.save()
-        # !!!
-        # !!!
-        self.bs.proceed_free_copy(c)
-        # Kostyl ochen' bolshoy
-        # !!!
-        # !!!
+        self.app.el.fire(EventManager.Events.queue_changed, {"id": self.doc.DocumentID})
         self.app.el.fire(EventManager.Events.copy_added, {"id": c.CopyID})
         self.cl = self.bs.get_document_copies(self.doc)
         self.table.setRowCount(len(self.cl))
