@@ -119,11 +119,29 @@ def timer_function():
     :return: None
     """
     now = datetime.datetime.now()
-    # Get waiting tasks
+    # Get waiting tasks and run them
     auto_tasks = Task.select().where(Task.datetime < now).\
         where(Task.status == WAITING).order_by(Task.datetime.asc())
     for task in auto_tasks:
         task.run()
+
+    # Get error tasks and delete them
+    old = now - datetime.timedelta(weeks=1)
+    error_tasks = Task.select().where(Task.datetime < old).\
+        where(Task.status == ERROR).order_by(Task.datetime.asc())
+    for task in error_tasks:
+        task.delete_instance()
+    error_tasks = Task.select().where(Task.datetime < old).\
+        where(Task.status == RUNNING).order_by(Task.datetime.asc())
+    for task in error_tasks:
+        task.delete_instance()
+
+    # Get finished tasks and delete them
+    old = now - datetime.timedelta(weeks=1)
+    error_tasks = Task.select().where(Task.datetime < old).\
+        where(Task.status == FINISHED).order_by(Task.datetime.asc())
+    for task in error_tasks:
+        task.delete_instance()
 
 
 class TimerThread(QThread):
