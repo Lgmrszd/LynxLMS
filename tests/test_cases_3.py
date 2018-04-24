@@ -9,7 +9,7 @@ import datetime
 
 class TestCases3(unittest.TestCase):
     def prepare_database(self):
-        db_fname = "test_database.db"
+        db_fname = "tests/test_database.db"
         db_config.init_db(db_fname)
         db_config.drop_tables()
         db_config.create_tables()
