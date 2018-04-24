@@ -9,7 +9,7 @@ from gui.Window import Window
 from gui.AddDocument import AddDocument
 from gui.SearchWindow import SearchWindow
 from PyQt5.QtWidgets import QApplication
-
+from managers import auth
 
 class MainWindow(Window):
     def closeEvent(self, QCloseEvent):
@@ -34,6 +34,8 @@ class MainWindow(Window):
         add_button(vbox, "Manage users", self.open_manage_users_window)
         add_button(vbox, "Add user", self.open_add_user_window)
         add_button(vbox, "Show history", self.open_history_window)
+        if auth.Auth.get_access_level()[0] == 'admin':
+            add_button(vbox, "Admin panel", self.open_admin_panel)
         vbox.addStretch()
 
         self.setLayout(vbox)
@@ -88,3 +90,6 @@ class MainWindow(Window):
 
     def open_add_group(self):
         self.app.open_window(AddGroup, {})
+
+    def open_admin_panel(self):
+        pass

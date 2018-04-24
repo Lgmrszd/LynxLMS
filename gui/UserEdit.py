@@ -25,6 +25,8 @@ class UserEdit(Window):
         address_label.setFixedWidth(60)
         phone_label = QLabel("phone")
         phone_label.setFixedWidth(60)
+        mail_label = QLabel("email")
+        mail_label.setFixedWidth(60)
 
         self.name_edit = QLineEdit()
         self.name_edit.setText(self.user.name)
@@ -34,6 +36,8 @@ class UserEdit(Window):
         self.address_edit.setText(self.user.address)
         self.phone_edit = QLineEdit()
         self.phone_edit.setText(str(self.user.phone))
+        self.mail_edit = QLineEdit()
+        self.mail_edit.setText(str(self.user.email))
 
         add_button = QPushButton("Edit")
         add_button.setFixedWidth(90)
@@ -58,6 +62,10 @@ class UserEdit(Window):
         phone_layout.addWidget(phone_label)
         phone_layout.addWidget(self.phone_edit)
 
+        mail_layout = QHBoxLayout()
+        mail_layout.addWidget(mail_label)
+        mail_layout.addWidget(self.mail_edit)
+
         group_layout = QHBoxLayout()
 
         add_button_layout = QHBoxLayout()
@@ -68,6 +76,7 @@ class UserEdit(Window):
         vbox.addLayout(surname_layout)
         vbox.addLayout(address_layout)
         vbox.addLayout(phone_layout)
+        vbox.addLayout(mail_layout)
         vbox.addLayout(add_button_layout)
 
         self.setLayout(vbox)
@@ -82,6 +91,7 @@ class UserEdit(Window):
         dic["surname"] = self.surname_edit.text()
         dic["address"] = self.address_edit.text()
         dic["phone"] = int(self.phone_edit.text())
+        dic["email"] = self.mail_edit.text()
         dic["group"] = self.user.group
 
         User.edit(self.user.card_id, dic)
