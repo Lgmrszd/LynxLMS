@@ -121,3 +121,7 @@ main.spec
 # test
 tests/test_database.db
 /tests/data/config.json
+
+# pytest
+.pytest_cache/*
+tests/.pytest_cache/*
