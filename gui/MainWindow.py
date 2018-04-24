@@ -1,4 +1,3 @@
-import sys
 from PyQt5.QtWidgets import QDesktopWidget, QVBoxLayout
 from gui.AddUser import AddUser
 from gui.ManageUsersWindow import ManageUsersWindow
@@ -9,13 +8,14 @@ from gui.ManageGroupsWindow import ManageGroupsWindow
 from gui.Window import Window
 from gui.AddDocument import AddDocument
 from gui.SearchWindow import SearchWindow
+from PyQt5.QtWidgets import QApplication
 
 
 class MainWindow(Window):
     def closeEvent(self, QCloseEvent):
         """вызывается при close event"""
         super(MainWindow, self).closeEvent(QCloseEvent)
-        sys.exit(0)
+        QApplication.instance().exit()
 
     def _set_up_ui(self):
         self.search_window = self.app.open_window(SearchWindow, {})
