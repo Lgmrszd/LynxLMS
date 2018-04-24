@@ -11,6 +11,7 @@ ERROR = 2
 FINISHED = 3
 
 _tasks_functions = {}
+_EM = None
 
 
 class Task(BaseModel):
@@ -142,6 +143,16 @@ def timer_function():
         where(Task.status == FINISHED).order_by(Task.datetime.asc())
     for task in error_tasks:
         task.delete_instance()
+
+
+def tick():
+    if _EM:
+        timer_function()
+
+
+def add_EventManager(EM):
+    global _EM
+    _EM = EM
 
 
 class TimerThread(QThread):
