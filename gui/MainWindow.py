@@ -31,16 +31,10 @@ class MainWindow(Window):
         self.dialog.upd(progress)
 
     def task_crash(self, message):
-        self.dialog.upd(100)
-        msg = QMessageBox()
-        msg.setText(message)
-        msg.exec_()
+        self.dialog.finish("<font color='red'>"+message+"</font>")
 
     def task_finish(self, message):
-        self.dialog.upd(100)
-        msg = QMessageBox()
-        msg.setText(message)
-        msg.exec_()
+        self.dialog.finish(message)
 
     def closeEvent(self, QCloseEvent):
         """вызывается при close event"""

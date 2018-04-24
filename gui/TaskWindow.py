@@ -5,7 +5,8 @@ from PyQt5.QtCore import Qt
 class Dialog(QMessageBox):
     def __init__(self, name):
         super().__init__()
-        self.progress = 0
+        self.can_close = False
+        self.setWindowTitle(" ")
         label = QLabel(name)
         self.pb = QProgressBar()
         vb = QVBoxLayout()
@@ -14,14 +15,19 @@ class Dialog(QMessageBox):
         self.layout().addLayout(vb, 0, 0)
         self.setStandardButtons(QMessageBox.NoButton)
 
+    def finish(self, message):
+        self.can_close = True
+        self.close()
+        msg = QMessageBox()
+        msg.setWindowTitle(" ")
+        msg.setText(message)
+        msg.exec_()
+
     def upd(self, pr):
         self.pb.setValue(pr)
-        self.progress = pr
-        if self.progress == 100:
-            self.close()
 
     def closeEvent(self, QCloseEvent):
-        if self.progress < 100:
-            QCloseEvent.ignore()
-        else:
+        if self.can_close:
             QCloseEvent.accept()
+        else:
+            QCloseEvent.ignore()
