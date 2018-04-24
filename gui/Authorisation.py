@@ -22,6 +22,7 @@ class Authorization(QWidget):
 
         self.login_edit = QLineEdit("")
         self.pass_edit = QLineEdit("")
+        self.pass_edit.setEchoMode(QLineEdit.Password)
 
         self.status = QLabel("")
 
@@ -63,7 +64,6 @@ class Authorization(QWidget):
         if len(password) == 0:
             self.status.setText("<font color='red'> Empty password field </font>")
             return
-        print(login + " " + password)
 
         if Auth.login(login, password) != 0:
             self.status.setText("<font color='red'> Incorrect login / password </font>")
