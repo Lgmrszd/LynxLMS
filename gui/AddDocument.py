@@ -14,7 +14,6 @@ class AddDocument(Window):
         if ok and item:
             self.type = item
         else:
-            self.close()
             return
         self._reset_ui()
 

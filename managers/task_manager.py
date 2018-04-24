@@ -145,16 +145,6 @@ def timer_function():
         task.delete_instance()
 
 
-def tick():
-    if _EM:
-        timer_function()
-
-
-def add_EventManager(EM):
-    global _EM
-    _EM = EM
-
-
 class TimerThread(QThread):
     __startSignal = pyqtSignal(str)
     __updateSignal = pyqtSignal(int)
