@@ -8,6 +8,7 @@ class Authorization(QWidget):
     def __init__(self):
         super().__init__()
         self._set_up_ui()
+        self.app = None
 
     def _set_up_ui(self):
         window_size_x = 400
@@ -69,4 +70,4 @@ class Authorization(QWidget):
             return
 
         self.close()
-        app = App(Booking_system(login))
+        self.app = App(Booking_system(login))
