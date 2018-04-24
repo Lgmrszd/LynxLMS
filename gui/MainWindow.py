@@ -1,5 +1,8 @@
-from PyQt5.QtWidgets import QDesktopWidget, QVBoxLayout
+from PyQt5.QtWidgets import QDesktopWidget, QVBoxLayout, QMessageBox
+
+from gui import TaskWindow
 from gui.AddUser import AddUser
+from gui.EventManager import EventManager
 from gui.ManageUsersWindow import ManageUsersWindow
 from gui.AddGroup import AddGroup
 from gui.GUITools import add_button
@@ -12,6 +15,33 @@ from PyQt5.QtWidgets import QApplication
 from managers import auth
 
 class MainWindow(Window):
+    def __init__(self, app):
+        super().__init__(app)
+        self.dialog = None
+        app.el.register(self.task_show, EventManager.Events.task_started, self)
+        app.el.register(self.task_update, EventManager.Events.task_completeness, self)
+        app.el.register(self.task_crash, EventManager.Events.task_crashed, self)
+        app.el.register(self.task_finish, EventManager.Events.task_finished, self)
+
+    def task_show(self, name):
+        self.dialog = TaskWindow.Dialog(name)
+        self.dialog.show()
+
+    def task_update(self, progress):
+        self.dialog.upd(progress)
+
+    def task_crash(self, message):
+        self.dialog.upd(100)
+        msg = QMessageBox()
+        msg.setText(message)
+        msg.exec_()
+
+    def task_finish(self, message):
+        self.dialog.upd(100)
+        msg = QMessageBox()
+        msg.setText(message)
+        msg.exec_()
+
     def closeEvent(self, QCloseEvent):
         """вызывается при close event"""
         super(MainWindow, self).closeEvent(QCloseEvent)
