@@ -468,5 +468,8 @@ def test_case_9(qtbot):
     assert True
 
 
-def test_case_10():
-    pass
+def test_case_10(qtbot):
+    test_case_4(qtbot)
+
+    books = doc_manager.Book.get_list(5, 1, {"title": ("", 0)})
+    print(books)
