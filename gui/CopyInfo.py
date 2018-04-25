@@ -1,10 +1,10 @@
 from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout, QLabel, QPushButton, QMessageBox, \
     QTableWidget, QAbstractItemView, QTableWidgetItem
 from managers.doc_manager import *
-from managers.booking_system import *
 from gui.Window import Window
 from gui.EventManager import EventManager
 import gui.MainWindow
+from gui.GUITools import add_button
 
 
 class CopyInfo(Window):
@@ -68,16 +68,13 @@ class CopyInfo(Window):
         renew.clicked.connect(self.renew)
 
         if self.copy.active:
-            self.delete_button = QPushButton("Delete")
+            dbtext = "Delete"
         else:
-            self.delete_button = QPushButton("Restore")
-        self.delete_button.setFixedWidth(90)
-        self.delete_button.setFixedHeight(25)
-        self.delete_button.clicked.connect(self.delete_book)
+            dbtext = "Restore"
 
         add_button_layout = QHBoxLayout()
         add_button_layout.addStretch()
-        add_button_layout.addWidget(self.delete_button)
+        self.delete_button = add_button(add_button_layout, dbtext, self.delete_book, Copy.__name__, "remove", 90, 25)
         add_button_layout.addWidget(edit_button)
         add_button_layout.addWidget(renew)
         add_button_layout.addWidget(return_button)

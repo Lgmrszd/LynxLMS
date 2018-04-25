@@ -1,7 +1,8 @@
-from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout, QLabel, QLineEdit, QPushButton
+from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout, QLabel, QLineEdit
 from managers.group_manager import Group
 from gui.Window import Window
 from gui.EventManager import EventManager
+from gui.GUITools import add_button
 
 
 class AddGroup(Window):
@@ -47,11 +48,6 @@ class AddGroup(Window):
         self.av_rt_edit = QLineEdit()
         self.priority_edit = QLineEdit()
 
-        add_button = QPushButton("Add")
-        add_button.setFixedWidth(90)
-        add_button.setFixedHeight(25)
-        add_button.clicked.connect(self.add_user)
-
         vbox = QVBoxLayout()
 
         name_layout = QHBoxLayout()
@@ -96,7 +92,7 @@ class AddGroup(Window):
 
         add_button_layout = QHBoxLayout()
         add_button_layout.addStretch()
-        add_button_layout.addWidget(add_button)
+        add_button(add_button_layout, "Add", self.add_user, Group.__name__, "add", 90, 25)
 
         vbox.addLayout(name_layout)
         vbox.addLayout(book_ct_layout)

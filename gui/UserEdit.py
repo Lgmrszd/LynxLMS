@@ -1,5 +1,7 @@
 from PyQt5.QtGui import QIntValidator
-from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout, QLabel, QLineEdit, QPushButton
+from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout, QLabel, QLineEdit
+
+from gui.GUITools import add_button
 from managers.user_manager import User
 from gui.Window import Window
 from gui.EventManager import EventManager
@@ -39,11 +41,6 @@ class UserEdit(Window):
         self.mail_edit = QLineEdit()
         self.mail_edit.setText(str(self.user.email))
 
-        add_button = QPushButton("Edit")
-        add_button.setFixedWidth(90)
-        add_button.setFixedHeight(25)
-        add_button.clicked.connect(self.edit_user)
-
         vbox = QVBoxLayout()
 
         name_layout = QHBoxLayout()
@@ -66,11 +63,9 @@ class UserEdit(Window):
         mail_layout.addWidget(mail_label)
         mail_layout.addWidget(self.mail_edit)
 
-        group_layout = QHBoxLayout()
-
         add_button_layout = QHBoxLayout()
         add_button_layout.addStretch()
-        add_button_layout.addWidget(add_button)
+        add_button(add_button_layout, "Edit", self.edit_user, User.__name__, "edit", 90, 25)
 
         vbox.addLayout(name_layout)
         vbox.addLayout(surname_layout)

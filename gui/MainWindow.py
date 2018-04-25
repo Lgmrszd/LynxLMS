@@ -12,7 +12,7 @@ from gui.Window import Window
 from gui.AddDocument import AddDocument
 from gui.SearchWindow import SearchWindow
 from PyQt5.QtWidgets import QApplication
-from managers import auth
+from managers import *
 
 class MainWindow(Window):
     def __init__(self, app):
@@ -51,13 +51,13 @@ class MainWindow(Window):
 
         vbox = QVBoxLayout()
         vbox.setSpacing(10)
-        add_button(vbox, "Search documents", self.switch_search_window)
-        add_button(vbox, "Add document", self.open_add_document_window)
-        add_button(vbox, "Manage groups", self.open_groups_window)
-        add_button(vbox, "Add group", self.open_add_group)
-        add_button(vbox, "Manage users", self.open_manage_users_window)
-        add_button(vbox, "Add user", self.open_add_user_window)
-        add_button(vbox, "Show history", self.open_history_window)
+        add_button(vbox, "Search documents", self.switch_search_window, doc_manager.Document.__name__, "get_list")
+        add_button(vbox, "Add document", self.open_add_document_window, doc_manager.Document.__name__, "add")
+        add_button(vbox, "Manage groups", self.open_groups_window, group_manager.Group.__name__, "get_list")
+        add_button(vbox, "Add group", self.open_add_group, group_manager.Group.__name__, "add")
+        add_button(vbox, "Manage users", self.open_manage_users_window, user_manager.User.__name__, "get_list")
+        add_button(vbox, "Add user", self.open_add_user_window, user_manager.User.__name__, "add")
+        add_button(vbox, "Show history", self.open_history_window, booking_system.Booking_system.__name__, "get_list")
         if auth.Auth.get_access_level()[0] == 'admin':
             add_button(vbox, "Admin panel", self.open_admin_panel)
         vbox.addStretch()

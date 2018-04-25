@@ -1,14 +1,15 @@
 from PyQt5.QtGui import QColor
-from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout, QLabel, QPushButton, QMessageBox, \
+from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout, QLabel, QMessageBox, \
                                                 QTableWidget, QAbstractItemView, QTableWidgetItem, QInputDialog
 from gui.CopyInfo import CopyInfo
 from gui.EventManager import EventManager
 from gui.QueueWindow import QueueWindow
 from gui.Window import Window
 from gui.BookEdit import BookEdit
-from managers.doc_manager import Copy
+from managers.doc_manager import Copy, Document
 from gui.GUITools import add_button
 from managers.user_manager import User
+from managers.booking_system import Booking_system
 
 
 class BookInfo(Window):
@@ -82,27 +83,18 @@ class BookInfo(Window):
 
         vbox.addWidget(self.table)
 
-        edit_button = QPushButton("Edit")
-        edit_button.setFixedWidth(90)
-        edit_button.setFixedHeight(25)
-        edit_button.clicked.connect(self.edit_document)
-
-        self.delete_button = QPushButton("Delete")
-        self.delete_button.setFixedWidth(90)
-        self.delete_button.setFixedHeight(25)
-        self.delete_button.clicked.connect(self.delete_document)
-        if not self.doc.active:
-            self.delete_button.setVisible(False)
-
         edit_button_layout = QHBoxLayout()
         edit_button_layout.addStretch()
-        rb = add_button(edit_button_layout, "OR", self.make_or, 90, 25)
-        rb.setStyleSheet("background-color: red;")
-        edit_button_layout.addWidget(self.delete_button)
-        add_button(edit_button_layout, "Queue", self.show_queue, 90, 25)
-        add_button(edit_button_layout, "Add copy", self.add_copy, 90, 25)
-        add_button(edit_button_layout, "Check out", self.check_out, 90, 25)
-        edit_button_layout.addWidget(edit_button)
+        rb = add_button(edit_button_layout, "OR", self.make_or, Booking_system.__name__, "outstanding_request", 90, 25)
+        if rb.isEnabled():
+            rb.setStyleSheet("background-color: red;")
+        self.delete_button = add_button(edit_button_layout, "Delete", self.delete_document, Document.__name__, "remove", 90, 25)
+        if not self.doc.active:
+            self.delete_button.setVisible(False)
+        add_button(edit_button_layout, "Queue", self.show_queue, None, None,90, 25)
+        add_button(edit_button_layout, "Add copy", self.add_copy, Copy.__name__, "add", 90, 25)
+        add_button(edit_button_layout, "Check out", self.check_out, Booking_system.__name__, "check_out", 90, 25)
+        add_button(edit_button_layout, "Edit", self.edit_document, None, None, 90, 25)
         vbox.addLayout(edit_button_layout)
 
         self.setLayout(vbox)
