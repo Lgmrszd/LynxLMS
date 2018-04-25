@@ -9,7 +9,8 @@ from gui.TaskWindow import Dialog
 from gui.BookInfo import BookInfo
 from gui.AddUser import AddUser
 import db_config
-from managers import auth, user_manager, doc_manager, booking_system
+import datetime
+from managers import auth, user_manager, doc_manager, booking_system, task_manager
 
 
 docs_data = {
@@ -407,7 +408,36 @@ def test_case_6():
 
 
 def test_case_7():
-    pass
+    shutil.copy(test4_db, test_new_db)
+    db_config.init_db(test_new_db)
+    l3_data = get_ln_data(3)
+    auth.Auth.login(l3_data["login"], l3_data["password"])
+
+    p1 = user_manager.User.get(user_manager.User.name == patrons_data["p1"]["name"])
+    p2 = user_manager.User.get(user_manager.User.name == patrons_data["p2"]["name"])
+    p3 = user_manager.User.get(user_manager.User.name == patrons_data["p3"]["name"])
+    s = user_manager.User.get(user_manager.User.name == patrons_data["s"]["name"])
+    v = user_manager.User.get(user_manager.User.name == patrons_data["v"]["name"])
+    d3 = doc_manager.Book.get(doc_manager.Book.title == docs_data["books"]["d3"]["title"])
+
+    bsystem = booking_system.Booking_system(l3_data["login"])
+    print(bsystem.check_out(d3, p1))
+    print(bsystem.check_out(d3, p2))
+    print(bsystem.check_out(d3, s))
+    print(bsystem.check_out(d3, v))
+    print(bsystem.check_out(d3, p3))
+
+    d3_c = d3.get_document_copies()
+
+    access_error = False
+    try:
+        res = bsystem.outstanding_request(d3, p3)
+        print(res)
+    except auth.AccessError:
+        access_error = True
+    assert not access_error
+    sleep(1)
+    task_manager.timer_function()
 
 
 def test_case_8(qtbot):
@@ -420,8 +450,14 @@ def test_case_8(qtbot):
     assert True
 
 
-def test_case_9():
-    pass
+def test_case_9(qtbot):
+    # This is manual test
+    test_case_7()
+    auth_window = setup_login_custom(qtbot, "admin", "pass")
+    admin_panel_button = get_button_by_name("Admin panel")
+    qtbot.mouseClick(admin_panel_button, QtCore.Qt.LeftButton)
+    qtbot.stopForInteraction()
+    assert True
 
 
 def test_case_10():
