@@ -125,3 +125,4 @@ tests/test_database.db
 # pytest
 .pytest_cache/*
 tests/.pytest_cache/*
+tests/test_database_4_clear_copy.db
