@@ -11,6 +11,7 @@ from gui.ManageGroupsWindow import ManageGroupsWindow
 from gui.Window import Window
 from gui.AddDocument import AddDocument
 from gui.SearchWindow import SearchWindow
+from gui.AdminPanel import AdminPanel
 from PyQt5.QtWidgets import QApplication
 from managers import auth
 
@@ -42,6 +43,7 @@ class MainWindow(Window):
         QApplication.instance().exit()
 
     def _set_up_ui(self):
+        self.admin_panel = self.app.open_window(AdminPanel, {})
         self.search_window = self.app.open_window(SearchWindow, {})
         self.history_window = self.app.open_window(HistoryWindow, {})
         self.manage_users = self.app.open_window(ManageUsersWindow, {})
@@ -116,4 +118,7 @@ class MainWindow(Window):
         self.app.open_window(AddGroup, {})
 
     def open_admin_panel(self):
-        pass
+        if self.admin_panel.isHidden():
+            self.admin_panel.show()
+        else:
+            self.admin_panel.hide()

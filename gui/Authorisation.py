@@ -1,8 +1,9 @@
 from PyQt5.QtWidgets import QWidget, QDesktopWidget, QPushButton, QVBoxLayout, QLineEdit, QHBoxLayout, QLabel
+from PyQt5.QtGui import QIcon, QPixmap
 from managers.auth import Auth, AccessError
 from gui.App import App
 from managers.booking_system import Booking_system
-
+import os.path
 
 class Authorization(QWidget):
     def __init__(self):
@@ -16,6 +17,10 @@ class Authorization(QWidget):
 
         hbox = QHBoxLayout()
         hbox.addStretch()
+
+        label = QLabel()
+        pixmap = QPixmap(os.path.dirname(__file__) + '/../images/auth_img.jpg')
+        label.setPixmap(pixmap)
 
         self.login_label = QLabel("Login")
         self.pass_label = QLabel("Password")
@@ -32,6 +37,7 @@ class Authorization(QWidget):
 
         vbox = QVBoxLayout()
         vbox.addStretch()
+        vbox.addWidget(label)
         vbox.addWidget(self.login_label)
         vbox.addWidget(self.login_edit)
         vbox.addWidget(self.pass_label)
