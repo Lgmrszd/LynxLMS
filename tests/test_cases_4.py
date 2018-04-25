@@ -9,7 +9,7 @@ from gui.TaskWindow import Dialog
 from gui.BookInfo import BookInfo
 from gui.AddUser import AddUser
 import db_config
-from managers import auth, user_manager, doc_manager
+from managers import auth, user_manager, doc_manager, booking_system
 
 
 docs_data = {
@@ -361,7 +361,9 @@ def test_case_5():
 
     assert d1 is not None
     assert isinstance(d1, doc_manager.Book)
+
     d1_copies = d1.get_document_copies()
+    d1_copies = [i for i in d1_copies if i.active]
     assert len(d1_copies) == 3
 
     d1_copy = d1_copies[0]
@@ -373,11 +375,18 @@ def test_case_5():
     auth.Auth.login(l2_data["login"], l2_data["password"])
 
     d1_copies = d1.get_document_copies()
-    assert len(d1_copies) == 3  # WHY 3 ANTON WHAT THE F***
+    d1_copies = [i for i in d1_copies if i.active]
+    assert len(d1_copies) == 2
 
 
 def test_case_6():
-    pass
+    shutil.copy(test4_db, test_new_db)
+    db_config.init_db(test_new_db)
+    l1_data = get_ln_data(1)
+    auth.Auth.login(l1_data["login"], l1_data["password"])
+    p1 = user_manager.User.get(user_manager.User.name == patrons_data["p1"]["name"])
+    bsystem = booking_system.Booking_system(l1_data["login"])
+    bsystem.check_out()
 
 
 def test_case_7():
