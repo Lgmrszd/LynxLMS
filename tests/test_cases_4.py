@@ -1,3 +1,4 @@
+import shutil
 from PyQt5 import QtCore
 from PyQt5.QtWidgets import QApplication, QMessageBox, QInputDialog, QDialogButtonBox, QTableWidget, QPushButton
 from time import sleep
@@ -85,6 +86,9 @@ patrons_data = {
         "email": "m.bobrov@innopolis.ru"
     }
 }
+
+test4_db = "tests/test_database_4_clear.db"
+test_new_db = "tests/test_database_4_clear_copy.db"
 
 
 class lookThread(QtCore.QThread):
@@ -204,6 +208,7 @@ def setup_login_custom(qtbot, login, password):
     qtbot.waitForWindowShown(auth_window)
     sleep(0.2)
     qtbot.mouseClick(auth_window.login_button, QtCore.Qt.LeftButton)
+    # qtbot.stopForInteraction()
     assert MainWindow in auth_window.app.windows
     qtbot.addWidget(auth_window.app.windows[MainWindow][0])
     return auth_window
@@ -248,15 +253,15 @@ def test_case_3(qtbot):
     main_window = auth_window.app.windows[MainWindow][0]
     # main_window.switch_search_window()
 
-    qtbot.stopForInteraction()
+    # qtbot.stopForInteraction()
 
 
 def test_case_4(qtbot):
     lt = lookThread(qtbot)
     lt.start()
     test_case_2()
-    l1_data = get_ln_data(2)
-    auth_window = setup_login_custom(qtbot, l1_data["login"], l1_data["password"])
+    l2_data = get_ln_data(2)
+    auth_window = setup_login_custom(qtbot, l2_data["login"], l2_data["password"])
     main_window = auth_window.app.windows[MainWindow][0]
     sleep(1)
     # Add books
@@ -337,3 +342,55 @@ def test_case_4(qtbot):
         assert db_book.author == book["author"]
         assert len(db_book.get_document_copies()) == 3
     lt.exit()
+    shutil.copy("tests/test_database.db", test4_db)
+
+
+def test_case_5():
+    shutil.copy(test4_db, test_new_db)
+    db_config.init_db(test_new_db)
+
+    # login as l3
+    l3_data = get_ln_data(3)
+    auth.Auth.login(l3_data["login"], l3_data["password"])
+
+    books, _ = doc_manager.Book.get_list(5, 1)
+    d1 = None
+    for book in books:
+        if book.title == docs_data["books"]["d1"]["title"]:
+            d1 = book
+
+    assert d1 is not None
+    assert isinstance(d1, doc_manager.Book)
+    d1_copies = d1.get_document_copies()
+    assert len(d1_copies) == 3
+
+    d1_copy = d1_copies[0]
+    assert isinstance(d1_copy, doc_manager.Copy)
+    doc_manager.Copy.remove(d1_copy.CopyID)
+
+    # login as l2
+    l2_data = get_ln_data(2)
+    auth.Auth.login(l2_data["login"], l2_data["password"])
+
+    d1_copies = d1.get_document_copies()
+    assert len(d1_copies) == 3  # WHY 3 ANTON WHAT THE F***
+
+
+def test_case_6():
+    pass
+
+
+def test_case_7():
+    pass
+
+
+def test_case_8():
+    pass
+
+
+def test_case_9():
+    pass
+
+
+def test_case_10():
+    pass
