@@ -2,3 +2,5 @@ sip
 PyQt5
 peewee==2.10.2
 bcrypt
+pytest
+pytest-qt
