@@ -7,17 +7,14 @@ from gui.GUITools import add_button
 
 
 class AddDocument(Window):
-    def __init__(self, app, doc_type=None):
+    def __init__(self, app):
         super().__init__(app)
         doc_types = ("Book", "Journal", "AV")
-        if doc_type in doc_types:
-            self.type = doc_type
+        item, ok = QInputDialog.getItem(self, "Choose type", "", doc_types, 0, False)
+        if ok and item:
+            self.type = item
         else:
-            item, ok = QInputDialog.getItem(self, "Choose type", "", doc_types, 0, False)
-            if ok and item:
-                self.type = item
-            else:
-                return
+            return
         self._reset_ui()
 
     def compare_window(self, param: dict) -> bool:
