@@ -58,7 +58,9 @@ class Booking_system:
 
         # find copy that is not checked out
         copy_query = doc_manager.Copy.select().where(doc_manager.Copy.active == True,
-                                                     doc_manager.Copy.checked_out == 0)
+                                                     doc_manager.Copy.checked_out == 0,
+                                                     doc_manager.Copy.docClass == doc_manager.class_to_name()[type(doc)],
+                                                     doc_manager.Copy.docId == doc.DocumentID)
         if (len(copy_query) != 0):
             copy = copy_query.get()
             copy.checked_out = 2
