@@ -410,8 +410,14 @@ def test_case_7():
     pass
 
 
-def test_case_8():
-    pass
+def test_case_8(qtbot):
+    # This is manual test
+    test_case_6()
+    auth_window = setup_login_custom(qtbot, "admin", "pass")
+    admin_panel_button = get_button_by_name("Admin panel")
+    qtbot.mouseClick(admin_panel_button, QtCore.Qt.LeftButton)
+    qtbot.stopForInteraction()
+    assert True
 
 
 def test_case_9():
