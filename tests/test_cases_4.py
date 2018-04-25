@@ -10,7 +10,7 @@ from gui.BookInfo import BookInfo
 from gui.AddUser import AddUser
 import db_config
 import datetime
-from managers import auth, user_manager, doc_manager, booking_system, task_manager
+from managers import auth, user_manager, doc_manager, booking_system, task_manager, event_manager
 
 
 docs_data = {
@@ -408,6 +408,13 @@ def test_case_6():
 
 
 def test_case_7():
+    global notified
+    notified = False
+
+    def check_notification(code, msg):
+        global notified
+        notified = True
+
     shutil.copy(test4_db, test_new_db)
     db_config.init_db(test_new_db)
     l3_data = get_ln_data(3)
@@ -421,23 +428,24 @@ def test_case_7():
     d3 = doc_manager.Book.get(doc_manager.Book.title == docs_data["books"]["d3"]["title"])
 
     bsystem = booking_system.Booking_system(l3_data["login"])
-    print(bsystem.check_out(d3, p1))
-    print(bsystem.check_out(d3, p2))
-    print(bsystem.check_out(d3, s))
-    print(bsystem.check_out(d3, v))
-    print(bsystem.check_out(d3, p3))
+    bsystem.check_out(d3, p1)
+    bsystem.check_out(d3, p2)
+    bsystem.check_out(d3, s)
+    bsystem.check_out(d3, v)
+    bsystem.check_out(d3, p3)
 
     d3_c = d3.get_document_copies()
 
     access_error = False
     try:
         res = bsystem.outstanding_request(d3, p3)
-        print(res)
     except auth.AccessError:
         access_error = True
     assert not access_error
     sleep(1)
+    event_manager.register_listener("task_ended", check_notification)
     task_manager.timer_function()
+    assert notified
 
 
 def test_case_8(qtbot):
