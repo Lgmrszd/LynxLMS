@@ -1,9 +1,10 @@
 from PyQt5.QtGui import QIntValidator
-from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout, QLabel, QLineEdit, QPushButton, QComboBox
+from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout, QLabel, QLineEdit, QComboBox
 from gui.Window import Window
 from gui.EventManager import EventManager
 from managers.user_manager import User
 from managers.group_manager import Group
+from gui.GUITools import add_button
 
 
 class AddUser(Window):
@@ -45,11 +46,6 @@ class AddUser(Window):
             items.append(item.name)
         self.group_combo_box.addItems(items)
 
-        add_button = QPushButton("Add")
-        add_button.setFixedWidth(90)
-        add_button.setFixedHeight(25)
-        add_button.clicked.connect(self.add_user)
-
         vbox = QVBoxLayout()
 
         name_layout = QHBoxLayout()
@@ -78,7 +74,7 @@ class AddUser(Window):
 
         add_button_layout = QHBoxLayout()
         add_button_layout.addStretch()
-        add_button_layout.addWidget(add_button)
+        add_button(add_button_layout, "Add", self.add_user, User.__name__, "add", 90, 25)
 
         vbox.addLayout(name_layout)
         vbox.addLayout(surname_layout)

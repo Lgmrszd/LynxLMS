@@ -1,4 +1,6 @@
-from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout, QLabel, QPushButton
+from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout, QLabel
+
+from gui.GUITools import add_button
 from managers.user_manager import Group
 from gui.GroupEdit import GroupEdit
 from gui.Window import Window
@@ -25,16 +27,6 @@ class GroupInfo(Window):
         window_size_y = 400
 
         self.group_id = QLabel("ID: " + str(self.group.id))
-
-        edit_button = QPushButton("Edit")
-        edit_button.setFixedWidth(90)
-        edit_button.setFixedHeight(25)
-        edit_button.clicked.connect(self.edit_group)
-
-        self.delete_button = QPushButton("Delete")
-        self.delete_button.setFixedWidth(90)
-        self.delete_button.setFixedHeight(25)
-        self.delete_button.clicked.connect(self.delete_group)
 
         name_label = QLabel("name : ")
         name_label.setFixedWidth(100)
@@ -77,16 +69,6 @@ class GroupInfo(Window):
         self.av_rt_label.setText(str(self.group.av_rt))
         self.priority_label = QLabel()
         self.priority_label.setText(str(self.group.priority))
-
-        edit_button = QPushButton("Edit")
-        edit_button.setFixedWidth(90)
-        edit_button.setFixedHeight(25)
-        edit_button.clicked.connect(self.edit_group)
-
-        delete_button = QPushButton("Delete")
-        delete_button.setFixedWidth(90)
-        delete_button.setFixedHeight(25)
-        delete_button.clicked.connect(self.delete_group)
 
         vbox = QVBoxLayout()
 
@@ -132,8 +114,8 @@ class GroupInfo(Window):
 
         buttons_layout = QHBoxLayout()
         buttons_layout.addStretch()
-        buttons_layout.addWidget(delete_button)
-        buttons_layout.addWidget(edit_button)
+        add_button(buttons_layout, "Delete", self.delete_group, Group.__name__, "remove", 90, 25)
+        add_button(buttons_layout, "Edit", self.edit_group, Group.__name__, "edit", 90, 25)
 
         vbox.addLayout(name_layout)
         vbox.addLayout(book_ct_layout)

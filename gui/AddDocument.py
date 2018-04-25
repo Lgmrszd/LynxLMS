@@ -55,7 +55,7 @@ class AddDocument(Window):
 
         add_button_layout = QHBoxLayout()
         add_button_layout.addStretch()
-        add_button(add_button_layout, "Add", self.add_document, 90, 25)
+        add_button(add_button_layout, "Add", self.add_document, Document.__name__, "add", 90, 25)
         vbox.addLayout(add_button_layout)
 
         self.setLayout(vbox)

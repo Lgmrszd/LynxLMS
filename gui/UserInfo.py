@@ -1,11 +1,11 @@
 from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout, QLabel, QPushButton, QTableWidget, \
     QGroupBox, QTableWidgetItem, QAbstractItemView, QInputDialog
 
+from gui.GUITools import add_button
 from gui.UserEdit import UserEdit
 from gui.Window import Window
 from gui.EventManager import EventManager
 from managers.user_manager import User
-# from gui.UserEdit import UserEdit
 
 
 class UserInfo(Window):
@@ -67,16 +67,6 @@ class UserInfo(Window):
         self.phone_label = QLabel("Phone: " + str(self.user.phone))
         self.mail_label = QLabel("Email: " + str(self.user.email))
 
-        edit_button = QPushButton("Edit")
-        edit_button.setFixedWidth(90)
-        edit_button.setFixedHeight(25)
-        edit_button.clicked.connect(self.edit_user)
-
-        self.delete_button = QPushButton("Delete")
-        self.delete_button.setFixedWidth(90)
-        self.delete_button.setFixedHeight(25)
-        self.delete_button.clicked.connect(self.delete_user)
-
         fine_button = QPushButton("Pay fine")
         fine_button.setFixedWidth(90)
         fine_button.setFixedHeight(25)
@@ -117,8 +107,8 @@ class UserInfo(Window):
 
         last_layout = QHBoxLayout()
         last_layout.addStretch()
-        last_layout.addWidget(self.delete_button)
-        last_layout.addWidget(edit_button)
+        self.delete_button = add_button(last_layout, "Delete", self.delete_user, User.__name__, "remove", 90, 25)
+        add_button(last_layout, "Edit", self.edit_user, User.__name__, "edit", 90, 25)
         last_layout.addWidget(fine_button)
 
         history_table_group = QGroupBox()

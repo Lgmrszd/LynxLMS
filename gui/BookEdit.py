@@ -1,7 +1,9 @@
 from PyQt5.QtGui import QIntValidator
-from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout, QLabel, QLineEdit, QPushButton, QMessageBox
+from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout, QLabel, QLineEdit, QMessageBox
 from gui.Window import Window
 from gui.EventManager import EventManager
+from gui.GUITools import add_button
+from managers.doc_manager import Document
 
 
 class BookEdit(Window):
@@ -17,11 +19,6 @@ class BookEdit(Window):
         window_size_y = 480
 
         vbox = QVBoxLayout()
-
-        save_button = QPushButton("Save")
-        save_button.setFixedWidth(90)
-        save_button.setFixedHeight(25)
-        save_button.clicked.connect(self.save_changes)
 
         self.fields = dict()
         self.types = dict()
@@ -47,7 +44,7 @@ class BookEdit(Window):
 
         add_button_layout = QHBoxLayout()
         add_button_layout.addStretch()
-        add_button_layout.addWidget(save_button)
+        add_button(add_button_layout, "Save", self.save_changes, Document.__name__, "save", 90, 25)
         vbox.addLayout(add_button_layout)
 
         self.setLayout(vbox)

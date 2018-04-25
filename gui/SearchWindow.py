@@ -56,6 +56,7 @@ class SearchWindow(Window):
         self.books = []
 
         self.search_field = QLineEdit("")
+        self.af = QLineEdit("")
 
         sort_label = QLabel("Sort by:")
         self.sortBox = QComboBox()
@@ -89,8 +90,15 @@ class SearchWindow(Window):
         next_button.clicked.connect(self.next_page)
 
         search_layout = QHBoxLayout()
-        search_layout.addWidget(self.search_field)
-        search_layout.addWidget(search_button)
+        vb = QVBoxLayout()
+        search_layout.addLayout(vb)
+        vb.addWidget(QLabel("Title:"))
+        vb.addWidget(QLabel("Author:"))
+        vb = QVBoxLayout()
+        search_layout.addLayout(vb)
+        vb.addWidget(self.search_field)
+        vb.addWidget(self.af)
+        # search_layout.addWidget(search_button)
 
         settings_layout = QHBoxLayout()
         settings_layout.addWidget(sort_label)
@@ -101,6 +109,8 @@ class SearchWindow(Window):
         settings_layout.addWidget(self.activeBox)
 
         settings_layout.addStretch()
+
+        settings_layout.addWidget(search_button)
 
         in_group_layout = QVBoxLayout()
         in_group_layout.addWidget(self.result_table)
@@ -159,12 +169,16 @@ class SearchWindow(Window):
         self.update_page()
 
     def get_result(self):#вызывается при нажатии на кнопку 'search', вызвав 'self.search_field.text()' можно получить тескт из строки поиска
+        dic = dict()
+        dic["title"] = (str(self.search_field.text()).strip(), False)
+        dic["author"] =(str(self.af.text()).strip(), False)
+
         if self.type == "AV":
-            self.list, self.number = AVMaterial.get_list(15, self.page_num, self.active)
+            self.list, self.number = AVMaterial.get_list(15, self.page_num, self.active, dic)
         elif self.type == "Book":
-            self.list, self.number = Book.get_list(15, self.page_num, self.active)
+            self.list, self.number = Book.get_list(15, self.page_num, self.active, dic)
         elif self.type == "Journal":
-            self.list, self.number = JournalArticle.get_list(15, self.page_num, self.active)
+            self.list, self.number = JournalArticle.get_list(15, self.page_num, self.active, dic)
 
         for i in range(0, len(self.list)):
             self.result_table.setItem(i, self.title_col, QTableWidgetItem(self.list[i].title))
