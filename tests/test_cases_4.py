@@ -1,17 +1,14 @@
-import typing
-
 from PyQt5 import QtCore
-from PyQt5.QtCore import QObject
-from PyQt5.QtWidgets import QApplication, QMessageBox, QInputDialog, QDialogButtonBox, QTableWidget, QPushButton, QLineEdit
+from PyQt5.QtWidgets import QApplication, QMessageBox, QInputDialog, QDialogButtonBox, QTableWidget, QPushButton
 from time import sleep
 from gui.Authorisation import Authorization
 from gui.MainWindow import MainWindow
 from gui.AddDocument import AddDocument
 from gui.TaskWindow import Dialog
 from gui.BookInfo import BookInfo
+from gui.AddUser import AddUser
 import db_config
-import inspect
-from managers import auth
+from managers import auth, user_manager, doc_manager
 
 
 docs_data = {
@@ -23,7 +20,7 @@ docs_data = {
             "year": 2009,
             "edition": "Third edition",
             "cost": 5000,
-            "keywords": "Algorithms, Data Structures, Complexity, Computational Theory"
+            "keywords": "Algorithms, Data Structures, Complexity, Computational Theory",
         },
         "d2": {
             "title": "Algorithms + Data Structures = Programs",
@@ -43,6 +40,49 @@ docs_data = {
             "cost": 5000,
             "keywords": "Algorithms, Combinatorial Algorithms, Recursion"
         }
+    }
+}
+
+patrons_data = {
+    "p1": {
+        "name": "Sergey",
+        "surname": "Afonso",
+        "address": "Via Margutta, 3",
+        "phone": "30001",
+        "group": "Faculty",
+        "email": "m.bobrov@innopolis.ru"
+    },
+    "p2": {
+        "name": "Nadia",
+        "surname": "Teixeira",
+        "address": "Via Sacra, 13",
+        "phone": "30002",
+        "group": "Faculty",
+        "email": "m.bobrov@innopolis.ru"
+    },
+    "p3": {
+        "name": "Elvira",
+        "surname": "Espindola",
+        "address": "Via del Corso, 22",
+        "phone": "30003",
+        "group": "Faculty",
+        "email": "m.bobrov@innopolis.ru"
+    },
+    "s": {
+        "name": "Andrey",
+        "surname": "Velo",
+        "address": "Avenida Mazatlan 250",
+        "phone": "30004",
+        "group": "Students",
+        "email": "m.bobrov@innopolis.ru"
+    },
+    "v": {
+        "name": "Veronika",
+        "surname": "Rama",
+        "address": "Stret Atocha, 27",
+        "phone": "30005",
+        "group": "Visiting professors",
+        "email": "m.bobrov@innopolis.ru"
     }
 }
 
@@ -148,8 +188,7 @@ def get_ln_data(n):
     return {k: (names.get(n, v) if k is "info" else v.format(n) if isinstance(v, str) else n) for k, v in res.items()}
 
 
-def setup_db():
-    db_fname = "tests/test_database.db"
+def setup_db(db_fname="tests/test_database.db"):
     db_config.init_db(db_fname)
     db_config.drop_tables()
     db_config.create_tables()
@@ -174,12 +213,18 @@ def setup_login(qtbot):
     return setup_login_custom(qtbot, "admin", "pass")
 
 
-def get_button_by_name(name):
+def get_button_by_name(name, parentType = None):
+    # Try 3 times
+    for i in range(3):
         for widget in QApplication.allWidgets():
             if isinstance(widget, QPushButton):
                 if widget.text() == name:
-                    return widget
-        return None
+                    if parentType:
+                        if isinstance(widget.parent(), parentType):
+                            return widget
+                    else:
+                        return widget
+    return None
 
 
 def test_case_1():
@@ -226,7 +271,7 @@ def test_case_4(qtbot):
         for k, v in book_info.items():
             add_doc_window.fields[k].setText(str(v))
         qtbot.waitForWindowShown(add_doc_window)
-        sleep(0.2)
+        sleep(0.5)
         add_doc_confirm_b = get_button_by_name("Add")
         assert add_doc_confirm_b is not None
         qtbot.mouseClick(add_doc_confirm_b, QtCore.Qt.LeftButton)
@@ -245,12 +290,50 @@ def test_case_4(qtbot):
         assert isinstance(book_info, BookInfo)
         add_doc_b = get_button_by_name("Add copy")
         assert add_doc_b is not None
-        lt.add_write_location()
-        qtbot.mouseClick(add_doc_b, QtCore.Qt.LeftButton)
-        sleep(0.5)
+        for i in range(3):
+            lt.add_write_location()
+            qtbot.mouseClick(add_doc_b, QtCore.Qt.LeftButton)
+            sleep(0.5)
         book_info.close()
     main_window.search_window.close()
 
+    add_user_b = get_button_by_name("Add user")
+    assert add_user_b is not None
+    patrons = ["p1", "p2", "p3"]
+    patrons = {k: v for k, v in patrons_data.items() if k in patrons}
+    for k, patron_data in {k: v for k, v in patrons_data.items() if k in patrons}.items():
+        qtbot.mouseClick(add_user_b, QtCore.Qt.LeftButton)
+        assert AddUser in auth_window.app.windows
+        assert len(auth_window.app.windows[AddUser]) > 0
+        add_user_window = auth_window.app.windows[AddUser][0]
+        assert isinstance(add_user_window, AddUser)
+        qtbot.keyClicks(add_user_window.name_edit, patron_data["name"])
+        qtbot.keyClicks(add_user_window.surname_edit, patron_data["surname"])
+        qtbot.keyClicks(add_user_window.address_edit, patron_data["address"])
+        qtbot.keyClicks(add_user_window.phone_edit, patron_data["phone"])
+        qtbot.keyClicks(add_user_window.mail_edit, patron_data["email"])
+        add_user_window.group_combo_box.setCurrentIndex(add_user_window.group_combo_box.findText(patron_data["group"]))
+        add_user_confirm_b = get_button_by_name("Add", AddUser)
+        qtbot.mouseClick(add_user_confirm_b, QtCore.Qt.LeftButton)
 
-    qtbot.stopForInteraction()
+    users = user_manager.User.get_list(5, 1)
+    assert len(users) == 3
+    users_by_name = {v["name"]: v for k, v in patrons.items()}
+    db_users_by_name = {i.name: i for i in users}
+    for name, user in users_by_name.items():
+        assert name in db_users_by_name
+        db_user = db_users_by_name[name]
+        assert db_user.surname == user["surname"]
+        assert db_user.email == user["email"]
+    lt.exit()
 
+    books, _ = doc_manager.Book.get_list(5, 1)
+    assert len(books) == 3
+    books_by_title = {v["title"]: v for k, v in docs_data["books"].items()}
+    db_books_by_title = {i.title: i for i in books}
+    for title, book in books_by_title.items():
+        assert title in db_books_by_title
+        db_book = db_books_by_title[title]
+        assert db_book.author == book["author"]
+        assert len(db_book.get_document_copies()) == 3
+    lt.exit()
