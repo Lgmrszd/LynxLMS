@@ -171,7 +171,6 @@ class TimerThread(QThread):
         self.__endSignal.emit(status, message)
 
     def run(self):
-        print("startKek")
         timer = QTimer()
         timer.timeout.connect(timer_function)
         timer.start(1000)
