@@ -304,7 +304,7 @@ def test_case_4(qtbot):
 
     add_user_b = get_button_by_name("Add user")
     assert add_user_b is not None
-    patrons = ["p1", "p2", "p3"]
+    patrons = ["s", "p1", "p2", "p3", "v"]
     patrons = {k: v for k, v in patrons_data.items() if k in patrons}
     for k, patron_data in {k: v for k, v in patrons_data.items() if k in patrons}.items():
         qtbot.mouseClick(add_user_b, QtCore.Qt.LeftButton)
@@ -322,7 +322,7 @@ def test_case_4(qtbot):
         qtbot.mouseClick(add_user_confirm_b, QtCore.Qt.LeftButton)
 
     users = user_manager.User.get_list(5, 1)
-    assert len(users) == 3
+    assert len(users) == 5
     users_by_name = {v["name"]: v for k, v in patrons.items()}
     db_users_by_name = {i.name: i for i in users}
     for name, user in users_by_name.items():
@@ -384,9 +384,26 @@ def test_case_6():
     db_config.init_db(test_new_db)
     l1_data = get_ln_data(1)
     auth.Auth.login(l1_data["login"], l1_data["password"])
+
     p1 = user_manager.User.get(user_manager.User.name == patrons_data["p1"]["name"])
+    p2 = user_manager.User.get(user_manager.User.name == patrons_data["p2"]["name"])
+    p3 = user_manager.User.get(user_manager.User.name == patrons_data["p3"]["name"])
+    s = user_manager.User.get(user_manager.User.name == patrons_data["s"]["name"])
+    v = user_manager.User.get(user_manager.User.name == patrons_data["v"]["name"])
+    d3 = doc_manager.Book.get(doc_manager.Book.title == docs_data["books"]["d3"]["title"])
+
     bsystem = booking_system.Booking_system(l1_data["login"])
-    bsystem.check_out()
+    bsystem.check_out(d3, p1)
+    bsystem.check_out(d3, p2)
+    bsystem.check_out(d3, s)
+    bsystem.check_out(d3, v)
+    bsystem.check_out(d3, p3)
+    access_error = False
+    try:
+        bsystem.outstanding_request(d3, p3)
+    except auth.AccessError:
+        access_error = True
+    assert access_error
 
 
 def test_case_7():
