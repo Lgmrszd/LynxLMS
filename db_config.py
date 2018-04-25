@@ -67,5 +67,6 @@ def drop_tables():
                     managers.booking_system.History,
                     managers.user_manager.Queue,
                     managers.user_manager.Request,
-                    managers.auth.AuthUsers], safe=True) #It removes AuthUsers!!!
+                    managers.auth.AuthUsers,
+                    managers.task_manager.Task], safe=True) #It removes AuthUsers!!!
 
